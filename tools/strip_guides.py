@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Remove the Study Guide cards from repo/index.html.
+"""Remove the Study Guide cards from the Security+ hub (repo/security-plus/index.html).
 
 The five Study Guides are Claude docs living on claude.ai; they have no
 public mirror, so their cards must not ship in the public repo build.
@@ -9,7 +9,7 @@ import re
 import sys
 import pathlib
 
-p = pathlib.Path(__file__).resolve().parent.parent / "repo" / "index.html"
+p = pathlib.Path(__file__).resolve().parent.parent / "repo" / "security-plus" / "index.html"
 t = p.read_text()
 
 # each guide card is: ,{k:"guide", ... url:"https://claude.ai/..."}  immediately

@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Term-and-definition matching game for Security+ Domain 5.">
+<meta name="description" content="Term-and-definition matching game for Security+ Domain 1.">
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Domain 5 Match</title>
+<title>Domain 1 Match</title>
 </head>
 <body>
 <style>
 :root{
   --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
   --text:#171b1f; --text-muted:#5a6570;
-  --accent:#6d4bc4; --accent-ink:#ffffff;
+  --accent:#0d7b86; --accent-ink:#ffffff;
   --hl-blue:#2f5fd6; --hl-blue-bg:#eaf0fd;
   --hl-green:#1f8a5c; --hl-green-bg:#e7f4ee;
   --bad:#c23b3b; --bad-bg:#fbe9e9;
-  --cable-1:#0d7b86; --cable-2:#2f5fd6; --cable-3:#6d4bc4;
+  --cable-1:#0d7b86; --cable-2:#2f5fd6; --cable-3:#1f8a5c;
   --cable-4:#b3437c; --cable-5:#a9791c; --cable-6:#6d4bc4;
   --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
   --shadow-lift:0 6px 22px rgba(20,24,28,.16);
@@ -29,11 +29,11 @@
   :root:not([data-theme="light"]){
     --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
     --text:#e7edf1; --text-muted:#93a2ac;
-    --accent:#a98cf0; --accent-ink:#1a1030;
+    --accent:#3fd0dd; --accent-ink:#06262a;
     --hl-blue:#7ea2ff; --hl-blue-bg:#161f34;
     --hl-green:#55d69a; --hl-green-bg:#12291f;
     --bad:#f0817c; --bad-bg:#331616;
-    --cable-1:#3fd0dd; --cable-2:#7ea2ff; --cable-3:#a98cf0;
+    --cable-1:#3fd0dd; --cable-2:#7ea2ff; --cable-3:#55d69a;
     --cable-4:#ea86b8; --cable-5:#e0b24d; --cable-6:#a98cf0;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
     --shadow-lift:0 10px 30px rgba(0,0,0,.55);
@@ -42,11 +42,11 @@
 :root[data-theme="dark"]{
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
   --text:#e7edf1; --text-muted:#93a2ac;
-  --accent:#a98cf0; --accent-ink:#1a1030;
+  --accent:#3fd0dd; --accent-ink:#06262a;
   --hl-blue:#7ea2ff; --hl-blue-bg:#161f34;
   --hl-green:#55d69a; --hl-green-bg:#12291f;
   --bad:#f0817c; --bad-bg:#331616;
-  --cable-1:#3fd0dd; --cable-2:#7ea2ff; --cable-3:#a98cf0;
+  --cable-1:#3fd0dd; --cable-2:#7ea2ff; --cable-3:#55d69a;
   --cable-4:#ea86b8; --cable-5:#e0b24d; --cable-6:#a98cf0;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
   --shadow-lift:0 10px 30px rgba(0,0,0,.55);
@@ -188,7 +188,7 @@ h1{font-family:var(--font-display);font-weight:600;letter-spacing:-0.01em;}
   <div class="topbar-inner">
     <a class="backlink" href="index.html"><span class="arr">&larr;</span> Security+ Toolkit</a>
     <div class="brand">
-      <h1>Domain 5 Match</h1>
+      <h1>Domain 1 Match</h1>
       <span class="sub">patch each term to its definition</span>
     </div>
     <div class="tabs" id="tabs" role="tablist"></div>
@@ -232,133 +232,117 @@ h1{font-family:var(--font-display);font-weight:600;letter-spacing:-0.01em;}
 (function(){
 "use strict";
 
-var TAB_ORDER = ["all","5.1","5.2","5.3","5.4","5.5","5.6","gotchas"];
-var TAB_LABEL = {"all":"All","5.1":"5.1","5.2":"5.2","5.3":"5.3","5.4":"5.4","5.5":"5.5","5.6":"5.6","gotchas":"Gotchas"};
+var TAB_ORDER = ["all","1.1","1.2","1.3","1.4","gotchas"];
+var TAB_LABEL = {"all":"All","1.1":"1.1","1.2":"1.2","1.3":"1.3","1.4":"1.4","gotchas":"Gotchas"};
 var SIZES = [6,8,10];
 
 var PAIRS = [
-/* ---------- 5.1 Security Governance ---------- */
-{id:"a1",obj:"5.1",term:"Policy",def:"Mandatory high-level statement of what's required and why"},
-{id:"a2",obj:"5.1",term:"Standard",def:"Specific, measurable requirement that fulfils a policy"},
-{id:"a3",obj:"5.1",term:"Procedure",def:"Mandatory step-by-step instructions"},
-{id:"a4",obj:"5.1",term:"Guideline",def:"Optional best-practice recommendation"},
-{id:"a5",obj:"5.1",term:"AUP",def:"What users may do with company systems, signed at onboarding"},
-{id:"a6",obj:"5.1",term:"Business continuity",def:"Keeping essential functions running during a disruption"},
-{id:"a7",obj:"5.1",term:"Disaster recovery",def:"Restoring IT after a major event"},
-{id:"a8",obj:"5.1",term:"Agile",def:"SDLC run as short, repeated sprints"},
-{id:"a9",obj:"5.1",term:"Waterfall",def:"SDLC run as sequential phases, one pass"},
-{id:"a10",obj:"5.1",term:"Change control board",def:"Approves and schedules changes"},
-{id:"a11",obj:"5.1",term:"Backout plan",def:"How to undo a change that fails"},
-{id:"a12",obj:"5.1",term:"Playbook",def:"Ordered response steps for one specific event"},
-{id:"a13",obj:"5.1",term:"Committee",def:"Experts working out how to meet the board's goals"},
-{id:"a14",obj:"5.1",term:"Data owner",def:"Senior person accountable for a data set"},
-{id:"a15",obj:"5.1",term:"Data custodian",def:"Handles data day to day: labels, access, backups"},
-{id:"a16",obj:"5.1",term:"Data controller",def:"Decides why and how personal data is processed"},
-{id:"a17",obj:"5.1",term:"Data processor",def:"Processes personal data on the controller's instructions"},
-/* ---------- 5.2 Risk Management ---------- */
-{id:"b1",obj:"5.2",term:"Ad hoc assessment",def:"Assessing one specific concern, as needed"},
-{id:"b2",obj:"5.2",term:"Continuous assessment",def:"Risk checks built into everyday operations"},
-{id:"b3",obj:"5.2",term:"Qualitative analysis",def:"Risk rated in categories such as high, medium, low"},
-{id:"b4",obj:"5.2",term:"SLE",def:"AV &times; EF &mdash; loss from one event"},
-{id:"b5",obj:"5.2",term:"ALE",def:"SLE &times; ARO &mdash; expected loss per year"},
-{id:"b6",obj:"5.2",term:"ARO",def:"Expected number of occurrences per year"},
-{id:"b7",obj:"5.2",term:"Exposure factor",def:"Fraction of asset value lost in one event"},
-{id:"b8",obj:"5.2",term:"Likelihood",def:"Qualitative judgment of how probable a risk is"},
-{id:"b9",obj:"5.2",term:"Risk register",def:"Living list of risks, owners and responses"},
-{id:"b10",obj:"5.2",term:"Key risk indicator",def:"A metric warning that a risk is rising"},
-{id:"b11",obj:"5.2",term:"Risk appetite",def:"How much risk the organization is willing to pursue"},
-{id:"b12",obj:"5.2",term:"Risk tolerance",def:"Acceptable variation around the appetite"},
-{id:"b13",obj:"5.2",term:"Expansionary",def:"Appetite that accepts more risk for growth"},
-{id:"b14",obj:"5.2",term:"Transfer",def:"Shifting financial impact to an insurer or other party"},
-{id:"b15",obj:"5.2",term:"Avoid",def:"Stopping the risky activity altogether"},
-{id:"b16",obj:"5.2",term:"Mitigate",def:"Reducing likelihood or impact with controls"},
-{id:"b17",obj:"5.2",term:"Exemption",def:"Released from the policy entirely"},
-{id:"b18",obj:"5.2",term:"Exception",def:"Temporary approved deviation from a policy"},
-{id:"b19",obj:"5.2",term:"RTO",def:"How quickly a function must be restored"},
-{id:"b20",obj:"5.2",term:"RPO",def:"Maximum acceptable data loss, measured in time"},
-{id:"b21",obj:"5.2",term:"MTBF",def:"Average run time before a failure"},
-{id:"b22",obj:"5.2",term:"MTTR",def:"Average time to repair a failure"},
-/* ---------- 5.3 Third-Party Risk ---------- */
-{id:"c1",obj:"5.3",term:"Right-to-audit clause",def:"Contract term allowing you to audit a vendor"},
-{id:"c2",obj:"5.3",term:"Supply chain analysis",def:"Examining a vendor's own suppliers and components"},
-{id:"c3",obj:"5.3",term:"Independent assessment",def:"Third-party report such as SOC 2 on a vendor"},
-{id:"c4",obj:"5.3",term:"Conflict of interest",def:"Something that compromises judgment in the relationship"},
-{id:"c5",obj:"5.3",term:"Vendor questionnaire",def:"Standard security questions feeding a vendor's risk rating"},
-{id:"c6",obj:"5.3",term:"SLA",def:"Measurable uptime and response commitments with penalties"},
-{id:"c7",obj:"5.3",term:"MOU",def:"Informal statement of shared intent, not a contract"},
-{id:"c8",obj:"5.3",term:"MOA",def:"More detailed responsibilities than an MOU"},
-{id:"c9",obj:"5.3",term:"MSA",def:"Umbrella contract for an ongoing relationship"},
-{id:"c10",obj:"5.3",term:"SOW",def:"One specific job's scope and deliverables under the MSA"},
-{id:"c11",obj:"5.3",term:"Bilateral NDA",def:"Confidentiality agreement binding both parties"},
-{id:"c12",obj:"5.3",term:"BPA",def:"Partners' ownership, profit sharing and decision rights"},
-/* ---------- 5.4 Compliance ---------- */
-{id:"d1",obj:"5.4",term:"External compliance reporting",def:"Reporting to regulators or partners, often annually"},
-{id:"d2",obj:"5.4",term:"Sanctions",def:"Restrictions on where or with whom you may operate"},
-{id:"d3",obj:"5.4",term:"Loss of license",def:"Losing the right to operate or process payments"},
-{id:"d4",obj:"5.4",term:"Due care",def:"Acting reasonably on what you know"},
-{id:"d5",obj:"5.4",term:"Due diligence",def:"Researching and understanding obligations and risks"},
-{id:"d6",obj:"5.4",term:"Acknowledgement",def:"Employees confirming they've read and accept a policy"},
-{id:"d7",obj:"5.4",term:"Data subject",def:"The identifiable person the data is about"},
-{id:"d8",obj:"5.4",term:"Right to be forgotten",def:"GDPR right to have personal data erased"},
-{id:"d9",obj:"5.4",term:"Data inventory",def:"Knowing what personal data you hold and where"},
-/* ---------- 5.5 Audits & Assessments ---------- */
-{id:"e1",obj:"5.5",term:"Attestation",def:"Formal opinion vouching for an audit's results"},
-{id:"e2",obj:"5.5",term:"Audit committee",def:"Oversees risk and directs internal audits"},
-{id:"e3",obj:"5.5",term:"Self-assessment",def:"A team checking itself against requirements"},
-{id:"e4",obj:"5.5",term:"Regulatory audit",def:"External examination required by law"},
-{id:"e5",obj:"5.5",term:"Known environment",def:"Tester given full details &mdash; white box"},
-{id:"e6",obj:"5.5",term:"Unknown environment",def:"Tester given nothing &mdash; black box"},
-{id:"e7",obj:"5.5",term:"Red team",def:"Offensive &mdash; finds and exploits weaknesses"},
-{id:"e8",obj:"5.5",term:"Blue team",def:"Defensive &mdash; detects and responds"},
-{id:"e9",obj:"5.5",term:"Passive recon",def:"Research that never touches the target's systems"},
-{id:"e10",obj:"5.5",term:"Active recon",def:"Scans and probes that leave traces in the target's logs"},
-/* ---------- 5.6 Security Awareness ---------- */
-{id:"f1",obj:"5.6",term:"Phishing campaign",def:"Simulated phishing that measures who clicks"},
-{id:"f2",obj:"5.6",term:"Risky behaviour",def:"Deliberate act that raises risk, like editing the hosts file"},
-{id:"f3",obj:"5.6",term:"Unexpected behaviour",def:"Out-of-pattern activity, like a foreign login at 3 a.m."},
-{id:"f4",obj:"5.6",term:"Unintentional behaviour",def:"Honest mistake, like a mistyped domain"},
-{id:"f5",obj:"5.6",term:"OPSEC",def:"Seeing your own information through an attacker's eyes"},
-{id:"f6",obj:"5.6",term:"Situational awareness",def:"Noticing suspicious links, calls, tailgaters and drops"},
-{id:"f7",obj:"5.6",term:"Recurring (reporting)",def:"Repeat offenders get extended training and tighter controls"},
+/* ---------- 1.1 Security Controls ---------- */
+{id:"c1",obj:"1.1",term:"Technical control",def:"Enforced by a system: firewall rules, OS policies, antivirus"},
+{id:"c2",obj:"1.1",term:"Managerial control",def:"Enforced by policy and paperwork: onboarding policy, compliance docs"},
+{id:"c3",obj:"1.1",term:"Operational control",def:"Enforced by people, day to day: guards, awareness training, patrols"},
+{id:"c4",obj:"1.1",term:"Physical control",def:"Enforced by a physical object: locks, fences, badge readers"},
+{id:"c5",obj:"1.1",term:"Preventive",def:"Stops the access before it happens"},
+{id:"c6",obj:"1.1",term:"Deterrent",def:"Discourages the attempt without physically stopping it"},
+{id:"c7",obj:"1.1",term:"Detective",def:"Identifies or logs that something happened"},
+{id:"c8",obj:"1.1",term:"Corrective",def:"Reverses or limits damage after detection"},
+{id:"c9",obj:"1.1",term:"Compensating",def:"A temporary substitute when the ideal control isn't available"},
+{id:"c10",obj:"1.1",term:"Directive",def:"Tells someone to act a certain way; relies on compliance"},
+
+/* ---------- 1.2 Core Concepts ---------- */
+{id:"p1",obj:"1.2",term:"Confidentiality",def:"Only the right people can see the data"},
+{id:"p2",obj:"1.2",term:"Integrity",def:"Data received is exactly what was sent, unchanged"},
+{id:"p3",obj:"1.2",term:"Availability",def:"Systems stay up and reachable"},
+{id:"p4",obj:"1.2",term:"Non-repudiation",def:"Sender can't credibly deny having sent something"},
+{id:"p5",obj:"1.2",term:"Identification",def:"You claim an identity (a username)"},
+{id:"p6",obj:"1.2",term:"Authentication",def:"You prove that identity"},
+{id:"p7",obj:"1.2",term:"Authorization",def:"The system decides what you're allowed to do"},
+{id:"p8",obj:"1.2",term:"Accounting",def:"The system logs what you did and when"},
+{id:"p9",obj:"1.2",term:"Gap analysis",def:"Comparing current security state against a baseline"},
+{id:"p10",obj:"1.2",term:"Policy Enforcement Point",def:"Gatekeeper all traffic must pass through"},
+{id:"p11",obj:"1.2",term:"Policy Engine",def:"Compares a request against policy, decides grant/deny/revoke"},
+{id:"p12",obj:"1.2",term:"Policy Administrator",def:"Relays the decision to the PEP, issues tokens/credentials"},
+{id:"p13",obj:"1.2",term:"Adaptive identity",def:"Risk-based authentication that strengthens with context"},
+{id:"p14",obj:"1.2",term:"Access control vestibule",def:"One person, one door open at a time (a mantrap)"},
+{id:"p15",obj:"1.2",term:"Honeypot",def:"A single decoy system built to attract an attacker"},
+{id:"p16",obj:"1.2",term:"Honeynet",def:"Multiple honeypots combined into a decoy network"},
+{id:"p17",obj:"1.2",term:"Honeytoken",def:"Traceable fake data seeded to catch where a leak came from"},
+
+/* ---------- 1.3 Change Management ---------- */
+{id:"m1",obj:"1.3",term:"Change request",def:"Formal submission: reason, scope, systems affected, schedule"},
+{id:"m2",obj:"1.3",term:"Change control board",def:"Weighs risk of making the change vs. risk of not making it"},
+{id:"m3",obj:"1.3",term:"RACI model",def:"Responsible, Accountable, Consulted, Informed"},
+{id:"m4",obj:"1.3",term:"Backout plan",def:"A tested plan to revert, prepared before testing or implementation"},
+{id:"m5",obj:"1.3",term:"Maintenance window",def:"A scheduled block of time set aside to make changes"},
+{id:"m6",obj:"1.3",term:"Allow list",def:"Only named items may run — restrictive by default"},
+{id:"m7",obj:"1.3",term:"Deny list",def:"Everything may run except named items — permissive by default"},
+{id:"m8",obj:"1.3",term:"Legacy application",def:"Old, often unsupported, and risky to touch"},
+{id:"m9",obj:"1.3",term:"CMDB",def:"Configuration management database that tracks changes"},
+{id:"m10",obj:"1.3",term:"SOP",def:"A documented standard operating procedure"},
+
+/* ---------- 1.4 Cryptography ---------- */
+{id:"k1",obj:"1.4",term:"Key escrow",def:"A trusted third party holds a backup copy of a private key"},
+{id:"k2",obj:"1.4",term:"CSR",def:"Certificate Signing Request sent to a CA"},
+{id:"k3",obj:"1.4",term:"CRL",def:"A list of revoked certs; the browser downloads the whole list"},
+{id:"k4",obj:"1.4",term:"OCSP",def:"A real-time status check for one certificate"},
+{id:"k5",obj:"1.4",term:"OCSP stapling",def:"The server presents a pre-signed status during the TLS handshake"},
+{id:"k6",obj:"1.4",term:"Symmetric encryption",def:"One shared key both encrypts and decrypts"},
+{id:"k7",obj:"1.4",term:"Asymmetric encryption",def:"Two related keys — public encrypts, private decrypts"},
+{id:"k8",obj:"1.4",term:"Session key",def:"An ephemeral symmetric key, used once then discarded"},
+{id:"k9",obj:"1.4",term:"Key stretching",def:"Repeated hashing that slows brute-forcing dramatically"},
+{id:"k10",obj:"1.4",term:"TPM",def:"An on-motherboard chip that secures one device's keys"},
+{id:"k11",obj:"1.4",term:"HSM",def:"Data-center-scale hardware for high-volume key storage"},
+{id:"k12",obj:"1.4",term:"Salt",def:"Random data added before hashing so identical passwords differ"},
+{id:"k13",obj:"1.4",term:"Rainbow table",def:"Precomputed hash lookups, defeated by salting"},
+{id:"k14",obj:"1.4",term:"Digital signature",def:"A hash encrypted with the sender's own private key"},
+{id:"k15",obj:"1.4",term:"Steganography",def:"Hiding data inside other data, like an image or audio file"},
+{id:"k16",obj:"1.4",term:"Tokenization",def:"Replacing sensitive data with a meaningless substitute value"},
+{id:"k17",obj:"1.4",term:"Data masking",def:"Showing only part of a sensitive value, e.g. **** 2512"},
+{id:"k18",obj:"1.4",term:"Blockchain",def:"A distributed, append-only, open public ledger"},
+
 /* ---------- Gotchas ---------- */
-{id:"g1",obj:"gotchas",term:"BC vs. DR",def:"Keep the business running vs. restore IT"},
-{id:"g2",obj:"gotchas",term:"Owner vs. custodian",def:"Accountable vs. does the daily work"},
-{id:"g3",obj:"gotchas",term:"RTO vs. RPO",def:"Time to recover vs. data you can lose"},
-{id:"g4",obj:"gotchas",term:"Appetite vs. tolerance",def:"Risk you'll pursue vs. how far past it before acting"},
-{id:"g5",obj:"gotchas",term:"Exemption vs. exception",def:"Out of the policy vs. temporary deviation"},
-{id:"g6",obj:"gotchas",term:"MSA vs. SOW",def:"Umbrella terms vs. one specific job"},
-{id:"g7",obj:"gotchas",term:"Due diligence vs. due care",def:"Research it vs. act on it"},
-{id:"g8",obj:"gotchas",term:"Passive vs. active recon",def:"No contact with the target vs. probes it"},
-{id:"g9",obj:"gotchas",term:"Offboarding rule",def:"Disable the account, don't delete it"},
-{id:"x1",obj:"5.2",term:"Neutral appetite",def:"Accepts moderate risk when benefit matches loss"},
-{id:"x2",obj:"5.5",term:"Examination",def:"In-depth review by a regulator"},
-{id:"x3",obj:"5.2",term:"MTTF",def:"Expected life of a replaced part"},
-{id:"x4",obj:"5.1",term:"DPO",def:"Oversees personal-data handling under GDPR"},
-{id:"z1",obj:"5.2",term:"Inherent risk",def:"The raw exposure of running the activity before any safeguard is applied"},
-{id:"z2",obj:"5.2",term:"Residual risk",def:"What is left once controls are in place; never zero"},
-{id:"z3",obj:"5.2",term:"MTD",def:"The absolute outage limit past which the business may not recover"},
-{id:"z4",obj:"5.2",term:"Primary loss",def:"Immediate direct damage &mdash; property, replacement cost, revenue lost during the interruption"},
-{id:"z5",obj:"5.2",term:"Secondary loss",def:"Downstream damage &mdash; fines, lawsuits, lost confidence, higher premiums afterwards"},
-{id:"z6",obj:"5.2",term:"Delphi method",def:"Rounds of anonymous expert surveys fed back until estimates converge"},
-{id:"z7",obj:"5.2",term:"Semi-quantitative analysis",def:"Numeric ranges or scores attached to qualitative bands so risks can be ranked"},
-{id:"z8",obj:"5.1",term:"RACI matrix",def:"Responsible, Accountable, Consulted, Informed &mdash; exactly one accountable party"},
-{id:"z9",obj:"5.1",term:"Steering committee",def:"Management-level stakeholders deciding which security projects get money and people"},
-{id:"z10",obj:"5.1",term:"Standard change",def:"Low-risk and routine, pre-approved once and needing no fresh approval"},
-{id:"z11",obj:"5.1",term:"Normal change",def:"The default path: risk assessment, written plan, CAB approval, then a window"},
-{id:"z12",obj:"5.1",term:"Emergency change",def:"Expedited approval, with the paperwork completed and reviewed afterwards"},
-{id:"z13",obj:"5.5",term:"Pivoting",def:"Using a compromised host as a route into networks unreachable from outside"},
-{id:"z14",obj:"5.5",term:"Persistence",def:"Access surviving a reboot or password change &mdash; a task, service or extra account"},
-{id:"z15",obj:"5.5",term:"Cleanup",def:"Removing every tool, account and backdoor and restoring each system's pre-test state"},
-{id:"z16",obj:"5.5",term:"Credentialed scan",def:"Logs in and reads patch levels from inside &mdash; more findings, fewer false positives"},
-{id:"z17",obj:"5.5",term:"Non-credentialed scan",def:"Sees only what an unauthenticated attacker on the network would see"},
-{id:"z18",obj:"5.5",term:"Intrusive scan",def:"Actually attempts the exploit to prove the finding, and may crash the service"},
-{id:"z19",obj:"5.5",term:"Self-assessment with independent validation",def:"The team assesses itself, then an outside validator re-tests a sample of it"},
-{id:"z20",obj:"5.6",term:"Net Promoter Score",def:"Survey metric for whether staff would recommend the training session"},
-{id:"w1",obj:"5.5",term:"White team",def:"Referees the exercise, holds the rules, and can halt it"}
+{id:"g1",obj:"gotchas",term:"Preventive vs. deterrent",def:"Preventive physically stops access; deterrent only discourages it"},
+{id:"g2",obj:"gotchas",term:"Hash vs. non-repudiation",def:"A hash proves data wasn't changed; a signature also proves who sent it"},
+{id:"g3",obj:"gotchas",term:"Data plane vs. control plane",def:"Data plane moves traffic; control plane makes the rules behind the move"},
+{id:"g4",obj:"gotchas",term:"Honeypot vs. honeynet",def:"One decoy system vs. a whole network of decoys"},
+{id:"g5",obj:"gotchas",term:"Allow list vs. deny list",def:"Allow list is restrictive/default-deny; deny list is permissive/default-allow"},
+{id:"g6",obj:"gotchas",term:"Symmetric vs. asymmetric",def:"One shared key vs. two mathematically related keys"},
+{id:"g7",obj:"gotchas",term:"CRL vs. OCSP",def:"Download the whole list vs. ask about one certificate in real time"},
+{id:"g8",obj:"gotchas",term:"TPM vs. HSM",def:"One device's keys vs. many devices at data-center scale"},
+{id:"g9",obj:"gotchas",term:"Hashing vs. digital signature",def:"Fingerprint/integrity only vs. integrity plus non-repudiation"},
+{id:"g10",obj:"gotchas",term:"Obfuscation vs. encryption",def:"Hides from casual view vs. mathematically unreadable without a key"},
+{id:"x1",obj:"1.4",term:"ECB",def:"Cipher mode that leaks patterns in identical blocks"},
+{id:"x2",obj:"1.4",term:"GCM",def:"Counter mode with built-in authentication"},
+{id:"x3",obj:"1.4",term:"Registration authority",def:"Verifies identity before the CA issues a certificate"},
+{id:"x4",obj:"1.4",term:"PKCS #12",def:"Password-protected certificate plus private key"},
+{id:"x5",obj:"1.4",term:"CRC",def:"Detects accidental errors, not tampering"},
+{id:"x6",obj:"1.4",term:"Record-level encryption",def:"Each database row encrypted with its own key"},
+{id:"z1",obj:"1.2",term:"Endpoint fingerprinting",def:"NAC profiles a credential-less device from MAC, DHCP and traffic traits"},
+{id:"z2",obj:"1.2",term:"Chargeback",def:"Metering a department's or customer's usage from AAA records so it can be invoiced"},
+{id:"z3",obj:"1.4",term:"Pepper",def:"A single secret added before hashing, kept outside the password database"},
+{id:"z4",obj:"gotchas",term:"Deny list vs. block list",def:"Two names for one control &mdash; permissive, blocking only named items"},
+{id:"z5",obj:"1.3",term:"Planned downtime",def:"Service taken offline deliberately, agreed and announced ahead of time"},
+{id:"z6",obj:"1.3",term:"Unplanned downtime",def:"The outage a failure or a botched change hands you"},
+{id:"y1",obj:"1.4",term:"Cryptographic primitive",def:"A single algorithm doing exactly one job, such as one hash function"},
+{id:"y2",obj:"1.4",term:"Cipher suite",def:"A named bundle naming key exchange, bulk cipher and integrity together"},
+{id:"y3",obj:"1.4",term:"Common name (CN)",def:"Deprecated X.509 name field that browsers no longer validate at all"},
+{id:"y4",obj:"1.4",term:"Certificate renewal",def:"Reissuing before the validity date passes, so the service never lapses"},
+{id:"y5",obj:"1.4",term:"Root certificate lifetime",def:"A decade or more, because replacing it touches every trust store"},
+{id:"y6",obj:"1.4",term:"Revocation reason code",def:"Says why a certificate was withdrawn, such as key compromise or superseded"},
+{id:"y7",obj:"1.4",term:"Certificate auto-enrollment",def:"A domain CA issuing silently to devices already authenticated to Active Directory"},
+{id:"y8",obj:"1.4",term:"Covert channel",def:"A path carrying data where nobody inspects: header fields, DNS, packet timing"},
+{id:"y9",obj:"1.4",term:"De-identification",def:"The goal masking and tokenization serve: records that no longer name anyone"},
+{id:"w1",obj:"1.4",term:"Keyspace",def:"Every possible key for an algorithm; each extra bit doubles it"},
+{id:"w2",obj:"1.4",term:"Trapdoor function",def:"Easy to compute one way, impractical to reverse without the private key"},
+{id:"w3",obj:"1.4",term:"256-bit ECC key",def:"Roughly the strength of a 2048-bit RSA key, at far less cost"},
+{id:"w4",obj:"1.4",term:"Perfect forward secrecy",def:"A long-term key stolen later cannot decrypt sessions recorded earlier"},
+{id:"w5",obj:"1.4",term:"DHE / ECDHE",def:"Ephemeral Diffie-Hellman &mdash; a fresh shared secret derived every session"},
+{id:"w6",obj:"1.4",term:"RSA key exchange",def:"Client wraps the session key in the server's long-term public key"}
 ];
 
 var SVGNS = "http://www.w3.org/2000/svg";
-var STORE_KEY = "domain5match:v1";
+function CERTMIG(o,n){try{if(localStorage.getItem(n)===null){var v=localStorage.getItem(o);if(v!==null)localStorage.setItem(n,v);}}catch(e){}}
+var STORE_KEY = "secplus:domain1match:v2";CERTMIG("domain1match:v2","secplus:domain1match:v2");
 
 /* ---------- elements ---------- */
 var boardEl = document.getElementById("board");

@@ -366,7 +366,8 @@ var PAIRS = [
 ];
 
 var SVGNS = "http://www.w3.org/2000/svg";
-var STORE_KEY = "domain2match:v1";
+function CERTMIG(o,n){try{if(localStorage.getItem(n)===null){var v=localStorage.getItem(o);if(v!==null)localStorage.setItem(n,v);}}catch(e){}}
+var STORE_KEY = "secplus:domain2match:v1";CERTMIG("domain2match:v1","secplus:domain2match:v1");
 
 /* ---------- elements ---------- */
 var boardEl = document.getElementById("board");

@@ -447,7 +447,8 @@ var SCENARIOS = [
 var OBJ_COLOR_CLASS = {"1.1":"badge-11","1.2":"badge-12","1.3":"badge-13","1.4":"badge-14"};
 
 /* ---------- state ---------- */
-var STORE_KEY = "domain1drill:v1";
+function CERTMIG(o,n){try{if(localStorage.getItem(n)===null){var v=localStorage.getItem(o);if(v!==null)localStorage.setItem(n,v);}}catch(e){}}
+var STORE_KEY = "secplus:domain1drill:v1";CERTMIG("domain1drill:v1","secplus:domain1drill:v1");
 function defaultState(){
   return { cardStatus:{}, objStats:{"1.1":{c:0,t:0},"1.2":{c:0,t:0},"1.3":{c:0,t:0},"1.4":{c:0,t:0}} };
 }

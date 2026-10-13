@@ -556,7 +556,8 @@ var OBJ_COLOR_CLASS = {"4.1":"badge-41","4.2":"badge-42","4.3":"badge-43","4.4":
 var OBJ_VAR = {"4.1":"obj-41","4.2":"obj-42","4.3":"obj-43","4.4":"obj-44","4.5":"obj-45","4.6":"obj-46","4.7":"obj-47","4.8":"obj-48","4.9":"obj-49"};
 
 /* ---------- state ---------- */
-var STORE_KEY = "domain4drill:v1";
+function CERTMIG(o,n){try{if(localStorage.getItem(n)===null){var v=localStorage.getItem(o);if(v!==null)localStorage.setItem(n,v);}}catch(e){}}
+var STORE_KEY = "secplus:domain4drill:v1";CERTMIG("domain4drill:v1","secplus:domain4drill:v1");
 function defaultState(){
   var os = {}; OBJ_LIST.forEach(function(o){ os[o] = {c:0,t:0}; });
   return { cardStatus:{}, objStats:os };

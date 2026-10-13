@@ -1,10 +1,32 @@
-import re, os, pathlib
+"""Assemble the publishable site from the artifact source fragments.
 
+Artifact pages are published as fragments (no doctype/head/body) because the platform
+wraps them. This adds a real wrapper, rewrites absolute artifact URLs to relative
+filenames, and lays the result out one folder per certification:
+
+    repo/
+      index.html            <- the cert picker (root hub)
+      security-plus/        <- one folder per cert
+        index.html          <- that cert's own hub
+        domain1-notebook.html ...
+
+Adding a cert means adding an entry to CERTS. Nothing else here changes.
+"""
+import re, pathlib
+
+SRC = pathlib.Path('/home/claude')
 OUT = pathlib.Path('/home/claude/repo')
 OUT.mkdir(exist_ok=True)
 
-HUB_URL   = "https://claude.ai/artifact/VBQTcEFCBoLm2HbFYQ3MFE"
-ART_TO_FILE = {
+# The root cert picker. Source file -> published name at the repo root.
+ROOT = {'cert-hub.html': 'index.html'}
+ROOT_DESC = {'index.html': 'Study tools for every CompTIA certification on the track.'}
+
+SECPLUS_HUB = "https://claude.ai/artifact/VBQTcEFCBoLm2HbFYQ3MFE"
+
+# Artifact URL -> the filename it becomes. Links between pages in the same cert folder
+# stay bare filenames, so no path prefix is needed here.
+SECPLUS_URLS = {
   "https://claude.ai/artifact/Rsb6YnjU33btaifdZgyFhB": "domain1-notebook.html",
   "https://claude.ai/artifact/La2HXLBpgY7jR8m6FdAQzH": "domain1-match.html",
   "https://claude.ai/artifact/V4c6LTwdzLraL6923m1FG2": "domain1-drill.html",
@@ -20,30 +42,29 @@ ART_TO_FILE = {
   "https://claude.ai/artifact/A4gMbARsZBBK7upETX4cVQ": "domain5-notebook.html",
   "https://claude.ai/artifact/RPuAbmpbnVFFnqAwEwMUKg": "domain5-match.html",
   "https://claude.ai/artifact/Wyhp4zXtxfBbihG4azVnRt": "domain5-drill.html",
-  HUB_URL: "index.html",
+  SECPLUS_HUB: "index.html",
   "https://claude.ai/artifact/AWyxEkC2q9eHzRvyDUNkb1": "acronym-drill.html",
   "https://claude.ai/artifact/PQbQXhnhBj4rniTPMzJprV": "prep-scheduler.html",
 }
 
-FILES = {
-  'security-toolkit.html': 'index.html',
-  'domain1-notebook.html': 'domain1-notebook.html',
-  'domain1-match.html':    'domain1-match.html',
-  'domain1-drill.html':    'domain1-drill.html',
-  'domain2-notebook.html': 'domain2-notebook.html',
-  'domain2-match.html':    'domain2-match.html',
-  'domain2-drill.html':    'domain2-drill.html',
-  'domain3-notebook.html': 'domain3-notebook.html',
-  'domain3-match.html':    'domain3-match.html',
-  'domain3-drill.html':    'domain3-drill.html',
-  'domain4-notebook.html': 'domain4-notebook.html',
-  'domain4-match.html':    'domain4-match.html',
-  'domain4-drill.html':    'domain4-drill.html',
-  'domain5-notebook.html': 'domain5-notebook.html',
-  'domain5-match.html':    'domain5-match.html',
-  'domain5-drill.html':    'domain5-drill.html',
-  'acronym-drill.html':    'acronym-drill.html',
-  'prep-scheduler.html':   'prep-scheduler.html',
+SECPLUS_FILES = {'security-toolkit.html': 'index.html'}
+for d in range(1, 6):
+    for kind in ('notebook', 'match', 'drill'):
+        SECPLUS_FILES[f'domain{d}-{kind}.html'] = f'domain{d}-{kind}.html'
+SECPLUS_FILES['acronym-drill.html'] = 'acronym-drill.html'
+SECPLUS_FILES['prep-scheduler.html'] = 'prep-scheduler.html'
+
+SECPLUS_DESC = {'index.html': 'Study tools for the CompTIA Security+ SY0-701 exam, organized by domain.'}
+for d in range(1, 6):
+    SECPLUS_DESC[f'domain{d}-notebook.html'] = f'Searchable reference notes for Security+ Domain {d}.'
+    SECPLUS_DESC[f'domain{d}-match.html']    = f'Term-and-definition matching game for Security+ Domain {d}.'
+    SECPLUS_DESC[f'domain{d}-drill.html']    = f'Flashcards, quiz and scenario practice for Security+ Domain {d}.'
+SECPLUS_DESC['acronym-drill.html']  = 'All 333 CompTIA Security+ SY0-701 acronyms as flashcards, a quiz and a searchable list.'
+SECPLUS_DESC['prep-scheduler.html'] = 'Turns your Security+ exam date into a day-by-day study and drill plan that follows your weak spots.'
+
+CERTS = {
+  'security-plus': {'files': SECPLUS_FILES, 'desc': SECPLUS_DESC, 'urls': SECPLUS_URLS},
+  # 'cysa': {...}  <- add here when the CySA+ pages exist
 }
 
 HEAD = ('<!doctype html>\n<html lang="en">\n<head>\n'
@@ -55,50 +76,36 @@ HEAD = ('<!doctype html>\n<html lang="en">\n<head>\n'
         'padding-bottom:env(safe-area-inset-bottom,0px)}}html{{scroll-padding-top:env(safe-area-inset-top,0px)}}'
         'body{{margin:0}}img{{max-width:100%}}[hidden]{{display:none!important}}</style>\n')
 
-DESC = {
- 'index.html':'Study tools for the CompTIA Security+ SY0-701 exam, organized by domain.',
- 'domain1-notebook.html':'Searchable reference notes for Security+ Domain 1.',
- 'domain1-match.html':'Term-and-definition matching game for Security+ Domain 1.',
- 'domain1-drill.html':'Flashcards, quiz and scenario practice for Security+ Domain 1.',
- 'domain2-notebook.html':'Searchable reference notes for Security+ Domain 2.',
- 'domain2-match.html':'Term-and-definition matching game for Security+ Domain 2.',
- 'domain2-drill.html':'Flashcards, quiz and scenario practice for Security+ Domain 2.',
- 'domain3-notebook.html':'Searchable reference notes for Security+ Domain 3.',
- 'domain3-match.html':'Term-and-definition matching game for Security+ Domain 3.',
- 'domain3-drill.html':'Flashcards, quiz and scenario practice for Security+ Domain 3.',
- 'domain4-notebook.html':'Searchable reference notes for Security+ Domain 4.',
- 'domain4-match.html':'Term-and-definition matching game for Security+ Domain 4.',
- 'domain4-drill.html':'Flashcards, quiz and scenario practice for Security+ Domain 4.',
- 'domain5-notebook.html':'Searchable reference notes for Security+ Domain 5.',
- 'domain5-match.html':'Term-and-definition matching game for Security+ Domain 5.',
- 'domain5-drill.html':'Flashcards, quiz and scenario practice for Security+ Domain 5.',
- 'acronym-drill.html':'All 333 CompTIA Security+ SY0-701 acronyms as flashcards, a quiz and a searchable list.',
- 'prep-scheduler.html':'Turns your Security+ exam date into a day-by-day study and drill plan that follows your weak spots.',
-}
 
-for srcname, outname in FILES.items():
-    s = open(srcname).read()
-
-    # pull <title> out of the fragment so it can go in <head>
+def build(srcname, outpath, desc, urls):
+    s = (SRC / srcname).read_text(encoding='utf-8')
     m = re.search(r'<title>(.*?)</title>', s)
-    title = m.group(1) if m else outname
+    title = m.group(1) if m else outpath.name
     s = re.sub(r'<title>.*?</title>\s*', '', s, count=1)
-
-    # rewrite artifact URLs -> relative filenames
-    for url, fname in ART_TO_FILE.items():
+    for url, fname in urls.items():
         s = s.replace(url, fname)
-
-    head = HEAD.format(desc=DESC[outname]) + f'<title>{title}</title>\n</head>\n<body>\n'
+    head = HEAD.format(desc=desc) + f'<title>{title}</title>\n</head>\n<body>\n'
     doc = head + s.strip() + '\n</body>\n</html>\n'
-    (OUT/outname).write_text(doc, encoding='utf-8')
-    print(f'{outname:24} {len(doc)//1024:4} KB   title="{title}"')
+    outpath.parent.mkdir(parents=True, exist_ok=True)
+    outpath.write_text(doc, encoding='utf-8')
+    rel = outpath.relative_to(OUT)
+    print(f'{str(rel):34} {len(doc)//1024:4} KB   title="{title}"')
 
-# report any leftover absolute claude.ai links
+
+for srcname, outname in ROOT.items():
+    build(srcname, OUT / outname, ROOT_DESC[outname], {})
+
+for folder, cfg in CERTS.items():
+    print(f'\n-- {folder}/')
+    for srcname, outname in cfg['files'].items():
+        build(srcname, OUT / folder / outname, cfg['desc'][outname], cfg['urls'])
+
 print('\n--- remaining claude.ai links ---')
 found = False
-for f in OUT.glob('*.html'):
+for f in sorted(OUT.rglob('*.html')):
     for line in f.read_text(encoding='utf-8').splitlines():
         if 'claude.ai' in line:
             found = True
-            print(f'{f.name}: {line.strip()[:120]}')
-if not found: print('none')
+            print(f'{f.relative_to(OUT)}: {line.strip()[:110]}')
+if not found:
+    print('none')
