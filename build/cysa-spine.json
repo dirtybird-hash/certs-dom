@@ -1,0 +1,1682 @@
+{
+ "1.1": {
+  "title": "Explain the importance of system and network architecture concepts in security operations.",
+  "bullets": [
+   {
+    "t": "Log ingestion",
+    "children": [
+     {
+      "t": "Time synchronization",
+      "children": []
+     },
+     {
+      "t": "Logging levels",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Operating system (OS) concepts",
+    "children": [
+     {
+      "t": "Windows Registry",
+      "children": []
+     },
+     {
+      "t": "System hardening",
+      "children": []
+     },
+     {
+      "t": "File structure",
+      "children": [
+       {
+        "t": "Configuration file locations",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "System processes",
+      "children": []
+     },
+     {
+      "t": "Hardware architecture",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Infrastructure concepts",
+    "children": [
+     {
+      "t": "Serverless",
+      "children": []
+     },
+     {
+      "t": "Virtualization",
+      "children": []
+     },
+     {
+      "t": "Containerization",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Network architecture",
+    "children": [
+     {
+      "t": "On-premises",
+      "children": []
+     },
+     {
+      "t": "Cloud",
+      "children": []
+     },
+     {
+      "t": "Hybrid",
+      "children": []
+     },
+     {
+      "t": "Network segmentation",
+      "children": []
+     },
+     {
+      "t": "Zero trust",
+      "children": []
+     },
+     {
+      "t": "Secure access secure edge (SASE)",
+      "children": []
+     },
+     {
+      "t": "Software-defined networking (SDN)",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Identity and access management",
+    "children": [
+     {
+      "t": "Multifactor authentication (MFA)",
+      "children": []
+     },
+     {
+      "t": "Single sign-on (SSO)",
+      "children": []
+     },
+     {
+      "t": "Federation",
+      "children": []
+     },
+     {
+      "t": "Privileged access management (PAM)",
+      "children": []
+     },
+     {
+      "t": "Passwordless",
+      "children": []
+     },
+     {
+      "t": "Cloud access security broker (CASB)",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Encryption",
+    "children": [
+     {
+      "t": "Public key infrastructure (PKI)",
+      "children": []
+     },
+     {
+      "t": "Secure sockets layer (SSL) inspection",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Sensitive data protection",
+    "children": [
+     {
+      "t": "Data loss prevention (DLP)",
+      "children": []
+     },
+     {
+      "t": "Personally identifiable information (PII)",
+      "children": []
+     },
+     {
+      "t": "Cardholder data (CHD)",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "1.2": {
+  "title": "Given a scenario, analyze indicators of potentially malicious activity.",
+  "bullets": [
+   {
+    "t": "Network-related",
+    "children": [
+     {
+      "t": "Bandwidth consumption",
+      "children": []
+     },
+     {
+      "t": "Beaconing",
+      "children": []
+     },
+     {
+      "t": "Irregular peer-to-peer",
+      "children": []
+     },
+     {
+      "t": "Rogue devices on the network",
+      "children": []
+     },
+     {
+      "t": "Scans/sweeps",
+      "children": []
+     },
+     {
+      "t": "Unusual traffic spikes",
+      "children": []
+     },
+     {
+      "t": "Activity on unexpected ports",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Host-related",
+    "children": [
+     {
+      "t": "Processor consumption",
+      "children": []
+     },
+     {
+      "t": "Memory consumption",
+      "children": []
+     },
+     {
+      "t": "Drive capacity consumption",
+      "children": []
+     },
+     {
+      "t": "Unauthorized software",
+      "children": []
+     },
+     {
+      "t": "Malicious processes",
+      "children": []
+     },
+     {
+      "t": "Unauthorized changes",
+      "children": []
+     },
+     {
+      "t": "Unauthorized privileges",
+      "children": []
+     },
+     {
+      "t": "Data exfiltration",
+      "children": []
+     },
+     {
+      "t": "Abnormal OS process behavior",
+      "children": []
+     },
+     {
+      "t": "File system changes or anomalies",
+      "children": []
+     },
+     {
+      "t": "Registry changes or anomalies",
+      "children": []
+     },
+     {
+      "t": "Unauthorized scheduled tasks",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Application-related",
+    "children": [
+     {
+      "t": "Anomalous activity",
+      "children": []
+     },
+     {
+      "t": "Introduction of new accounts",
+      "children": []
+     },
+     {
+      "t": "Unexpected output",
+      "children": []
+     },
+     {
+      "t": "Unexpected outbound",
+      "children": []
+     },
+     {
+      "t": "Service interruption",
+      "children": []
+     },
+     {
+      "t": "Application logs",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Other",
+    "children": [
+     {
+      "t": "Social engineering attacks",
+      "children": []
+     },
+     {
+      "t": "Obfuscated links to",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "1.3": {
+  "title": "Given a scenario, use appropriate tools or techniques to determine malicious activity.",
+  "bullets": [
+   {
+    "t": "Tools",
+    "children": [
+     {
+      "t": "Packet capture",
+      "children": [
+       {
+        "t": "Wireshark",
+        "children": []
+       },
+       {
+        "t": "tcpdump",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Log analysis/correlation",
+      "children": [
+       {
+        "t": "Security information and event management (SIEM)",
+        "children": []
+       },
+       {
+        "t": "Security orchestration, automation, and response (SOAR)",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Endpoint security",
+      "children": [
+       {
+        "t": "Endpoint detection and response (EDR)",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Domain name service (DNS) and Internet Protocol (IP) reputation",
+      "children": [
+       {
+        "t": "WHOIS",
+        "children": []
+       },
+       {
+        "t": "AbuseIPDB",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "File analysis",
+      "children": [
+       {
+        "t": "Strings",
+        "children": []
+       },
+       {
+        "t": "VirusTotal",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Sandboxing",
+      "children": [
+       {
+        "t": "Joe Sandbox",
+        "children": []
+       },
+       {
+        "t": "Cuckoo Sandbox",
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "t": "Common techniques",
+    "children": [
+     {
+      "t": "Pattern recognition",
+      "children": [
+       {
+        "t": "Command and control",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Interpreting suspicious commands",
+      "children": []
+     },
+     {
+      "t": "Email analysis",
+      "children": [
+       {
+        "t": "Header",
+        "children": []
+       },
+       {
+        "t": "Impersonation",
+        "children": []
+       },
+       {
+        "t": "DomainKeys Identified Mail (DKIM)",
+        "children": []
+       },
+       {
+        "t": "Domain-based Message Authentication, Reporting, and Conformance (DMARC)",
+        "children": []
+       },
+       {
+        "t": "Sender Policy Framework (SPF)",
+        "children": []
+       },
+       {
+        "t": "Embedded links",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "File analysis",
+      "children": [
+       {
+        "t": "Hashing",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "User behavior analysis",
+      "children": [
+       {
+        "t": "Abnormal account activity",
+        "children": []
+       },
+       {
+        "t": "Impossible travel",
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "t": "Programming languages/scripting",
+    "children": [
+     {
+      "t": "JavaScript Object Notation (JSON)",
+      "children": []
+     },
+     {
+      "t": "Extensible Markup Language (XML)",
+      "children": []
+     },
+     {
+      "t": "Python",
+      "children": []
+     },
+     {
+      "t": "PowerShell",
+      "children": []
+     },
+     {
+      "t": "Shell script",
+      "children": []
+     },
+     {
+      "t": "Regular expressions",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "1.4": {
+  "title": "Compare and contrast threat-intelligence and threat-hunting concepts.",
+  "bullets": [
+   {
+    "t": "Threat actors",
+    "children": [
+     {
+      "t": "Advanced persistent threat (APT)",
+      "children": []
+     },
+     {
+      "t": "Hacktivists",
+      "children": []
+     },
+     {
+      "t": "Organized crime",
+      "children": []
+     },
+     {
+      "t": "Nation-state",
+      "children": []
+     },
+     {
+      "t": "Script kiddie",
+      "children": []
+     },
+     {
+      "t": "Insider threat",
+      "children": [
+       {
+        "t": "Intentional",
+        "children": []
+       },
+       {
+        "t": "Unintentional",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Supply chain",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Tactics, techniques, and procedures (TTP)",
+    "children": []
+   },
+   {
+    "t": "Confidence levels",
+    "children": [
+     {
+      "t": "Timeliness",
+      "children": []
+     },
+     {
+      "t": "Relevancy",
+      "children": []
+     },
+     {
+      "t": "Accuracy",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Collection methods and sources",
+    "children": [
+     {
+      "t": "Open source",
+      "children": [
+       {
+        "t": "Social media",
+        "children": []
+       },
+       {
+        "t": "Blogs/forums",
+        "children": []
+       },
+       {
+        "t": "Government bulletins",
+        "children": []
+       },
+       {
+        "t": "Computer emergency response team (CERT)",
+        "children": []
+       },
+       {
+        "t": "Cybersecurity incident response team (CSIRT)",
+        "children": []
+       },
+       {
+        "t": "Deep/dark web",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Closed source",
+      "children": [
+       {
+        "t": "Paid feeds",
+        "children": []
+       },
+       {
+        "t": "Information sharing organizations",
+        "children": []
+       },
+       {
+        "t": "Internal sources",
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "t": "Threat intelligence sharing",
+    "children": [
+     {
+      "t": "Incident response",
+      "children": []
+     },
+     {
+      "t": "Vulnerability management",
+      "children": []
+     },
+     {
+      "t": "Risk management",
+      "children": []
+     },
+     {
+      "t": "Security engineering",
+      "children": []
+     },
+     {
+      "t": "Detection and monitoring",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Threat hunting",
+    "children": [
+     {
+      "t": "Indicators of compromise (IoC)",
+      "children": [
+       {
+        "t": "Collection",
+        "children": []
+       },
+       {
+        "t": "Analysis",
+        "children": []
+       },
+       {
+        "t": "Application",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Focus areas",
+      "children": [
+       {
+        "t": "Configurations/ misconfigurations",
+        "children": []
+       },
+       {
+        "t": "Isolated networks",
+        "children": []
+       },
+       {
+        "t": "Business-critical assets and processes",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Active defense",
+      "children": []
+     },
+     {
+      "t": "Honeypot",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "1.5": {
+  "title": "Explain the importance of efficiency and process improvement in security operations.",
+  "bullets": [
+   {
+    "t": "Standardize processes",
+    "children": [
+     {
+      "t": "Identification of tasks suitable for automation",
+      "children": [
+       {
+        "t": "Repeatable/do not require human",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Team coordination to manage and facilitate",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Streamline operations",
+    "children": [
+     {
+      "t": "Automation and orchestration",
+      "children": [
+       {
+        "t": "Security orchestration, automation,",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Orchestrating threat intelligence data",
+      "children": [
+       {
+        "t": "Data enrichment",
+        "children": []
+       },
+       {
+        "t": "Threat feed combination",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Minimize human engagement",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Technology and tool integration",
+    "children": [
+     {
+      "t": "Application programming interface (API)",
+      "children": []
+     },
+     {
+      "t": "Webhooks",
+      "children": []
+     },
+     {
+      "t": "Plugins",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Single pane of glass interaction automation and response (SOAR) Management methods",
+    "children": []
+   }
+  ]
+ },
+ "2.1": {
+  "title": "Given a scenario, implement vulnerability scanning methods and concepts.",
+  "bullets": [
+   {
+    "t": "Asset discovery",
+    "children": [
+     {
+      "t": "Map scans",
+      "children": []
+     },
+     {
+      "t": "Device fingerprinting",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Special considerations",
+    "children": [
+     {
+      "t": "Scheduling",
+      "children": []
+     },
+     {
+      "t": "Operations",
+      "children": []
+     },
+     {
+      "t": "Performance",
+      "children": []
+     },
+     {
+      "t": "Sensitivity levels",
+      "children": []
+     },
+     {
+      "t": "Segmentation",
+      "children": []
+     },
+     {
+      "t": "Regulatory requirements",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Internal vs. external scanning",
+    "children": []
+   },
+   {
+    "t": "Agent vs. agentless",
+    "children": []
+   },
+   {
+    "t": "Credentialed vs. non-credentialed",
+    "children": []
+   },
+   {
+    "t": "Passive vs. active",
+    "children": []
+   },
+   {
+    "t": "Static vs. dynamic",
+    "children": [
+     {
+      "t": "Reverse engineering",
+      "children": []
+     },
+     {
+      "t": "Fuzzing",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Critical infrastructure",
+    "children": [
+     {
+      "t": "Operational technology (OT)",
+      "children": []
+     },
+     {
+      "t": "Industrial control systems (ICS)",
+      "children": []
+     },
+     {
+      "t": "Supervisory control and data acquisition (SCADA)",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Security baseline scanning",
+    "children": []
+   },
+   {
+    "t": "Industry frameworks",
+    "children": [
+     {
+      "t": "Payment Card Industry Data Security Standard (PCI DSS)",
+      "children": []
+     },
+     {
+      "t": "Center for Internet Security (CIS) benchmarks",
+      "children": []
+     },
+     {
+      "t": "Open Web Application Security Project (OWASP)",
+      "children": []
+     },
+     {
+      "t": "International Organization for Standardization (ISO) 27000 series",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "2.2": {
+  "title": "Given a scenario, analyze output from vulnerability assessment tools.",
+  "bullets": [
+   {
+    "t": "Tools",
+    "children": [
+     {
+      "t": "Network scanning and mapping",
+      "children": [
+       {
+        "t": "Angry IP Scanner",
+        "children": []
+       },
+       {
+        "t": "Maltego",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Web application scanners",
+      "children": [
+       {
+        "t": "Burp Suite",
+        "children": []
+       },
+       {
+        "t": "Zed Attack Proxy (ZAP)",
+        "children": []
+       },
+       {
+        "t": "Arachni",
+        "children": []
+       },
+       {
+        "t": "Nikto",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Vulnerability scanners",
+      "children": [
+       {
+        "t": "Nessus",
+        "children": []
+       },
+       {
+        "t": "OpenVAS",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Debuggers",
+      "children": [
+       {
+        "t": "Immunity debugger",
+        "children": []
+       },
+       {
+        "t": "GNU debugger (GDB)",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Multipurpose",
+      "children": [
+       {
+        "t": "Nmap",
+        "children": []
+       },
+       {
+        "t": "Metasploit framework (MSF)",
+        "children": []
+       },
+       {
+        "t": "Recon-ng",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Cloud infrastructure assessment tools",
+      "children": [
+       {
+        "t": "Scout Suite",
+        "children": []
+       },
+       {
+        "t": "Prowler",
+        "children": []
+       },
+       {
+        "t": "Pacu | Vulnerability Management",
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "2.3": {
+  "title": "Given a scenario, analyze data to prioritize vulnerabilities.",
+  "bullets": [
+   {
+    "t": "Common Vulnerability Scoring System (CVSS) interpretation",
+    "children": [
+     {
+      "t": "Attack vectors",
+      "children": []
+     },
+     {
+      "t": "Attack complexity",
+      "children": []
+     },
+     {
+      "t": "Privileges required",
+      "children": []
+     },
+     {
+      "t": "User interaction",
+      "children": []
+     },
+     {
+      "t": "Scope",
+      "children": []
+     },
+     {
+      "t": "Impact",
+      "children": [
+       {
+        "t": "Confidentiality",
+        "children": []
+       },
+       {
+        "t": "Integrity",
+        "children": []
+       },
+       {
+        "t": "Availability",
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "t": "Validation",
+    "children": [
+     {
+      "t": "True/false positives",
+      "children": []
+     },
+     {
+      "t": "True/false negatives",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Context awareness",
+    "children": [
+     {
+      "t": "Internal",
+      "children": []
+     },
+     {
+      "t": "External",
+      "children": []
+     },
+     {
+      "t": "Isolated",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Exploitability/weaponization",
+    "children": []
+   },
+   {
+    "t": "Asset value",
+    "children": []
+   },
+   {
+    "t": "Zero-day",
+    "children": []
+   }
+  ]
+ },
+ "2.4": {
+  "title": "Given a scenario, recommend controls to mitigate attacks and software vulnerabilities.",
+  "bullets": [
+   {
+    "t": "Cross-site scripting",
+    "children": [
+     {
+      "t": "Reflected",
+      "children": []
+     },
+     {
+      "t": "Persistent",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Overflow vulnerabilities",
+    "children": [
+     {
+      "t": "Buffer",
+      "children": []
+     },
+     {
+      "t": "Integer",
+      "children": []
+     },
+     {
+      "t": "Heap",
+      "children": []
+     },
+     {
+      "t": "Stack",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Data poisoning",
+    "children": []
+   },
+   {
+    "t": "Broken access control",
+    "children": []
+   },
+   {
+    "t": "Cryptographic failures",
+    "children": []
+   },
+   {
+    "t": "Injection flaws",
+    "children": []
+   },
+   {
+    "t": "Cross-site request forgery",
+    "children": []
+   },
+   {
+    "t": "Directory traversal",
+    "children": []
+   },
+   {
+    "t": "Insecure design",
+    "children": []
+   },
+   {
+    "t": "Security misconfiguration",
+    "children": []
+   },
+   {
+    "t": "End-of-life or outdated components",
+    "children": []
+   },
+   {
+    "t": "Identification and authentication failures",
+    "children": []
+   },
+   {
+    "t": "Server-side request forgery",
+    "children": []
+   },
+   {
+    "t": "Remote code execution",
+    "children": []
+   },
+   {
+    "t": "Privilege escalation",
+    "children": []
+   },
+   {
+    "t": "Local file inclusion (LFI)/remote file inclusion (RFI)",
+    "children": []
+   }
+  ]
+ },
+ "2.5": {
+  "title": "Explain concepts related to vulnerability response, handling, and management.",
+  "bullets": [
+   {
+    "t": "Compensating control",
+    "children": []
+   },
+   {
+    "t": "Control types",
+    "children": [
+     {
+      "t": "Managerial",
+      "children": []
+     },
+     {
+      "t": "Operational",
+      "children": []
+     },
+     {
+      "t": "Technical",
+      "children": []
+     },
+     {
+      "t": "Preventative",
+      "children": []
+     },
+     {
+      "t": "Detective",
+      "children": []
+     },
+     {
+      "t": "Responsive",
+      "children": []
+     },
+     {
+      "t": "Corrective",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Patching and configuration",
+    "children": [
+     {
+      "t": "Testing",
+      "children": []
+     },
+     {
+      "t": "Implementation",
+      "children": []
+     },
+     {
+      "t": "Rollback",
+      "children": []
+     },
+     {
+      "t": "Validation",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Maintenance windows",
+    "children": []
+   },
+   {
+    "t": "Exceptions",
+    "children": []
+   },
+   {
+    "t": "Risk management principles",
+    "children": [
+     {
+      "t": "Accept",
+      "children": []
+     },
+     {
+      "t": "Transfer",
+      "children": []
+     },
+     {
+      "t": "Avoid",
+      "children": []
+     },
+     {
+      "t": "Mitigate",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Policies, governance, and service- level objectives (SLOs)",
+    "children": []
+   },
+   {
+    "t": "Prioritization and escalation",
+    "children": []
+   },
+   {
+    "t": "Attack surface management",
+    "children": [
+     {
+      "t": "Edge discovery",
+      "children": []
+     },
+     {
+      "t": "Passive discovery",
+      "children": []
+     },
+     {
+      "t": "Security controls testing",
+      "children": []
+     },
+     {
+      "t": "Penetration testing and adversary emulation",
+      "children": []
+     },
+     {
+      "t": "Bug bounty",
+      "children": []
+     },
+     {
+      "t": "Attack surface reduction",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Secure coding best practices",
+    "children": [
+     {
+      "t": "Input validation",
+      "children": []
+     },
+     {
+      "t": "Output encoding",
+      "children": []
+     },
+     {
+      "t": "Session management",
+      "children": []
+     },
+     {
+      "t": "Authentication",
+      "children": []
+     },
+     {
+      "t": "Data protection",
+      "children": []
+     },
+     {
+      "t": "Parameterized queries",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Secure software development life cycle (SDLC)",
+    "children": []
+   },
+   {
+    "t": "Threat modeling Management and",
+    "children": []
+   }
+  ]
+ },
+ "3.1": {
+  "title": "Explain concepts related to attack methodology frameworks.",
+  "bullets": [
+   {
+    "t": "Cyber kill chains",
+    "children": []
+   },
+   {
+    "t": "Diamond Model of Intrusion Analysis",
+    "children": []
+   },
+   {
+    "t": "MITRE ATT&CK",
+    "children": []
+   },
+   {
+    "t": "Open Source Security Testing Methodology Manual (OSS TMM)",
+    "children": []
+   },
+   {
+    "t": "OWASP Testing Guide",
+    "children": []
+   }
+  ]
+ },
+ "3.2": {
+  "title": "Given a scenario, perform incident response activities.",
+  "bullets": [
+   {
+    "t": "Detection and analysis",
+    "children": [
+     {
+      "t": "IoC",
+      "children": []
+     },
+     {
+      "t": "Evidence acquisitions",
+      "children": [
+       {
+        "t": "Chain of custody",
+        "children": []
+       },
+       {
+        "t": "Validating data integrity",
+        "children": []
+       },
+       {
+        "t": "Preservation",
+        "children": []
+       },
+       {
+        "t": "Legal hold",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Data and log analysis",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Containment, eradication, and recovery",
+    "children": [
+     {
+      "t": "Scope",
+      "children": []
+     },
+     {
+      "t": "Impact",
+      "children": []
+     },
+     {
+      "t": "Isolation",
+      "children": []
+     },
+     {
+      "t": "Remediation",
+      "children": []
+     },
+     {
+      "t": "Re-imaging",
+      "children": []
+     },
+     {
+      "t": "Compensating controls",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "3.3": {
+  "title": "Explain the preparation and post-incident activity phases of the incident management life cycle.",
+  "bullets": [
+   {
+    "t": "Preparation",
+    "children": [
+     {
+      "t": "Incident response plan",
+      "children": []
+     },
+     {
+      "t": "Tools",
+      "children": []
+     },
+     {
+      "t": "Playbooks",
+      "children": []
+     },
+     {
+      "t": "Tabletop",
+      "children": []
+     },
+     {
+      "t": "Training",
+      "children": []
+     },
+     {
+      "t": "Business continuity (BC)/ disaster recovery (DR)",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Post-incident activity",
+    "children": [
+     {
+      "t": "Forensic analysis",
+      "children": []
+     },
+     {
+      "t": "Root cause analysis",
+      "children": []
+     },
+     {
+      "t": "Lessons learned and Communication",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "4.1": {
+  "title": "Explain the importance of vulnerability management reporting and communication.",
+  "bullets": [
+   {
+    "t": "Vulnerability management",
+    "children": [
+     {
+      "t": "Vulnerabilities",
+      "children": []
+     },
+     {
+      "t": "Affected hosts",
+      "children": []
+     },
+     {
+      "t": "Risk score",
+      "children": []
+     },
+     {
+      "t": "Mitigation",
+      "children": []
+     },
+     {
+      "t": "Recurrence",
+      "children": []
+     },
+     {
+      "t": "Prioritization",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Compliance reports",
+    "children": []
+   },
+   {
+    "t": "Action plans",
+    "children": [
+     {
+      "t": "Configuration management",
+      "children": []
+     },
+     {
+      "t": "Patching",
+      "children": []
+     },
+     {
+      "t": "Compensating controls",
+      "children": []
+     },
+     {
+      "t": "Awareness, education, and training",
+      "children": []
+     },
+     {
+      "t": "Changing business requirements",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Inhibitors to remediation",
+    "children": [
+     {
+      "t": "Memorandum of understanding (MOU)",
+      "children": []
+     },
+     {
+      "t": "Service-level agreement (SLA)",
+      "children": []
+     },
+     {
+      "t": "Organizational governance",
+      "children": []
+     },
+     {
+      "t": "Business process interruption",
+      "children": []
+     },
+     {
+      "t": "Degrading functionality",
+      "children": []
+     },
+     {
+      "t": "Legacy systems",
+      "children": []
+     },
+     {
+      "t": "Proprietary systems",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Metrics and key performance indicators (KPIs)",
+    "children": [
+     {
+      "t": "Trends",
+      "children": []
+     },
+     {
+      "t": "Top 10",
+      "children": []
+     },
+     {
+      "t": "Critical vulnerabilities and zero-days",
+      "children": []
+     },
+     {
+      "t": "SLOs",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Stakeholder identification",
+    "children": []
+   }
+  ]
+ },
+ "4.2": {
+  "title": "Explain the importance of incident response reporting and communication.",
+  "bullets": [
+   {
+    "t": "Stakeholder identification",
+    "children": []
+   },
+   {
+    "t": "Incident declaration and escalation",
+    "children": []
+   },
+   {
+    "t": "Incident response reporting",
+    "children": [
+     {
+      "t": "Executive summary",
+      "children": []
+     },
+     {
+      "t": "Who, what, when, where, and why",
+      "children": []
+     },
+     {
+      "t": "Recommendations",
+      "children": []
+     },
+     {
+      "t": "Timeline",
+      "children": []
+     },
+     {
+      "t": "Impact",
+      "children": []
+     },
+     {
+      "t": "Scope",
+      "children": []
+     },
+     {
+      "t": "Evidence",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Communications",
+    "children": [
+     {
+      "t": "Legal",
+      "children": []
+     },
+     {
+      "t": "Public relations",
+      "children": [
+       {
+        "t": "Customer communication",
+        "children": []
+       },
+       {
+        "t": "Media",
+        "children": []
+       }
+      ]
+     },
+     {
+      "t": "Regulatory reporting",
+      "children": []
+     },
+     {
+      "t": "Law enforcement",
+      "children": []
+     }
+    ]
+   },
+   {
+    "t": "Root cause analysis",
+    "children": []
+   },
+   {
+    "t": "Lessons learned",
+    "children": []
+   },
+   {
+    "t": "Metrics and KPIs",
+    "children": [
+     {
+      "t": "Mean time to detect",
+      "children": []
+     },
+     {
+      "t": "Mean time to respond",
+      "children": []
+     },
+     {
+      "t": "Mean time to remediate",
+      "children": []
+     },
+     {
+      "t": "Alert volume CompTIA CySA+ The following is a list of acronyms CS0-003 exam. Candidates list and attain a working knowledge comprehensive exam preparation",
+      "children": []
+     }
+    ]
+   }
+  ]
+ }
+}
