@@ -16,7 +16,7 @@
   --text:#171b1f; --text-muted:#5a6570;
   --accent:#a0522d; --accent-ink:#ffffff;
   --known:#1f8a5c; --known-bg:#e7f4ee; --learn:#a9791c; --learn-bg:#fbf1d9;
-  --d0:#6d4bc4; --d1:#0d7b86;
+  --d0:#6d4bc4; --d1:#0d7b86; --d2:#b3437c; --d3:#2f5fd6; --d4:#1f8a5c; --d5:#a9791c;
   --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
   --radius:16px;
   --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -26,13 +26,13 @@
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
   --text:#e7edf1; --text-muted:#93a2ac; --accent:#e0a071; --accent-ink:#2a1a10;
   --known:#55d69a; --known-bg:#12291f; --learn:#e0b24d; --learn-bg:#332a15;
-  --d0:#a98cf0; --d1:#3fd0dd;
+  --d0:#a98cf0; --d1:#3fd0dd; --d2:#ea86b8; --d3:#7ea2ff; --d4:#55d69a; --d5:#e0b24d;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
   --text:#e7edf1; --text-muted:#93a2ac; --accent:#e0a071; --accent-ink:#2a1a10;
   --known:#55d69a; --known-bg:#12291f; --learn:#e0b24d; --learn-bg:#332a15;
-  --d0:#a98cf0; --d1:#3fd0dd;
+  --d0:#a98cf0; --d1:#3fd0dd; --d2:#ea86b8; --d3:#7ea2ff; --d4:#55d69a; --d5:#e0b24d;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
 
 *{box-sizing:border-box;}
@@ -53,15 +53,12 @@ p{margin:0 0 12px;}
 .deck{font-family:var(--font-display);font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
   border:1px solid var(--border);background:var(--bg);color:var(--text-muted);}
 .deck[aria-pressed="true"]{color:#fff;border-color:transparent;}
-.deck[data-i="0"][aria-pressed="true"]{background:var(--d0);}
-.deck[data-i="1"][aria-pressed="true"]{background:var(--d1);}
 .deck:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
   padding:22px 24px;box-shadow:var(--shadow);}
 .tagrow{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap;}
 .dtag{font-family:var(--font-display);font-size:10.5px;color:#fff;border-radius:999px;padding:2px 9px;}
-.dtag[data-i="0"]{background:var(--d0);} .dtag[data-i="1"]{background:var(--d1);}
 .mark{font-family:var(--font-display);font-size:10.5px;border-radius:999px;padding:2px 9px;}
 .mark.known{background:var(--known-bg);color:var(--known);}
 .mark.learning{background:var(--learn-bg);color:var(--learn);}
@@ -86,6 +83,14 @@ p{margin:0 0 12px;}
 .note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
   padding:12px 14px;font-size:13.5px;color:var(--text-muted);line-height:1.55;margin-top:18px;}
 .foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+.deck[data-i="0"][aria-pressed="true"]{background:var(--d0);}
+.dtag[data-i="0"]{background:var(--d0);}
+.deck[data-i="1"][aria-pressed="true"]{background:var(--d1);}
+.dtag[data-i="1"]{background:var(--d1);}
+.deck[data-i="2"][aria-pressed="true"]{background:var(--d2);}
+.dtag[data-i="2"]{background:var(--d2);}
+.deck[data-i="3"][aria-pressed="true"]{background:var(--d3);}
+.dtag[data-i="3"]{background:var(--d3);}
 </style>
 
 <div class="wrap">
@@ -96,7 +101,7 @@ p{margin:0 0 12px;}
   else. Separate from the toolkit Drill, which is built against CompTIA's published objectives;
   these follow what the class actually covered.</p>
 
-  <div class="decks"><button class="deck" data-i="0" aria-pressed="true">Cryptography &middot; 9</button><button class="deck" data-i="1" aria-pressed="true">Managing Risk &middot; 12</button></div>
+  <div class="decks"><button class="deck" data-i="0" aria-pressed="true">Cryptography &middot; 9</button><button class="deck" data-i="1" aria-pressed="true">Managing Risk &middot; 12</button><button class="deck" data-i="2" aria-pressed="true">Public Key Infrastructure &middot; 7</button><button class="deck" data-i="3" aria-pressed="true">OS Process Management &middot; 9</button></div>
 
   <div id="card"></div>
   <div class="stats" id="stats"></div>
@@ -111,7 +116,7 @@ p{margin:0 0 12px;}
 </div>
 
 <script>
-var DECKS = [{"deck": "Cryptography", "file": "Cryptographyflashcard.txt", "cards": [{"q": "which Microsoft powershell cmdlet is used to generate a file hash?", "a": "Get-FileHash"}, {"q": "You would like to securely generate and store keys for Microsoft Azure storage account encryption. Which type of Azure resource stores cryptographic items?", "a": "key vault"}, {"q": "hashing applies to which aspect of the cia security triad?", "a": "integrity"}, {"q": "you need to order an hsm solution for your data center. which options are available?", "a": "network-attached appliance and PCIe card"}, {"q": "Which command line tool can be used to manage EFS?", "a": "cipher"}, {"q": "What is the default listening port number for HTTPS?", "a": "443"}, {"q": "Which Linux commands can be used to generate file hashes?", "a": "sha256sum<br>md5sum"}, {"q": "BitLocker is designed to encrypt which types of objects?", "a": "File Systems"}, {"q": "Which term identifies encrypted data?", "a": "ciphertext"}]}, {"deck": "Managing Risk", "file": "ManagingRiskFlash.txt", "cards": [{"q": "how does configuration management differ from change management?", "a": "configuration management keeps systems performance at a desired level over time, change management is short-term"}, {"q": "you have enabled Microsoft Azure storage account replication. When the primary region for the storage account is not reachable, what should you do?", "a": "failover to the secondary region"}, {"q": "which risk treatment is synonymous with risk retention?", "a": "risk acceptance"}, {"q": "which Microsoft windows performance monitor tool can be used to establish a performance baseline?", "a": "DCS"}, {"q": "Cybersecurity insurance is considered to be which kind of risk treatment?", "a": "risk transfer"}, {"q": "which risk treatment applies when the level of risk is unacceptable?", "a": "risk avoidance"}, {"q": "you are deploying a new antimalware program to user smartphones. Which type of security control is this?", "a": "preventative<br>detective"}, {"q": "which items normall appear in a risk registry?", "a": "owner<br>mitigation"}, {"q": "which type of risk treatment applies security controls to reduce threat impact?", "a": "risk reduction"}, {"q": "what is the purpose of calculating the annual loss expectancy (ALE)?", "a": "to determine the maximum cost that should be spent on mitigating security controls"}, {"q": "where are azure backup items stored?", "a": "recovery services vault"}, {"q": "which risk management framework stems from a European agency?", "a": "ENISA"}]}];
+var DECKS = [{"deck": "Cryptography", "file": "Cryptographyflashcard.txt", "cards": [{"q": "which Microsoft powershell cmdlet is used to generate a file hash?", "a": "Get-FileHash"}, {"q": "You would like to securely generate and store keys for Microsoft Azure storage account encryption. Which type of Azure resource stores cryptographic items?", "a": "key vault"}, {"q": "hashing applies to which aspect of the cia security triad?", "a": "integrity"}, {"q": "you need to order an hsm solution for your data center. which options are available?", "a": "network-attached appliance and PCIe card"}, {"q": "Which command line tool can be used to manage EFS?", "a": "cipher"}, {"q": "What is the default listening port number for HTTPS?", "a": "443"}, {"q": "Which Linux commands can be used to generate file hashes?", "a": "sha256sum<br>md5sum"}, {"q": "BitLocker is designed to encrypt which types of objects?", "a": "File Systems"}, {"q": "Which term identifies encrypted data?", "a": "ciphertext"}]}, {"deck": "Managing Risk", "file": "ManagingRiskFlash.txt", "cards": [{"q": "how does configuration management differ from change management?", "a": "configuration management keeps systems performance at a desired level over time, change management is short-term"}, {"q": "you have enabled Microsoft Azure storage account replication. When the primary region for the storage account is not reachable, what should you do?", "a": "failover to the secondary region"}, {"q": "which risk treatment is synonymous with risk retention?", "a": "risk acceptance"}, {"q": "which Microsoft windows performance monitor tool can be used to establish a performance baseline?", "a": "DCS"}, {"q": "Cybersecurity insurance is considered to be which kind of risk treatment?", "a": "risk transfer"}, {"q": "which risk treatment applies when the level of risk is unacceptable?", "a": "risk avoidance"}, {"q": "you are deploying a new antimalware program to user smartphones. Which type of security control is this?", "a": "preventative<br>detective"}, {"q": "which items normall appear in a risk registry?", "a": "owner<br>mitigation"}, {"q": "which type of risk treatment applies security controls to reduce threat impact?", "a": "risk reduction"}, {"q": "what is the purpose of calculating the annual loss expectancy (ALE)?", "a": "to determine the maximum cost that should be spent on mitigating security controls"}, {"q": "where are azure backup items stored?", "a": "recovery services vault"}, {"q": "which risk management framework stems from a European agency?", "a": "ENISA"}]}, {"deck": "Public Key Infrastructure", "file": "PublicKeyInfrastructureFlash.txt", "cards": [{"q": "which pki component issues certificates?", "a": "CA"}, {"q": "you are managing a windows 11 device. you would like to view existing computer and user certificates installed on the machine. What should you do?", "a": "Start MMC and add the Certificates snapin"}, {"q": "What is required to allow the enabling of an HTTPS binding?", "a": "PKI certificate"}, {"q": "What must be done for internal clients to trust private CA-issued certificates?", "a": "Install the private CA trusted root certificate on each client device"}, {"q": "You have installed a Windows Private CA, but you do not see the option of working with certificate templates. Why is this?", "a": "You server is not joined to an Active Directory domain"}, {"q": "Which PKI solutions allow for preventing the use of untrusted certificates?", "a": "CRL<br>OCSP"}, {"q": "You must ensure a highly sensitive internal web site uses PKI client authentication. What must be done on the web server?", "a": "Ensure the web server is configured to use HTTPS<br>Enable the option to require client PKI certificates"}]}, {"deck": "OS Process Management", "file": "OS Process ManagementFlash.txt", "cards": [{"q": "Which type of disk initialization is limited to 4 partitions?", "a": "MBR"}, {"q": "How does a Windows data collector set (DCS) differ from using Performance Monitor?", "a": "A DCS can be scheduled"}, {"q": "Which hardware security component can be used to store BitLocker encryption keys?", "a": "TPM"}, {"q": "Which Linux runlevel reboots a system?", "a": "6"}, {"q": "Which Linux command is used to create a filesystem?", "a": "mkfs"}, {"q": "Your Windows server performance has degraded significantly. You need to determine if a specific service is consuming most of the CPU time. Which tool should you use?", "a": "Task Manager"}, {"q": "Which Linux command can be used to view BIOS version information?", "a": "dmidecode"}, {"q": "What is wrong with this Linux command? sudo status service ssh", "a": "The words 'status' and 'service' must be interchanged"}, {"q": "Which tool can be used to view and modify the Windows registry?", "a": "regedit"}]}];
 
 var KEY = "cysa:schoolflash:v1";
 var st = {status:{}};
