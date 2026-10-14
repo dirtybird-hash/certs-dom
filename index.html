@@ -59,19 +59,29 @@ a{color:var(--accent);}
 .head p{color:var(--text-muted);max-width:60ch;}
 
 .certs{display:grid;gap:12px;margin-top:26px;}
-.cert{display:block;text-decoration:none;color:inherit;background:var(--surface);
+.cert{position:relative;background:var(--surface);
   border:1px solid var(--border);border-left:4px solid var(--ca);border-radius:var(--radius);
   padding:18px 20px;box-shadow:var(--shadow);transition:transform .15s,border-color .15s;}
-a.cert:hover{transform:translateY(-2px);border-color:var(--ca);}
+.cert.linked:hover{transform:translateY(-2px);border-color:var(--ca);}
 .cert.soon{box-shadow:none;background:var(--surface-2);}
-.cert-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+.cert-body{display:block;text-decoration:none;color:inherit;}
+.cert-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;
+  padding-right:120px;}
 .cert h2{font-size:18px;}
 .code{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);}
-.chip{font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
-  border-radius:999px;padding:3px 9px;margin-left:auto;white-space:nowrap;}
-.chip.passed{background:var(--ok-bg);color:var(--ok);}
-.chip.active{background:var(--warn-bg);color:var(--warn);}
-.chip.slot{background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border);}
+
+/* Status chip: a real button, so the state is the reader's to set. Absolutely
+   positioned and outside the card's link, so clicking it never navigates. */
+.chip{position:absolute;top:17px;right:18px;z-index:2;
+  font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:999px;padding:3px 9px;white-space:nowrap;cursor:pointer;
+  border:1px solid transparent;background:var(--surface-2);color:var(--text-muted);
+  transition:box-shadow .15s;}
+.chip:hover{box-shadow:0 0 0 2px color-mix(in srgb,currentColor 28%,transparent);}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.chip.certified{background:var(--ok-bg);color:var(--ok);}
+.chip.studying{background:var(--warn-bg);color:var(--warn);}
+.chip.none{background:var(--surface-2);color:var(--text-muted);border-color:var(--border);}
 .cert p{font-size:14.5px;color:var(--text-muted);margin:0 0 10px;}
 .tools{display:flex;gap:6px;flex-wrap:wrap;}
 .tool{font-family:var(--font-display);font-size:11px;border:1px solid var(--border);
@@ -82,6 +92,11 @@ a.cert:hover{transform:translateY(-2px);border-color:var(--ca);}
 .note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
   padding:13px 15px;font-size:13.5px;line-height:1.55;color:var(--text-muted);margin-top:26px;}
 .note strong{color:var(--text);}
+.resetrow{margin-top:11px;}
+.reset{font-family:var(--font-display);font-size:11.5px;padding:5px 11px;border-radius:9px;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);}
+.reset:hover{border-color:var(--accent);color:var(--accent);}
+.reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .foot{margin-top:22px;font-size:12.5px;color:var(--text-muted);
   border-top:1px solid var(--border);padding-top:14px;}
 </style>
@@ -98,49 +113,57 @@ a.cert:hover{transform:translateY(-2px);border-color:var(--ca);}
   <div class="certs">
 
     <div class="cert soon" style="--ca:var(--c-ap)">
-      <div class="cert-top">
-        <h2>A+ Core 2</h2><span class="code">220-1202</span>
-        <span class="chip passed">Certified</span>
+      <button type="button" class="chip" data-cert="aplus" data-name="A+ Core 2"></button>
+      <div class="cert-body">
+        <div class="cert-top">
+          <h2>A+ Core 2</h2><span class="code">220-1202</span>
+        </div>
+        <p>Material exists but is not wired in yet &mdash; interactive study console, seven day
+        mini-labs and a PBQ incident-response exam, built outside this system.</p>
+        <div class="tools"><span class="tool">Study console</span><span class="tool">Day mini-labs</span><span class="tool">PBQ exam</span></div>
+        <span class="go">Slot reserved &mdash; files to be added</span>
       </div>
-      <p>Material exists but is not wired in yet &mdash; interactive study console, seven day
-      mini-labs and a PBQ incident-response exam, built outside this system.</p>
-      <div class="tools"><span class="tool">Study console</span><span class="tool">Day mini-labs</span><span class="tool">PBQ exam</span></div>
-      <span class="go">Slot reserved &mdash; files to be added</span>
     </div>
 
     <div class="cert soon" style="--ca:var(--c-net)">
-      <div class="cert-top">
-        <h2>Network+</h2><span class="code">N10-009</span>
-        <span class="chip passed">Certified</span>
+      <button type="button" class="chip" data-cert="netplus" data-name="Network+"></button>
+      <div class="cert-body">
+        <div class="cert-top">
+          <h2>Network+</h2><span class="code">N10-009</span>
+        </div>
+        <p>Packet Tracer labs mapped to the N10-009 objectives, a ports flashcard deck and
+        colour-coded day notes. To be added as each piece is confirmed publishable.</p>
+        <div class="tools"><span class="tool">Packet Tracer labs</span><span class="tool">Port flashcards</span><span class="tool">Day notes</span></div>
+        <span class="go">Slot reserved &mdash; files to be added</span>
       </div>
-      <p>Packet Tracer labs mapped to the N10-009 objectives, a ports flashcard deck and
-      colour-coded day notes. To be added as each piece is confirmed publishable.</p>
-      <div class="tools"><span class="tool">Packet Tracer labs</span><span class="tool">Port flashcards</span><span class="tool">Day notes</span></div>
-      <span class="go">Slot reserved &mdash; files to be added</span>
     </div>
 
-    <a class="cert" href="security-plus/index.html" style="--ca:var(--c-sec)">
-      <div class="cert-top">
-        <h2>Security+</h2><span class="code">SY0-701</span>
-        <span class="chip passed">Certified</span>
-      </div>
-      <p>All five domains built and verified against the published objectives: 179 notebook
-      topics, 655 match pairs, 560 flashcards, 258 quiz questions and 75 scenarios, plus the
-      full acronym list and a prep scheduler.</p>
-      <div class="tools"><span class="tool on">Notebook</span><span class="tool on">Match</span><span class="tool on">Drill</span><span class="tool on">Acronyms</span><span class="tool on">Scheduler</span></div>
-      <span class="go">Open the Security+ toolkit &rarr;</span>
-    </a>
+    <div class="cert linked" style="--ca:var(--c-sec)">
+      <button type="button" class="chip" data-cert="secplus" data-name="Security+"></button>
+      <a class="cert-body" href="security-plus/index.html">
+        <div class="cert-top">
+          <h2>Security+</h2><span class="code">SY0-701</span>
+        </div>
+        <p>All five domains built and verified against the published objectives: 179 notebook
+        topics, 655 match pairs, 560 flashcards, 258 quiz questions and 75 scenarios, plus the
+        full acronym list and a prep scheduler.</p>
+        <div class="tools"><span class="tool on">Notebook</span><span class="tool on">Match</span><span class="tool on">Drill</span><span class="tool on">Acronyms</span><span class="tool on">Scheduler</span></div>
+        <span class="go">Open the Security+ toolkit &rarr;</span>
+      </a>
+    </div>
 
-    <a class="cert" href="cysa/index.html" style="--ca:var(--c-cysa)">
-      <div class="cert-top">
-        <h2>CySA+</h2><span class="code">CS0-003</span>
-        <span class="chip active">Studying now</span>
-      </div>
-      <p>Domain 1 built drill-first &mdash; 56 flashcards, 26 quiz questions and 10 scenarios across
-      objectives 1.1 to 1.5, plus the course flashcards typed during class.</p>
-      <div class="tools"><span class="tool on">Drill</span><span class="tool on">Simple Flash</span><span class="tool">Notebook</span><span class="tool">Match</span><span class="tool">Scheduler</span></div>
-      <span class="go">Open the CySA+ toolkit &rarr;</span>
-    </a>
+    <div class="cert linked" style="--ca:var(--c-cysa)">
+      <button type="button" class="chip" data-cert="cysa" data-name="CySA+"></button>
+      <a class="cert-body" href="cysa/index.html">
+        <div class="cert-top">
+          <h2>CySA+</h2><span class="code">CS0-003</span>
+        </div>
+        <p>Domain 1 built drill-first &mdash; 56 flashcards, 26 quiz questions and 10 scenarios across
+        objectives 1.1 to 1.5, plus the course flashcards typed during class.</p>
+        <div class="tools"><span class="tool on">Drill</span><span class="tool on">Simple Flash</span><span class="tool">Notebook</span><span class="tool">Match</span><span class="tool">Scheduler</span></div>
+        <span class="go">Open the CySA+ toolkit &rarr;</span>
+      </a>
+    </div>
 
   </div>
 
@@ -148,6 +171,11 @@ a.cert:hover{transform:translateY(-2px);border-color:var(--ca);}
     <strong>Progress is saved per certification, in this browser.</strong> Each cert's drills and
     scheduler write under their own key prefix, so Security+ Domain 1 and CySA+ Domain 1 never
     collide. It stays on the device you studied on and is not synced anywhere.
+    <br><br>
+    The status tag on each card is yours to set &mdash; click it to cycle through
+    <em>Certified</em>, <em>Studying now</em> and <em>Not started</em>. Nothing on the page reads
+    it; it is a label for you, saved under <code>certhub:status:v1</code>.
+    <div class="resetrow"><button type="button" class="reset" id="reset">Reset status tags</button></div>
   </div>
 
   <div class="foot">
@@ -157,5 +185,44 @@ a.cert:hover{transform:translateY(-2px);border-color:var(--ca);}
   </div>
 
 </div>
+
+<script>
+/* Status tags. Hardcoded "Certified" was wrong the moment a cert changed state, so the
+   state lives in this browser instead and the card only supplies its default. */
+var KEY = "certhub:status:v1";
+var ORDER  = ["certified", "studying", "none"];
+var LABELS = {certified:"Certified", studying:"Studying now", none:"Not started"};
+var DEFAULTS = {aplus:"certified", netplus:"certified", secplus:"certified", cysa:"studying"};
+
+var st = {};
+try{ var raw = localStorage.getItem(KEY); if(raw) st = JSON.parse(raw) || {}; }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+function stateOf(id){
+  var s = st[id] || DEFAULTS[id] || "none";
+  return ORDER.indexOf(s) === -1 ? "none" : s;
+}
+function paint(b){
+  var id = b.getAttribute("data-cert"), s = stateOf(id);
+  b.className = "chip " + s;
+  b.textContent = LABELS[s];
+  b.setAttribute("title", "Click to change status");
+  b.setAttribute("aria-label", b.getAttribute("data-name") + " status: " + LABELS[s]
+    + ". Click to change.");
+}
+var chips = document.querySelectorAll(".chip");
+Array.prototype.forEach.call(chips, function(b){
+  paint(b);
+  b.addEventListener("click", function(ev){
+    ev.preventDefault(); ev.stopPropagation();
+    var id = b.getAttribute("data-cert");
+    st[id] = ORDER[(ORDER.indexOf(stateOf(id)) + 1) % ORDER.length];
+    save(); paint(b);
+  });
+});
+document.getElementById("reset").addEventListener("click", function(){
+  st = {}; save();
+  Array.prototype.forEach.call(chips, paint);
+});
+</script>
 </body>
 </html>
