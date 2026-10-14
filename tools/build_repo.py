@@ -62,9 +62,28 @@ for d in range(1, 6):
 SECPLUS_DESC['acronym-drill.html']  = 'All 333 CompTIA Security+ SY0-701 acronyms as flashcards, a quiz and a searchable list.'
 SECPLUS_DESC['prep-scheduler.html'] = 'Turns your Security+ exam date into a day-by-day study and drill plan that follows your weak spots.'
 
+CERT_HUB = "https://claude.ai/artifact/B7ZnpG2Vvn7rt55DFHh9Ws"
+
+CYSA_URLS = {
+  CERT_HUB: "../index.html",                                        # back to the cert picker
+  "https://claude.ai/artifact/PrxFejEDNFYfNB7V7Ahjvq": "index.html",          # the CySA+ hub itself
+  "https://claude.ai/artifact/KrYojQYtNqGKiiYQQ1iPXy": "domain1-drill.html",
+  "https://claude.ai/artifact/5k2Wz7MQAfUfX2TKcHmDpn": "simple-flash.html",
+}
+CYSA_FILES = {
+  'cysa-hub.html':             'index.html',
+  'cysa-domain1-drill.html':   'domain1-drill.html',
+  'cysa-school-flashcards.html':'simple-flash.html',
+}
+CYSA_DESC = {
+  'index.html':        'Study tools for the CompTIA CySA+ CS0-003 exam, organized by domain.',
+  'domain1-drill.html':'Flashcards, quiz and scenario practice for CySA+ Domain 1, Security Operations.',
+  'simple-flash.html': 'Course flashcards for CySA+, typed during class and kept verbatim.',
+}
+
 CERTS = {
   'security-plus': {'files': SECPLUS_FILES, 'desc': SECPLUS_DESC, 'urls': SECPLUS_URLS},
-  # 'cysa': {...}  <- add here when the CySA+ pages exist
+  'cysa': {'files': CYSA_FILES, 'desc': CYSA_DESC, 'urls': CYSA_URLS},
 }
 
 HEAD = ('<!doctype html>\n<html lang="en">\n<head>\n'

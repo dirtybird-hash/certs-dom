@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Study tools for the CompTIA CySA+ CS0-003 exam, organized by domain.">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>CySA+ Toolkit</title>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: single column. Tools first, domain coverage below, so the thing you
+   came to do is above the thing you came to check. */
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
+  --text:#171b1f; --text-muted:#5a6570;
+  --accent:#6d4bc4; --accent-ink:#ffffff;
+  --drill:#6d4bc4; --flash:#a0522d;
+  --built:#1f8a5c; --built-bg:#e7f4ee;
+  --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
+  --radius:16px;
+  --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
+  --text:#e7edf1; --text-muted:#93a2ac; --accent:#a98cf0; --accent-ink:#1a1030;
+  --drill:#a98cf0; --flash:#e0a071; --built:#55d69a; --built-bg:#12291f;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
+  --text:#e7edf1; --text-muted:#93a2ac; --accent:#a98cf0; --accent-ink:#1a1030;
+  --drill:#a98cf0; --flash:#e0a071; --built:#55d69a; --built-bg:#12291f;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
+
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;font-size:16px;line-height:1.55;}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:22px 60px;}
+h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance;}
+p{margin:0 0 12px;}
+a{color:var(--accent);}
+.backlink{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);text-decoration:none;
+  display:inline-block;margin-bottom:12px;padding:3px 9px;border:1px solid var(--border);
+  border-radius:999px;background:var(--surface);}
+.backlink:hover{color:var(--accent);border-color:var(--accent);}
+.eyebrow{font-family:var(--font-display);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 7px;}
+h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
+.lede{color:var(--text-muted);font-size:15px;max-width:62ch;}
+
+.section-label{font-family:var(--font-display);font-size:11.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--text-muted);margin:26px 0 10px;}
+.cards{display:grid;gap:12px;}
+.card{display:block;text-decoration:none;color:inherit;background:var(--surface);
+  border:1px solid var(--border);border-left:4px solid var(--ca);border-radius:var(--radius);
+  padding:18px 20px;box-shadow:var(--shadow);transition:transform .15s,border-color .15s;}
+a.card:hover{transform:translateY(-2px);border-color:var(--ca);}
+.card-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:5px;}
+.card h2{font-size:17px;}
+.kind{font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--text-muted);border:1px solid var(--border);border-radius:999px;padding:2px 8px;margin-left:auto;}
+.card p{font-size:14.5px;color:var(--text-muted);margin:0 0 9px;}
+.meta{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);}
+.go{font-family:var(--font-display);font-size:12.5px;color:var(--ca);display:inline-block;margin-top:9px;}
+
+.doms{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden;}
+.drow{display:grid;grid-template-columns:40px 1fr 56px 86px;gap:10px;align-items:center;
+  padding:11px 14px;border-bottom:1px solid var(--border);}
+.drow:last-child{border-bottom:0;}
+.dn{font-family:var(--font-display);font-size:12px;color:var(--text-muted);}
+.dt{font-size:14px;min-width:0;}
+.dw{font-family:var(--font-display);font-size:12px;text-align:right;color:var(--text-muted);
+  font-variant-numeric:tabular-nums;}
+.chip{font-family:var(--font-display);font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+  border-radius:999px;padding:2px 8px;text-align:center;}
+.chip.on{background:var(--built-bg);color:var(--built);}
+.chip.off{background:var(--surface-2);color:var(--text-muted);}
+@media (max-width:520px){.drow{grid-template-columns:36px 1fr 74px;} .dw{display:none;}}
+.note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
+  padding:12px 14px;font-size:13.5px;color:var(--text-muted);line-height:1.55;margin-top:22px;}
+.foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+</style>
+
+<div class="wrap">
+  <a class="backlink" href="../index.html">&larr; All certifications</a>
+  <p class="eyebrow">CompTIA CySA+ &middot; CS0-003</p>
+  <h1>CySA+ Toolkit</h1>
+  <p class="lede">Four domains, 15 objectives. Built drill-first, so there are questions to answer
+  from the start rather than notes to admire.</p>
+
+  <p class="section-label">Tools</p>
+  <div class="cards">
+
+    <a class="card" href="domain1-drill.html" style="--ca:var(--drill)">
+      <div class="card-top"><h2>Domain 1 Drill</h2><span class="kind">Practice</span></div>
+      <p>Security Operations, objectives 1.1 to 1.5 &mdash; flashcards, multiple choice and
+      scenario questions, with accuracy tracked per objective.</p>
+      <span class="meta">56 cards &middot; 26 quiz &middot; 10 scenarios</span>
+      <span class="go">Open the Drill &rarr;</span>
+    </a>
+
+    <a class="card" href="simple-flash.html" style="--ca:var(--flash)">
+      <div class="card-top"><h2>Simple Flash</h2><span class="kind">From class</span></div>
+      <p>Course flashcards typed during classwork and kept verbatim &mdash; question, answer,
+      nothing else. Follows what the class covered rather than the exam objectives.</p>
+      <span class="meta">21 cards &middot; 2 decks</span>
+      <span class="go">Open Simple Flash &rarr;</span>
+    </a>
+
+  </div>
+
+  <p class="section-label">Domain coverage</p>
+  <div class="doms">
+    <div class="drow"><span class="dn">1.0</span><span class="dt">Security Operations</span>
+      <span class="dw">33%</span><span class="chip on">Drill built</span></div>
+    <div class="drow"><span class="dn">2.0</span><span class="dt">Vulnerability Management</span>
+      <span class="dw">30%</span><span class="chip off">Not started</span></div>
+    <div class="drow"><span class="dn">3.0</span><span class="dt">Incident Response &amp; Management</span>
+      <span class="dw">20%</span><span class="chip off">Not started</span></div>
+    <div class="drow"><span class="dn">4.0</span><span class="dt">Reporting &amp; Communication</span>
+      <span class="dw">17%</span><span class="chip off">Not started</span></div>
+  </div>
+
+  <div class="note">Build order is 1, then 3, then 2, then 4. Domain 3 comes early because it is
+  worth 20% of the exam from only 7% of the objective bullets &mdash; the best return per page on
+  the whole syllabus. Domain 4 is last for the opposite reason.</div>
+
+  <div class="foot">Personal study material. Not official CompTIA content, and not affiliated with,
+  authorized by or endorsed by CompTIA. CompTIA, CySA+ and CS0-003 are trademarks of CompTIA, Inc.</div>
+</div>
+</body>
+</html>

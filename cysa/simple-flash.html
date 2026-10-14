@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Course flashcards for CySA+, typed during class and kept verbatim.">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Simple Flash</title>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
+  --text:#171b1f; --text-muted:#5a6570;
+  --accent:#a0522d; --accent-ink:#ffffff;
+  --known:#1f8a5c; --known-bg:#e7f4ee; --learn:#a9791c; --learn-bg:#fbf1d9;
+  --d0:#6d4bc4; --d1:#0d7b86;
+  --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
+  --radius:16px;
+  --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
+  --text:#e7edf1; --text-muted:#93a2ac; --accent:#e0a071; --accent-ink:#2a1a10;
+  --known:#55d69a; --known-bg:#12291f; --learn:#e0b24d; --learn-bg:#332a15;
+  --d0:#a98cf0; --d1:#3fd0dd;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
+  --text:#e7edf1; --text-muted:#93a2ac; --accent:#e0a071; --accent-ink:#2a1a10;
+  --known:#55d69a; --known-bg:#12291f; --learn:#e0b24d; --learn-bg:#332a15;
+  --d0:#a98cf0; --d1:#3fd0dd;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
+
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;font-size:16px;line-height:1.55;}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:22px 60px;}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(25px,5.4vw,32px);
+  line-height:1.14;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance;}
+p{margin:0 0 12px;}
+.backlink{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);text-decoration:none;
+  display:inline-block;margin-bottom:12px;padding:3px 9px;border:1px solid var(--border);
+  border-radius:999px;background:var(--surface);}
+.backlink:hover{color:var(--accent);border-color:var(--accent);}
+.eyebrow{font-family:var(--font-display);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 7px;}
+.lede{color:var(--text-muted);font-size:15px;max-width:62ch;}
+
+.decks{display:flex;gap:6px;flex-wrap:wrap;margin:20px 0 16px;}
+.deck{font-family:var(--font-display);font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--border);background:var(--bg);color:var(--text-muted);}
+.deck[aria-pressed="true"]{color:#fff;border-color:transparent;}
+.deck[data-i="0"][aria-pressed="true"]{background:var(--d0);}
+.deck[data-i="1"][aria-pressed="true"]{background:var(--d1);}
+.deck:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px 24px;box-shadow:var(--shadow);}
+.tagrow{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap;}
+.dtag{font-family:var(--font-display);font-size:10.5px;color:#fff;border-radius:999px;padding:2px 9px;}
+.dtag[data-i="0"]{background:var(--d0);} .dtag[data-i="1"]{background:var(--d1);}
+.mark{font-family:var(--font-display);font-size:10.5px;border-radius:999px;padding:2px 9px;}
+.mark.known{background:var(--known-bg);color:var(--known);}
+.mark.learning{background:var(--learn-bg);color:var(--learn);}
+.count{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);margin-left:auto;
+  font-variant-numeric:tabular-nums;}
+.face{min-height:140px;display:flex;align-items:center;}
+.qtext{font-size:18px;line-height:1.48;}
+.atext{font-size:17px;line-height:1.55;color:var(--text);}
+.atext br{content:"";display:block;margin-bottom:6px;}
+.hint{font-family:var(--font-display);font-size:11px;color:var(--text-muted);margin-top:14px;}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
+.btn{font-family:var(--font-display);font-size:12.5px;padding:8px 14px;border-radius:10px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:10px;margin-top:20px;}
+.stat{border:1px solid var(--border);border-radius:12px;padding:11px 13px;background:var(--surface);}
+.stat .n{font-family:var(--font-display);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;}
+.stat .l{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
+  padding:12px 14px;font-size:13.5px;color:var(--text-muted);line-height:1.55;margin-top:18px;}
+.foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+</style>
+
+<div class="wrap">
+  <a class="backlink" href="index.html">&larr; CySA+ toolkit</a>
+  <p class="eyebrow">CompTIA CySA+ &middot; straight from class</p>
+  <h1>Simple Flash</h1>
+  <p class="lede">Course flashcards, kept exactly as written &mdash; question, answer, nothing
+  else. Separate from the toolkit Drill, which is built against CompTIA's published objectives;
+  these follow what the class actually covered.</p>
+
+  <div class="decks"><button class="deck" data-i="0" aria-pressed="true">Cryptography &middot; 9</button><button class="deck" data-i="1" aria-pressed="true">Managing Risk &middot; 12</button></div>
+
+  <div id="card"></div>
+  <div class="stats" id="stats"></div>
+
+  <div class="note">Wording is unedited. Progress saves in this browser under
+  <code>cysa:schoolflash:v1</code>, separate from the Drill, so marking a card here does not
+  touch your objective accuracy there.
+  <div class="btnrow"><button class="btn" id="reset">Reset marks</button></div></div>
+
+  <div class="foot">Personal study material transcribed from coursework. Not official CompTIA
+  content, and not affiliated with, authorized by or endorsed by CompTIA.</div>
+</div>
+
+<script>
+var DECKS = [{"deck": "Cryptography", "file": "Cryptographyflashcard.txt", "cards": [{"q": "which Microsoft powershell cmdlet is used to generate a file hash?", "a": "Get-FileHash"}, {"q": "You would like to securely generate and store keys for Microsoft Azure storage account encryption. Which type of Azure resource stores cryptographic items?", "a": "key vault"}, {"q": "hashing applies to which aspect of the cia security triad?", "a": "integrity"}, {"q": "you need to order an hsm solution for your data center. which options are available?", "a": "network-attached appliance and PCIe card"}, {"q": "Which command line tool can be used to manage EFS?", "a": "cipher"}, {"q": "What is the default listening port number for HTTPS?", "a": "443"}, {"q": "Which Linux commands can be used to generate file hashes?", "a": "sha256sum<br>md5sum"}, {"q": "BitLocker is designed to encrypt which types of objects?", "a": "File Systems"}, {"q": "Which term identifies encrypted data?", "a": "ciphertext"}]}, {"deck": "Managing Risk", "file": "ManagingRiskFlash.txt", "cards": [{"q": "how does configuration management differ from change management?", "a": "configuration management keeps systems performance at a desired level over time, change management is short-term"}, {"q": "you have enabled Microsoft Azure storage account replication. When the primary region for the storage account is not reachable, what should you do?", "a": "failover to the secondary region"}, {"q": "which risk treatment is synonymous with risk retention?", "a": "risk acceptance"}, {"q": "which Microsoft windows performance monitor tool can be used to establish a performance baseline?", "a": "DCS"}, {"q": "Cybersecurity insurance is considered to be which kind of risk treatment?", "a": "risk transfer"}, {"q": "which risk treatment applies when the level of risk is unacceptable?", "a": "risk avoidance"}, {"q": "you are deploying a new antimalware program to user smartphones. Which type of security control is this?", "a": "preventative<br>detective"}, {"q": "which items normall appear in a risk registry?", "a": "owner<br>mitigation"}, {"q": "which type of risk treatment applies security controls to reduce threat impact?", "a": "risk reduction"}, {"q": "what is the purpose of calculating the annual loss expectancy (ALE)?", "a": "to determine the maximum cost that should be spent on mitigating security controls"}, {"q": "where are azure backup items stored?", "a": "recovery services vault"}, {"q": "which risk management framework stems from a European agency?", "a": "ENISA"}]}];
+
+var KEY = "cysa:schoolflash:v1";
+var st = {status:{}};
+try{ var raw = localStorage.getItem(KEY); if(raw) st = JSON.parse(raw); }catch(e){}
+if(!st.status) st.status = {};
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+function idOf(c){ return c.deck + "|" + c.q.slice(0,60); }
+
+var FLAT = [];
+DECKS.forEach(function(d, i){
+  d.cards.forEach(function(c){ FLAT.push({deck:d.deck, di:i, q:c.q, a:c.a}); });
+});
+
+var on = new Set(DECKS.map(function(_, i){ return i; }));
+var queue = [], idx = 0, showing = 'q';
+
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+function rebuild(){
+  queue = shuffle(FLAT.filter(function(c){ return on.has(c.di); }));
+  idx = 0; showing = 'q'; draw();
+}
+function draw(){
+  var el = document.getElementById('card');
+  if(!queue.length){ el.innerHTML = '<div class="card">No decks selected.</div>'; drawStats(); return; }
+  var c = queue[idx % queue.length];
+  var mark = st.status[idOf(c)];
+  el.innerHTML = '<div class="card"><div class="tagrow">'
+    + '<span class="dtag" data-i="'+c.di+'">'+c.deck+'</span>'
+    + (mark ? '<span class="mark '+mark+'">'+(mark==='known'?'known':'still learning')+'</span>' : '')
+    + '<span class="count">'+((idx%queue.length)+1)+' / '+queue.length+'</span></div>'
+    + '<div class="face">'
+    + (showing==='q' ? '<div class="qtext">'+c.q+'</div>' : '<div class="atext">'+c.a+'</div>')
+    + '</div>'
+    + (showing==='q' ? '<div class="hint">Answer it out loud before you flip.</div>' : '')
+    + '<div class="btnrow">'
+    + '<button class="btn" id="prev">&larr; Previous</button>'
+    + '<button class="btn primary" id="flip">'+(showing==='q'?'Show answer':'Show question')+'</button>'
+    + '<button class="btn" id="known">Known</button>'
+    + '<button class="btn" id="learning">Still learning</button>'
+    + '<button class="btn" id="next">Next &rarr;</button>'
+    + '</div></div>';
+  document.getElementById('flip').onclick = function(){ showing = (showing==='q'?'a':'q'); draw(); };
+  document.getElementById('prev').onclick = function(){ idx = (idx-1+queue.length)%queue.length; showing='q'; draw(); };
+  document.getElementById('next').onclick = function(){ idx = (idx+1)%queue.length; showing='q'; draw(); };
+  document.getElementById('known').onclick = function(){ st.status[idOf(c)]='known'; save(); idx=(idx+1)%queue.length; showing='q'; draw(); };
+  document.getElementById('learning').onclick = function(){ st.status[idOf(c)]='learning'; save(); idx=(idx+1)%queue.length; showing='q'; draw(); };
+  drawStats();
+}
+function drawStats(){
+  var k=0, l=0;
+  FLAT.forEach(function(c){ var s = st.status[idOf(c)]; if(s==='known') k++; else if(s==='learning') l++; });
+  document.getElementById('stats').innerHTML =
+     '<div class="stat"><div class="n">'+k+' / '+FLAT.length+'</div><div class="l">marked known</div></div>'
+   + '<div class="stat"><div class="n">'+l+'</div><div class="l">still learning</div></div>'
+   + '<div class="stat"><div class="n">'+(FLAT.length-k-l)+'</div><div class="l">not yet seen</div></div>';
+}
+Array.prototype.forEach.call(document.querySelectorAll('.deck'), function(b){
+  b.onclick = function(){
+    var i = +b.getAttribute('data-i');
+    if(on.has(i)) on.delete(i); else on.add(i);
+    if(!on.size) on.add(i);
+    b.setAttribute('aria-pressed', String(on.has(i)));
+    rebuild();
+  };
+});
+document.getElementById('reset').onclick = function(){ st = {status:{}}; save(); draw(); };
+rebuild();
+
+</script>
+</body>
+</html>
