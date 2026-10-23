@@ -17,7 +17,7 @@
   --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
   --text:#171b1f; --text-muted:#5a6570;
   --accent:#6d4bc4; --accent-ink:#ffffff;
-  --drill:#6d4bc4; --flash:#a0522d;
+  --drill:#6d4bc4; --flash:#a0522d; --pbq:#1f6f8b;
   --built:#1f8a5c; --built-bg:#e7f4ee;
   --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
   --radius:16px;
@@ -27,12 +27,12 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
   --text:#e7edf1; --text-muted:#93a2ac; --accent:#a98cf0; --accent-ink:#1a1030;
-  --drill:#a98cf0; --flash:#e0a071; --built:#55d69a; --built-bg:#12291f;
+  --drill:#a98cf0; --flash:#e0a071; --pbq:#5ab6d4; --built:#55d69a; --built-bg:#12291f;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
   --text:#e7edf1; --text-muted:#93a2ac; --accent:#a98cf0; --accent-ink:#1a1030;
-  --drill:#a98cf0; --flash:#e0a071; --built:#55d69a; --built-bg:#12291f;
+  --drill:#a98cf0; --flash:#e0a071; --pbq:#5ab6d4; --built:#55d69a; --built-bg:#12291f;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
 
 *{box-sizing:border-box;}
@@ -111,6 +111,14 @@ a.card:hover{transform:translateY(-2px);border-color:var(--ca);}
       <span class="go">Open Simple Flash &rarr;</span>
     </a>
 
+
+    <a class="card" href="performance-tasks.html" style="--ca:var(--pbq)">
+      <div class="card-top"><h2>Performance Tasks</h2><span class="kind">Hands-on</span></div>
+      <p>Exercises in the shape the exam uses &mdash; sequence an attack, attribute the
+      evidence, then read why each piece belongs where it does.</p>
+      <span class="meta">1 task &middot; objective 3.1</span>
+      <span class="go">Open Performance Tasks &rarr;</span>
+    </a>
   </div>
 
   <p class="section-label">Domain coverage</p>
