@@ -97,7 +97,14 @@ HEAD = ('<!doctype html>\n<html lang="en">\n<head>\n'
 
 
 def build(srcname, outpath, desc, urls):
-    s = (SRC / srcname).read_text(encoding='utf-8')
+    src = SRC / srcname
+    if not src.exists():
+        # A cloud workspace is ephemeral; one cert's sources can be absent while
+        # another's are present. Skip loudly rather than failing the whole build,
+        # so a partial rebuild still produces the pages it can.
+        print(f'{str(outpath.relative_to(OUT)):34}  SKIPPED — no source at {srcname}')
+        return False
+    s = src.read_text(encoding='utf-8')
     m = re.search(r'<title>(.*?)</title>', s)
     title = m.group(1) if m else outpath.name
     s = re.sub(r'<title>.*?</title>\s*', '', s, count=1)
@@ -109,6 +116,7 @@ def build(srcname, outpath, desc, urls):
     outpath.write_text(doc, encoding='utf-8')
     rel = outpath.relative_to(OUT)
     print(f'{str(rel):34} {len(doc)//1024:4} KB   title="{title}"')
+    return True
 
 
 for srcname, outname in ROOT.items():

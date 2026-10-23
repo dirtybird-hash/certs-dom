@@ -10,6 +10,11 @@ import sys
 import pathlib
 
 p = pathlib.Path(__file__).resolve().parent.parent / "repo" / "security-plus" / "index.html"
+if not p.exists():
+    # build_repo.py skips a cert whose sources are absent, so this page may not
+    # have been produced this run. Nothing built means nothing to strip.
+    print("skipped — repo/security-plus/index.html was not built this run")
+    sys.exit(0)
 t = p.read_text()
 
 # each guide card is: ,{k:"guide", ... url:"https://claude.ai/..."}  immediately
