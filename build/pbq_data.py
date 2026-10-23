@@ -12,9 +12,9 @@ Shape of a PBQ:
     scenario    the situation, as an analyst would receive it
     task        what the learner has to do
     order       the correct sequence (list of stage names)
-    evidence    [{text, stage, why}] — one artefact per stage, shuffled on load
+    evidence    [{text, stage, why}] — one artifact per stage, shuffled on load
 
-Both halves are scored: sequencing the stages, and attributing each artefact
+Both halves are scored: sequencing the stages, and attributing each artifact
 to the right stage.
 """
 
@@ -25,11 +25,11 @@ PBQS = [
  'title': 'Kill Chain Reconstruction',
  'scenario':
    "You are handed a finished timeline from an intrusion at a mid-size engineering "
-   "firm. Seven artefacts survived in the logs. The incident lead wants them placed "
+   "firm. Seven artifacts survived in the logs. The incident lead wants them placed "
    "on the Lockheed Martin Cyber Kill Chain before the report goes out, because the "
    "remediation owner for each stage is different.",
  'task':
-   "Put the seven kill chain stages in order, then attribute each artefact to the "
+   "Put the seven kill chain stages in order, then attribute each artifact to the "
    "stage it belongs to. Two of them are commonly placed one stage too early or too "
    "late — the distinction is what the stage actually describes, not when you first "
    "noticed it.",
@@ -48,7 +48,7 @@ PBQS = [
             "infrastructure, pairing a loader with a finance-themed document.",
     'why':  "Weaponization happens entirely on the attacker's side and never touches "
             "the victim — which is exactly why it is the stage defenders have no "
-            "telemetry for. Coupling a payload to a deliverable artefact is the whole "
+            "telemetry for. Coupling a payload to a deliverable artifact is the whole "
             "definition. If you placed Delivery here, ask whether the victim has seen "
             "it yet; they have not."},
    {'stage': 'Delivery',

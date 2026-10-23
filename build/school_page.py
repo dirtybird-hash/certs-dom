@@ -4,14 +4,14 @@ The page design lives in kit/sf_template.html, which was derived from the
 published page itself, so regenerating cannot drift from what shipped. Three
 markers are filled:
 
-    __DECKCSS__   one colour rule pair per deck
+    __DECKCSS__   one color rule pair per deck
     __DECKBTNS__  the filter chips
     __DECKS__     the card data as JSON
 
 Storage key: cysa:schoolflash:v1 -> {status:{"<deck>|<question prefix>": ...}}
 
 Adding a deck means one line in school_parse.py's DECKS and rerunning both
-scripts. Colour slots are generated, so no CSS edit is needed.
+scripts. Color slots are generated, so no CSS edit is needed.
 
 Usage:  python3 school_parse.py && python3 school_page.py
 """
@@ -52,4 +52,4 @@ out = pathlib.Path('/home/claude/cysa-school-flashcards.html')
 out.write_text(page, encoding='utf-8')
 print(f'written {out}  {len(page)//1024} KB | {len(DATA)} decks, {TOTAL} cards')
 if len(DATA) > SLOTS:
-    print(f'WARNING: {len(DATA)} decks but only {SLOTS} colour slots — colours repeat')
+    print(f'WARNING: {len(DATA)} decks but only {SLOTS} color slots — colors repeat')

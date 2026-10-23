@@ -155,7 +155,7 @@ function render(p){
          + '<button class="move" data-i="'+i+'" data-d="-1" aria-label="Move '+s+' up"'+(i===0?' disabled':'')+'>&uarr;</button>'
          + '<button class="move" data-i="'+i+'" data-d="1" aria-label="Move '+s+' down"'+(i===order.length-1?' disabled':'')+'>&darr;</button></li>';
     });
-    h += '</ol><p class="steplabel">Step 2 &mdash; attribute each artefact</p>';
+    h += '</ol><p class="steplabel">Step 2 &mdash; attribute each artifact</p>';
     ev.forEach(function(e, i){
       var picked = e.pick || '';
       var cls = '';
@@ -253,4 +253,4 @@ out = pathlib.Path('/home/claude/cysa-pbq.html')
 out.write_text('\n'.join(body), encoding='utf-8')
 print(f'written {out}  {len("\n".join(body))//1024} KB | {len(DATA)} task(s)')
 for p in DATA:
-    print(f'   {p["obj"]}  {p["title"]}  — {len(p["order"])} stages, {len(p["ev"])} artefacts')
+    print(f'   {p["obj"]}  {p["title"]}  — {len(p["order"])} stages, {len(p["ev"])} artifacts')
