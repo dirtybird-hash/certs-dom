@@ -8,6 +8,9 @@ markers are filled:
     __DECKBTNS__  the filter chips
     __DECKS__     the card data as JSON
 
+Cards may carry a 'note' (school_parse.CORRECTIONS): shown under the original
+answer as "Check: ...", so a wrong card is flagged without editing James's text.
+
 Storage key: cysa:schoolflash:v1 -> {status:{"<deck>|<question prefix>": ...}}
 
 Adding a deck means one line in school_parse.py's DECKS and rerunning both
@@ -19,7 +22,7 @@ import json, html, pathlib
 
 HERE = pathlib.Path(__file__).parent
 decks = json.load(open(HERE / 'school_cards.json'))
-SLOTS = 10                      # --d0 .. --d9 defined in the template
+SLOTS = 11                      # --d0 .. --d10 defined in the template
 
 
 def esc(s):
@@ -28,12 +31,17 @@ def esc(s):
 
 DATA = [{'deck': esc(d['deck']),
          'file': esc(d['file']),
-         'cards': [{'q': esc(c['q']), 'a': esc(c['a']).replace('\n', '<br>')}
+         'cards': [{'q': esc(c['q']),
+                    'a': esc(c['a']).replace('\n', '<br>')
+                         + (f'<span class="fixnote">Check: {esc(c["note"])}</span>' if c.get('note') else '')}
                    for c in d['cards']]}
         for d in decks]
 TOTAL = sum(len(d['cards']) for d in DATA)
 
-deck_css = ''.join(
+FIXCSS = ('.fixnote{display:block;margin-top:12px;padding:9px 12px;border-left:3px solid var(--accent);'
+          'background:var(--bg);border-radius:0 8px 8px 0;font-size:13.5px;color:var(--text-muted);}\n')
+
+deck_css = FIXCSS + ''.join(
     f'.deck[data-i="{i}"][aria-pressed="true"]{{background:var(--d{i % SLOTS});}}\n'
     f'.dtag[data-i="{i}"]{{background:var(--d{i % SLOTS});}}\n'
     for i in range(len(DATA)))

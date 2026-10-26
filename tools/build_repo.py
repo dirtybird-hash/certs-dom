@@ -68,18 +68,27 @@ CYSA_URLS = {
   CERT_HUB: "../index.html",                                        # back to the cert picker
   "https://claude.ai/artifact/PrxFejEDNFYfNB7V7Ahjvq": "index.html",          # the CySA+ hub itself
   "https://claude.ai/artifact/KrYojQYtNqGKiiYQQ1iPXy": "domain1-drill.html",
+  "https://claude.ai/artifact/Gud7EZdHrEfGnPxsyy29Fk": "domain2-drill.html",
+  "https://claude.ai/artifact/R3jFowQmYqv5x3Kv2qYNoS": "domain3-drill.html",
+  "https://claude.ai/artifact/HrmyyybMcjv3ut54g1ujfu": "domain4-drill.html",
   "https://claude.ai/artifact/5k2Wz7MQAfUfX2TKcHmDpn": "simple-flash.html",
   "https://claude.ai/artifact/DoTioR9UxmZx2fEP4NRhrz": "performance-tasks.html",
 }
 CYSA_FILES = {
   'cysa-hub.html':             'index.html',
   'cysa-domain1-drill.html':   'domain1-drill.html',
+  'cysa-domain2-drill.html':   'domain2-drill.html',
+  'cysa-domain3-drill.html':   'domain3-drill.html',
+  'cysa-domain4-drill.html':   'domain4-drill.html',
   'cysa-school-flashcards.html':'simple-flash.html',
   'cysa-pbq.html':             'performance-tasks.html',
 }
 CYSA_DESC = {
   'index.html':        'Study tools for the CompTIA CySA+ CS0-003 exam, organized by domain.',
   'domain1-drill.html':'Flashcards, quiz and scenario practice for CySA+ Domain 1, Security Operations.',
+  'domain2-drill.html':'Flashcards, quiz and scenario practice for CySA+ Domain 2, Vulnerability Management.',
+  'domain3-drill.html':'Flashcards, quiz and scenario practice for CySA+ Domain 3, Incident Response and Management.',
+  'domain4-drill.html':'Flashcards, quiz and scenario practice for CySA+ Domain 4, Reporting and Communication.',
   'simple-flash.html': 'Course flashcards for CySA+, typed during class and kept verbatim.',
   'performance-tasks.html':
       'Hands-on CySA+ exercises in the shape the exam uses, scored per objective.',
@@ -123,8 +132,13 @@ def build(srcname, outpath, desc, urls):
     return True
 
 
+# The cert hub links to each cert's hub artifact; in the repo those become folder paths.
+ROOT_URLS = {
+  "https://claude.ai/artifact/VBQTcEFCBoLm2HbFYQ3MFE": "security-plus/index.html",
+  "https://claude.ai/artifact/PrxFejEDNFYfNB7V7Ahjvq": "cysa/index.html",
+}
 for srcname, outname in ROOT.items():
-    build(srcname, OUT / outname, ROOT_DESC[outname], {})
+    build(srcname, OUT / outname, ROOT_DESC[outname], ROOT_URLS)
 
 for folder, cfg in CERTS.items():
     print(f'\n-- {folder}/')

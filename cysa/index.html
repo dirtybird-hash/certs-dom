@@ -17,7 +17,7 @@
   --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
   --text:#171b1f; --text-muted:#5a6570;
   --accent:#6d4bc4; --accent-ink:#ffffff;
-  --drill:#6d4bc4; --flash:#a0522d; --pbq:#1f6f8b;
+  --drill:#6d4bc4; --flash:#a0522d; --pbq:#1f6f8b; --d3:#a14b7a; --d2:#1f8a5c; --d4:#a9791c;
   --built:#1f8a5c; --built-bg:#e7f4ee;
   --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
   --radius:16px;
@@ -27,12 +27,12 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
   --text:#e7edf1; --text-muted:#93a2ac; --accent:#a98cf0; --accent-ink:#1a1030;
-  --drill:#a98cf0; --flash:#e0a071; --pbq:#5ab6d4; --built:#55d69a; --built-bg:#12291f;
+  --drill:#a98cf0; --flash:#e0a071; --pbq:#5ab6d4; --d3:#e58fba; --d2:#55d69a; --d4:#e0b24d; --built:#55d69a; --built-bg:#12291f;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
   --text:#e7edf1; --text-muted:#93a2ac; --accent:#a98cf0; --accent-ink:#1a1030;
-  --drill:#a98cf0; --flash:#e0a071; --pbq:#5ab6d4; --built:#55d69a; --built-bg:#12291f;
+  --drill:#a98cf0; --flash:#e0a071; --pbq:#5ab6d4; --d3:#e58fba; --d2:#55d69a; --d4:#e0b24d; --built:#55d69a; --built-bg:#12291f;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
 
 *{box-sizing:border-box;}
@@ -87,8 +87,7 @@ a.card:hover{transform:translateY(-2px);border-color:var(--ca);}
   <a class="backlink" href="../index.html">&larr; All certifications</a>
   <p class="eyebrow">CompTIA CySA+ &middot; CS0-003</p>
   <h1>CySA+ Toolkit</h1>
-  <p class="lede">Four domains, 15 objectives. Built drill-first, so there are questions to answer
-  from the start rather than notes to admire.</p>
+  <p class="lede">Four domains, 15 objectives, all covered. 240 exam flashcards, 116 quiz questions, 31 scenarios and ten hands-on tasks &mdash; plus 53 general-knowledge cards and 16 questions beyond the objectives, badged and scored separately. Built drill-first, so there is always something to answer.</p>
 
   <p class="section-label">Tools</p>
   <div class="cards">
@@ -97,26 +96,50 @@ a.card:hover{transform:translateY(-2px);border-color:var(--ca);}
       <div class="card-top"><h2>Domain 1 Drill</h2><span class="kind">Practice</span></div>
       <p>Security Operations, objectives 1.1 to 1.5 &mdash; flashcards, multiple choice and
       scenario questions, with accuracy tracked per objective.</p>
-      <span class="meta">93 cards &middot; 47 quiz &middot; 17 scenarios</span>
+      <span class="meta">99 cards &middot; 52 quiz &middot; 17 scenarios &middot; <span title="General knowledge: not on the objectives, badged and scored separately">+35 GK cards, 9 GK quiz</span></span>
       <span class="go">Open the Drill &rarr;</span>
+    </a>
+
+    <a class="card" href="domain2-drill.html" style="--ca:var(--d2)">
+      <div class="card-top"><h2>Domain 2 Drill</h2><span class="kind">Practice</span></div>
+      <p>Vulnerability Management, objectives 2.1 to 2.5 &mdash; scanning methods, reading tool
+      output, prioritization, software vulnerabilities and the response process.</p>
+      <span class="meta">81 cards &middot; 35 quiz &middot; 6 scenarios &middot; <span title="General knowledge: not on the objectives, badged and scored separately">+8 GK cards, 3 GK quiz</span></span>
+      <span class="go">Open the Domain 2 Drill &rarr;</span>
+    </a>
+
+    <a class="card" href="domain3-drill.html" style="--ca:var(--d3)">
+      <div class="card-top"><h2>Domain 3 Drill</h2><span class="kind">Practice</span></div>
+      <p>Incident Response and Management, objectives 3.1 to 3.3 &mdash; attack frameworks,
+      response activities, and the preparation and post-incident phases.</p>
+      <span class="meta">28 cards &middot; 16 quiz &middot; 4 scenarios &middot; <span title="General knowledge: not on the objectives, badged and scored separately">+5 GK cards, 2 GK quiz</span></span>
+      <span class="go">Open the Domain 3 Drill &rarr;</span>
+    </a>
+
+    <a class="card" href="domain4-drill.html" style="--ca:var(--d4)">
+      <div class="card-top"><h2>Domain 4 Drill</h2><span class="kind">Practice</span></div>
+      <p>Reporting and Communication, objectives 4.1 and 4.2 &mdash; who needs to know, what
+      they need, inhibitors to remediation, and the metrics that matter.</p>
+      <span class="meta">32 cards &middot; 13 quiz &middot; 4 scenarios &middot; <span title="General knowledge: not on the objectives, badged and scored separately">+5 GK cards, 2 GK quiz</span></span>
+      <span class="go">Open the Domain 4 Drill &rarr;</span>
     </a>
 
     <a class="card" href="simple-flash.html" style="--ca:var(--flash)">
       <div class="card-top"><h2>Simple Flash</h2><span class="kind">From class</span></div>
-      <p>Course flashcards typed during classwork and kept verbatim &mdash; question, answer,
-      nothing else. Seven decks spanning crypto, risk, PKI, OS processes, malicious techniques, threat
-      intelligence and network settings &mdash; following what
-      the class covered rather than the exam objectives.</p>
-      <span class="meta">87 cards &middot; 9 decks</span>
+      <p>Course flashcards typed during classwork and kept verbatim, with any correction shown
+      under the original answer. Eleven decks spanning crypto, risk, PKI, OS processes, malicious
+      techniques, threat intelligence, network settings, authentication, authorization, data privacy
+      and security monitoring &mdash; following what the class covered rather than the exam objectives.</p>
+      <span class="meta">107 cards &middot; 11 decks</span>
       <span class="go">Open Simple Flash &rarr;</span>
     </a>
 
 
     <a class="card" href="performance-tasks.html" style="--ca:var(--pbq)">
       <div class="card-top"><h2>Performance Tasks</h2><span class="kind">Hands-on</span></div>
-      <p>Exercises in the shape the exam uses &mdash; sequence an attack, attribute the
-      evidence, then read why each piece belongs where it does.</p>
-      <span class="meta">1 task &middot; objective 3.1</span>
+      <p>Ten exercises in the shape the exam uses &mdash; read the evidence, run scans in a
+      working console, make the call, then read why. Every field is scored against its own objective.</p>
+      <span class="meta">10 tasks &middot; 83 scored fields &middot; Domains 1&ndash;3</span>
       <span class="go">Open Performance Tasks &rarr;</span>
     </a>
   </div>
@@ -126,11 +149,11 @@ a.card:hover{transform:translateY(-2px);border-color:var(--ca);}
     <div class="drow"><span class="dn">1.0</span><span class="dt">Security Operations</span>
       <span class="dw">33%</span><span class="chip on">Drill built</span></div>
     <div class="drow"><span class="dn">2.0</span><span class="dt">Vulnerability Management</span>
-      <span class="dw">30%</span><span class="chip off">Not started</span></div>
+      <span class="dw">30%</span><span class="chip on">Drill built</span></div>
     <div class="drow"><span class="dn">3.0</span><span class="dt">Incident Response &amp; Management</span>
-      <span class="dw">20%</span><span class="chip off">Not started</span></div>
+      <span class="dw">20%</span><span class="chip on">Drill built</span></div>
     <div class="drow"><span class="dn">4.0</span><span class="dt">Reporting &amp; Communication</span>
-      <span class="dw">17%</span><span class="chip off">Not started</span></div>
+      <span class="dw">17%</span><span class="chip on">Drill built</span></div>
   </div>
 
   <div class="note">Build order is 1, then 3, then 2, then 4. Domain 3 comes early because it is

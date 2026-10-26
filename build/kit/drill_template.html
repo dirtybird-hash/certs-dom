@@ -1,4 +1,4 @@
-<title>CySA+ Domain 1 Drill</title>
+<title>CySA+ Domain __N__ Drill</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
 :root{
@@ -47,19 +47,22 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
 .obj{font-family:var(--font-display);font-size:11.5px;padding:4px 10px;border-radius:999px;cursor:pointer;
   border:1px solid var(--border);background:var(--bg);color:var(--text-muted);}
 .obj[aria-pressed="true"]{color:#fff;border-color:transparent;}
-.obj[data-o="1.1"][aria-pressed="true"]{background:var(--o1);}
-.obj[data-o="1.2"][aria-pressed="true"]{background:var(--o2);}
-.obj[data-o="1.3"][aria-pressed="true"]{background:var(--o3);}
-.obj[data-o="1.4"][aria-pressed="true"]{background:var(--o4);}
-.obj[data-o="1.5"][aria-pressed="true"]{background:var(--o5);}
+__OBJCSS__
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
   padding:20px 22px;box-shadow:var(--shadow);margin-bottom:14px;}
 .tagrow{display:flex;align-items:center;gap:9px;margin-bottom:11px;flex-wrap:wrap;}
 .otag{font-family:var(--font-display);font-size:10.5px;color:#fff;border-radius:999px;padding:2px 9px;}
-.otag[data-o="1.1"]{background:var(--o1);} .otag[data-o="1.2"]{background:var(--o2);}
-.otag[data-o="1.3"]{background:var(--o3);} .otag[data-o="1.4"]{background:var(--o4);}
-.otag[data-o="1.5"]{background:var(--o5);}
+.kind{font-family:var(--font-display);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:999px;padding:2px 8px;border:1px solid var(--border);color:var(--text-muted);}
+.kind.ex{color:var(--accent);border-color:var(--accent);}
+.kind.gk{border-style:dashed;}
+.xo{font-family:var(--font-display);font-size:11.5px;padding:4px 10px;border-radius:999px;cursor:pointer;
+  border:1px dashed var(--border);background:var(--bg);color:var(--text-muted);margin-left:auto;}
+.xo[aria-pressed="true"]{background:var(--text);color:var(--bg);border-style:solid;border-color:var(--text);}
+.xo:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.gkrow{margin-top:12px;}
+__OTAGCSS__
 .count{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);margin-left:auto;font-variant-numeric:tabular-nums;}
 .qtext{font-size:17px;line-height:1.5;margin-bottom:14px;}
 .situation{background:var(--surface-2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;
@@ -109,11 +112,11 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
 </style>
 
 <div class="wrap">
-  <a class="backlink" href="index.html">&larr; CySA+ toolkit</a>
-  <p class="eyebrow">CompTIA CySA+ &middot; CS0-003 &middot; Domain 1</p>
-  <h1>Security Operations Drill</h1>
-  <p class="lede">33% of the exam. Flashcards, multiple choice and scenario questions across
-  objectives 1.1 to 1.5. Answer first, read the explanation second &mdash; recall is what gets
+  <a class="backlink" href="https://claude.ai/artifact/PrxFejEDNFYfNB7V7Ahjvq">&larr; CySA+ toolkit</a>
+  <p class="eyebrow">CompTIA CySA+ &middot; CS0-003 &middot; Domain __N__</p>
+  <h1>__NAME__ Drill</h1>
+  <p class="lede">__WEIGHT__% of the exam. Flashcards, multiple choice and scenario questions across
+  objectives __OBJFIRST__ to __OBJLAST__. Answer first, read the explanation second &mdash; recall is what gets
   marked, not recognition.</p>
 
   <div class="tabs" role="tablist">
@@ -124,7 +127,7 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
   </div>
 
   <div class="filters">
-    <button class="obj" data-o="1.1" aria-pressed="true">1.1 System &amp; Network Architecture</button><button class="obj" data-o="1.2" aria-pressed="true">1.2 Indicators of Malicious Activity</button><button class="obj" data-o="1.3" aria-pressed="true">1.3 Tools &amp; Techniques</button><button class="obj" data-o="1.4" aria-pressed="true">1.4 Threat Intelligence &amp; Hunting</button><button class="obj" data-o="1.5" aria-pressed="true">1.5 Efficiency &amp; Process Improvement</button>
+    __OBJBUTTONS__<button class="xo" id="examonly" aria-pressed="false" title="Hide general-knowledge items that are not on the CS0-003 objectives">Exam only</button>
   </div>
 
   <div id="p-flash"></div>
@@ -142,19 +145,24 @@ var QUIZ = __QUIZ__;
 var SCEN = __SCEN__;
 var OBJTITLE = __OBJTITLE__;
 
-var KEY = "cysa:domain1drill:v1";
+var KEY = "cysa:domain__N__drill:v1";
 var OBJS = __OBJS__;
-var state = {cardStatus:{}, objStats:{}};
+var state = {cardStatus:{}, objStats:{}, gkStats:{}};
 try{ var raw = localStorage.getItem(KEY); if(raw) state = JSON.parse(raw); }catch(e){}
 if(!state.cardStatus) state.cardStatus = {};
 if(!state.objStats) state.objStats = {};
+if(!state.gkStats) state.gkStats = {};
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
-function record(o, ok){
-  var s = state.objStats[o] || {c:0,t:0};
-  s.t += 1; if(ok) s.c += 1; state.objStats[o] = s; save();
+// General-knowledge answers are kept apart, so objective accuracy stays an exam-readiness number.
+function record(o, ok, gk){
+  var bag = gk ? state.gkStats : state.objStats;
+  var s = bag[o] || {c:0,t:0};
+  s.t += 1; if(ok) s.c += 1; bag[o] = s; save();
 }
+var examOnly = false;
+function kindTag(x){ return x.g ? '<span class="kind gk">General knowledge</span>' : '<span class="kind ex">Exam objective</span>'; }
 var active = new Set(OBJS);
-function sel(arr){ return arr.filter(function(x){ return active.has(x.o); }); }
+function sel(arr){ return arr.filter(function(x){ return active.has(x.o) && !(examOnly && x.g); }); }
 function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
 
 var fQ = [], fi = 0, flipped = false;
@@ -163,7 +171,7 @@ function drawFlash(){
   var el = document.getElementById('p-flash');
   if(!fQ.length){ el.innerHTML = '<div class="card">No cards for the selected objectives.</div>'; return; }
   var c = fQ[fi % fQ.length];
-  el.innerHTML = '<div class="card"><div class="tagrow"><span class="otag" data-o="'+c.o+'">'+c.o+'</span>'
+  el.innerHTML = '<div class="card"><div class="tagrow"><span class="otag" data-o="'+c.o+'">'+c.o+'</span>'+kindTag(c)
    + '<span class="count">'+((fi%fQ.length)+1)+' / '+fQ.length+'</span></div>'
    + '<div class="flip"><div class="side">'
    + (flipped ? '<div class="back">'+c.b+'</div>' : '<div class="qtext">'+c.f+'</div>')
@@ -189,13 +197,14 @@ function mcPanel(id, items, isScen){
     var el = document.getElementById(id);
     if(!qs.length){ el.innerHTML = '<div class="card">No questions for the selected objectives.</div>'; return; }
     var q = qs[i % qs.length];
-    var h = '<div class="card"><div class="tagrow"><span class="otag" data-o="'+q.o+'">'+q.o+'</span>'
+    var h = '<div class="card"><div class="tagrow"><span class="otag" data-o="'+q.o+'">'+q.o+'</span>'+kindTag(q)
       + '<span class="count">'+((i%qs.length)+1)+' / '+qs.length+'</span></div>';
     if(isScen) h += '<div class="situation">'+q.s+'</div>';
     h += '<div class="qtext">'+q.q+'</div><div class="choices">';
-    for(var k=0;k<q.c.length;k++){
-      h += '<button class="choice" data-k="'+k+'"><span class="k">'+String.fromCharCode(65+k)+'</span><span>'+q.c[k]+'</span></button>';
-    }
+    var order = shuffle(q.c.map(function(_, k){ return k; }));   // fresh order every time the question is shown
+    order.forEach(function(k, pos){
+      h += '<button class="choice" data-k="'+k+'"><span class="k">'+String.fromCharCode(65+pos)+'</span><span>'+q.c[k]+'</span></button>';
+    });
     h += '</div><div id="'+id+'-ex"></div><div class="btnrow">'
       + '<button class="btn" id="'+id+'-prev">&larr; Previous</button>'
       + '<button class="btn primary" id="'+id+'-next">Next &rarr;</button></div></div>';
@@ -212,7 +221,7 @@ function mcPanel(id, items, isScen){
         });
         document.getElementById(id+'-ex').innerHTML =
           '<div class="explain"><b>'+(ok?'Correct':'Not quite')+'</b>'+q.e+'</div>';
-        record(q.o, ok); drawProgress();
+        record(q.o, ok, q.g); drawProgress();
       };
     });
     document.getElementById(id+'-next').onclick = function(){ i = (i + 1) % qs.length; draw(); };
@@ -240,13 +249,21 @@ function drawProgress(){
       + '<span class="bar"><span style="width:'+(pct===null?0:pct)+'%"></span></span>'
       + '<span class="pc">'+(pct===null?'not drilled':pct+'%')+'</span></div>';
   });
+  var gt = 0, gc = 0;
+  Object.keys(state.gkStats).forEach(function(o){ gt += state.gkStats[o].t; gc += state.gkStats[o].c; });
+  var gn = QUIZ.concat(SCEN).filter(function(x){ return x.g; }).length;
+  if(gn) h += '</div><div class="panel-box gkrow"><div class="prow"><span class="kind gk">GK</span>'
+    + '<span class="ptitle">General knowledge &mdash; not on the objectives, not counted above'
+    + (gt?' <span style="color:var(--text-muted);font-size:12px;">'+gt+' answered</span>':'')+'</span>'
+    + '<span class="bar"><span style="width:'+(gt?Math.round(gc/gt*100):0)+'%"></span></span>'
+    + '<span class="pc">'+(gt?Math.round(gc/gt*100)+'%':'not drilled')+'</span></div>';
   h += '</div><div class="note">Accuracy is per objective, and it is the number that matters &mdash; '
     + 'coverage of the material is not the same as being able to recall it. Progress is saved in this '
-    + 'browser only, under <code>cysa:domain1drill:v1</code>.</div>'
+    + 'browser only, under <code>cysa:domain__N__drill:v1</code>.</div>'
     + '<div class="btnrow"><button class="btn" id="reset">Reset all progress</button></div>';
   el.innerHTML = h;
   document.getElementById('reset').onclick = function(){
-    state = {cardStatus:{}, objStats:{}}; save(); drawProgress();
+    state = {cardStatus:{}, objStats:{}, gkStats:{}}; save(); drawProgress();
   };
 }
 
@@ -273,6 +290,11 @@ Array.prototype.forEach.call(document.querySelectorAll('.obj'), function(b){
     newFlash(); quizPanel.reset(); scenPanel.reset();
   };
 });
+
+document.getElementById('examonly').onclick = function(){
+  examOnly = !examOnly; this.setAttribute('aria-pressed', String(examOnly));
+  newFlash(); quizPanel.reset(); scenPanel.reset();
+};
 
 newFlash(); show('flash');
 

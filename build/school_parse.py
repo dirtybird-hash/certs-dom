@@ -35,7 +35,26 @@ DECKS = [
     ('Managing Network Settings', 'Managing Network Settings.txt'),
     ('Authentication',            'Authentication.txt'),
     ('Authorization',             'Authorization.txt'),
+    ('Data Privacy',              'Data Privacy.txt'),
+    ('Security & Network Monitoring', 'Security & Network Monitoring.txt'),
 ]
+
+# Corrections are shown UNDER the original answer, never in place of it: the
+# decks are James's own transcription and stay verbatim. Keyed by deck name and
+# the start of the question. A key that matches no card is an error, so a
+# correction cannot silently stop showing after a deck is edited.
+CORRECTIONS = {
+    ('Security & Network Monitoring', 'You are managing a Linux system and need to capture SSH traffic'):
+        'Check the syntax: tcpdump -i ens33 -v -A -s0 port 22. The snapshot flag is -s0 '
+        '(a zero, meaning no length limit), and the filter is "port 22" with no dash.',
+    ('Security & Network Monitoring', 'Which is a core function of a SIEM system?'):
+        'A SIEM\'s core functions are log aggregation, correlation and alerting. Analysts use '
+        'a SIEM to hunt, but threat hunting is an analyst activity rather than what the SIEM itself does.',
+    ('Security & Network Monitoring', 'Which splunk command determines which local host items'):
+        'The full command is "splunk add monitor <path>", which tells a forwarder to collect a file or directory.',
+    ('Authorization', 'You are configuring Windows Dynamic Access Control.'):
+        'The abbreviation is CAP: Central Access Policy.',
+}
 
 ANS_MARK = re.compile(r'^\s*[Aa]\s*:\s*')
 Q_MARK   = re.compile(r'^\s*[Qq]\s*:\s*')
@@ -84,6 +103,13 @@ if __name__ == '__main__':
             missing.append(fname)
             continue
         cards = parse(p.read_text(encoding='utf-8', errors='replace'))
+        for (dk, qstart), note in CORRECTIONS.items():
+            if dk != name:
+                continue
+            hits = [c for c in cards if c['q'].startswith(qstart)]
+            if len(hits) != 1:
+                sys.exit(f'correction for {dk!r} / {qstart!r} matched {len(hits)} cards')
+            hits[0]['note'] = note
         if not cards:
             print(f'{name:28} SKIPPED — file is empty')
             continue
