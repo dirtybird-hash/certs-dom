@@ -68,6 +68,20 @@ NOTEBOOK = r"""
   return out; }
 """
 
+OPSLAB = r"""
+() => { const out = [];
+  DRILLS.forEach(d => {
+    let a = '';
+    if (d.ty === 'single') a = d.opts[d.ans][0];
+    else if (d.ty === 'multi') a = d.ans.map(i => d.opts[i][0]).join('; ');
+    else if (d.ty === 'order') a = d.opts.map(o => o[0]).join(' \u2192 ');
+    else if (d.ty === 'line') a = d.art[d.ans];
+    else if (d.ty === 'score'){ const r = CVSS.score(CVSS.parse(d.vec)); a = d.vec + ' = ' + r.base.toFixed(1) + ' ' + r.sev + '; ' + d.opts[d.ans][0]; }
+    out.push({s:'ops', k:'Ops drill', o:d.o, g:0, id:'d=' + d.id, q:d.title + '\n' + d.brief + '\n' + d.prompt, a:a, e:d.explain + ' ' + d.keep});
+  });
+  return out; }
+"""
+
 def main():
     items = []
     with sync_playwright() as pw:
@@ -80,6 +94,7 @@ def main():
         load('cysa-school-flashcards.html'); items += pg.evaluate(FLASHSF)
         load('cysa-pbq.html'); items += pg.evaluate(PBQ)
         load('cysa-notebook.html'); items += pg.evaluate(NOTEBOOK)
+        load('cysa-opslab.html'); items += pg.evaluate(OPSLAB)
         b.close()
     assert not errs, errs
     for it in items:                     # drop empty keys to keep the index small

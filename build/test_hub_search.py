@@ -18,7 +18,7 @@ with sync_playwright() as pw:
     pg.goto(HUB)
     n = pg.evaluate('HUBIDX.length')
     srcs = pg.evaluate('[...new Set(HUBIDX.map(x=>x.s))].sort()')
-    check('index covers every tool', srcs == ['d1', 'd2', 'd3', 'd4', 'nb', 'pbq', 'sf'], f'{n} entries {srcs}')
+    check('index covers every tool', srcs == ['d1', 'd2', 'd3', 'd4', 'nb', 'ops', 'pbq', 'sf'], f'{n} entries {srcs}')
     check('results hidden at rest', pg.is_hidden('#gres'))
 
     def search(q):

