@@ -602,3 +602,24 @@ GK_FLASHCARDS += [
  ("1.4", "Name the four categories of threat sources in NIST's risk assessment guidance.",
   "Adversarial: people or groups deliberately attacking.\nAccidental: well-meaning people making mistakes.\nStructural: equipment, software or environmental controls failing from age, overload or defects.\nEnvironmental: natural or human-made disasters outside the organization's control.\nRisk planning that only considers attackers misses the other three."),
 ]
+
+# ---------------------------------------------------------------------------
+# GENERAL KNOWLEDGE added 2026-10-26 from the Skillsoft transcripts Malware
+# Threats, Hardening Techniques and Data Security Standards (not on the CS0-003
+# objectives; checked against cysa-spine.json). Original prose.
+# ---------------------------------------------------------------------------
+
+GK_FLASHCARDS += [
+ ("1.2", "Common malware types and what sets each apart.",
+  "Virus: attaches to a host file and needs it to run.\nWorm: spreads across the network by itself.\nTrojan: pretends to be legitimate software.\nRAT: a trojan that gives remote control.\nRootkit: hides itself and other malware, often at kernel or boot level.\nSpyware and keyloggers: steal information quietly.\nRansomware: encrypts data (and often steals it first) for extortion.\nFileless malware: runs in memory through legitimate tools such as PowerShell, leaving little on disk.\nLogic bomb: waits for a trigger condition."),
+ ("1.2", "How have malware and botnets become commodities?",
+  "Criminal markets now sell ready-made tooling: ransomware-as-a-service (developers supply the malware and take a cut of each ransom), malware and exploit kits, access brokers selling footholds, and botnets rented by the hour for DDoS, spam or credential stuffing. The skill barrier has fallen, so organizations face more attackers using more capable tools."),
+ ("1.3", "What are the Social-Engineer Toolkit (SET) and Malzilla used for?",
+  "SET is an open-source framework for authorized social engineering tests: it builds phishing emails, cloned credential-harvesting sites and malicious payloads to measure how staff respond. Malzilla is an older tool for safely examining malicious web pages: fetching them, following redirects and decoding obfuscated JavaScript. Running SET against people without written authorization is an attack, not a test."),
+ ("1.1", "How do iSCSI and Fibre Channel SANs need to be secured?",
+  "iSCSI carries storage over ordinary IP networks (TCP 3260), so isolate it on its own VLAN or network, require CHAP authentication, and consider IPsec. Fibre Channel uses dedicated switches and host bus adapters (HBAs); secure it with zoning (which ports can talk to which) and LUN masking (which hosts see which logical units). An unmasked LUN can expose a whole volume to the wrong server."),
+ ("1.1", "What does WSUS do, and why do organizations use it?",
+  "Windows Server Update Services downloads Microsoft updates once and distributes them internally. Administrators approve updates per group, for example testing first and production after, and see which computers are missing which patches. Group Policy points clients at the WSUS server. Cloud fleets use tools such as Azure Update Manager for the same job."),
+ ("1.1", "Why is physical security part of data security?",
+  "Every system ultimately runs on hardware someone can touch. Physical access defeats many logical controls: booting from USB, pulling drives, planting keyloggers or rogue devices, stealing laptops and backup media. Layered physical controls (perimeter, badges, locked racks, cameras, visitor logs) and full-disk encryption on anything that leaves the building close that gap."),
+]

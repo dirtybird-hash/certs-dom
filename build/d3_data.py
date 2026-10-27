@@ -293,3 +293,36 @@ GK_FLASHCARDS += [
  ('3.2', 'How can incidents be classified by attack vector?',
   'A common scheme, from NIST\'s incident handling guide, sorts them by how they started: external or removable media, attrition (brute force that degrades or destroys), web, email, impersonation (spoofing, man-in-the-middle, rogue access points), improper usage (an authorized user breaking acceptable-use rules), loss or theft of equipment, and other. A shared vocabulary lets incidents be counted and compared.'),
 ]
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-26 from the Skillsoft transcripts Business Continuity Planning
+# and Digital Forensics (CS0-003 course). EXAM: 3.3 BC/DR and forensic analysis;
+# 3.2 legal hold (cloud). GENERAL KNOWLEDGE: none here. Original prose.
+# The course defines RTO as "maximum tolerable downtime"; strictly that is MTD,
+# and the card below teaches the distinction.
+# ---------------------------------------------------------------------------
+
+FLASHCARDS += [
+ ('3.3', 'Business continuity plan, disaster recovery plan, incident response plan: what does each cover?',
+  'BCP: keeping critical business processes running through any disruption, including manual workarounds, alternate sites and staffing. It is the widest plan.\nDRP: restoring specific IT systems, data and facilities after a disaster, built per critical process or system from the BIA.\nIRP: handling security incidents, from detection through containment, eradication, recovery and lessons learned.\nA ransomware outbreak can trigger all three at once, so they must agree on priorities and contacts.'),
+ ('3.3', 'RTO, RPO and MTD: what does each measure?',
+  'MTD (maximum tolerable downtime): the longest a process can be down before the damage is unacceptable.\nRTO (recovery time objective): the target time to restore it. It must be no longer than the MTD.\nRPO (recovery point objective): the most data loss acceptable, measured in time. It drives backup frequency: a 4-hour RPO needs backups at least every 4 hours.\nSome course material calls RTO the maximum tolerable downtime; strictly, MTD is the ceiling and RTO is the target set beneath it.'),
+ ('3.3', 'How is a forensic disk image made with dd, and how is it validated?',
+  'Attach the suspect drive through a write blocker, then copy it bit for bit, for example: dd if=/dev/sdb of=evidence.img bs=4M conv=noerror,sync. Hash the source device and the image (sha256sum) and confirm they match. dd copies everything, including deleted and unallocated areas; forensic variants such as dcfldd and dc3dd hash while they copy.'),
+ ('3.3', 'Why can "deleted" files often be recovered?',
+  'Deleting a file normally removes only the file system\'s pointer and marks the space as free; the data stays on the disk until something overwrites it. Carving tools rebuild files from unallocated space by their headers. The Windows Recycle Bin is not even deletion yet. SSDs that run TRIM may erase freed blocks quickly, so speed matters, and analysis is always done on an image, never the original.'),
+ ('3.2', 'How is a legal hold applied to cloud storage such as Amazon S3?',
+  'S3 Object Lock offers a legal hold that prevents an object version from being deleted or overwritten until the hold is removed, with no expiry date. Retention periods (governance or compliance mode) are the time-based alternative. Object Lock needs versioning and is enabled on the bucket. Other clouds offer equivalents, such as immutable blob storage in Azure.'),
+]
+
+QUIZ += [
+ ('3.3', 'Order processing can be down for at most 8 hours before losses become unacceptable, and IT commits to restoring it within 4 hours. Which is the RTO?',
+  ['8 hours', '4 hours', '12 hours', 'It cannot be determined without the RPO'],
+  1, 'The 8-hour ceiling is the maximum tolerable downtime. The RTO is the restore target, 4 hours, which sits within that ceiling. RPO is a separate measure of acceptable data loss.'),
+ ('3.3', 'A business can tolerate losing at most 15 minutes of transactions. What does that require?',
+  ['Nightly full backups', 'Replication or backups at least every 15 minutes', 'A hot site', 'A 15-minute RTO'],
+  1, 'A 15-minute RPO means you can never be more than 15 minutes behind, so backups, snapshots or replication must run at least that often. RTO is about how fast you restore, not how much data you lose.'),
+ ('3.3', 'An analyst finds that a user deleted files from a USB drive yesterday. What gives the best chance of recovering them?',
+  ['Run a defragmenter on the drive first', 'Image the drive through a write blocker now, then carve the image', 'Copy the remaining files off the drive to make room', 'Reformat the drive to reset its file table'],
+  1, 'Deleted data survives until overwritten, so stop all writes, image the device bit for bit, and work on the image. Defragmenting, copying or reformatting all risk overwriting exactly what you want back.'),
+]
