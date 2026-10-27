@@ -393,6 +393,14 @@ document.addEventListener('keydown', function(ev){
 
 newFlash(); show('flash');
 
+// Arriving from the toolkit-wide search (hub link ends in #q=term): open on that search.
+(function(){
+  var m = /^#q=(.*)$/.exec(location.hash || '');
+  if(!m) return;
+  try { sqEl.value = decodeURIComponent(m[1]); } catch(e){ sqEl.value = m[1]; }
+  onSearch();
+})();
+
 </script>
 </body>
 </html>
