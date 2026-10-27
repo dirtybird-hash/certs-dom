@@ -117,6 +117,22 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
 .pc{font-family:var(--font-display);font-size:12px;text-align:right;color:var(--text-muted);font-variant-numeric:tabular-nums;}
 .panel-box{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden;}
 @media (max-width:520px){.prow{grid-template-columns:44px 1fr 50px;} .bar{grid-column:2/span 2;}}
+/* Search: one box over every item in this domain; results show the answer in place. */
+.filters[hidden]{display:none;}
+.sbox{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.sbox input{flex:1;min-width:0;font-family:var(--font-body);font-size:15px;padding:10px 13px;
+  border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);}
+.sbox input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.scount{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.hit{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:10px;}
+.hit .tagrow{margin-bottom:7px;}
+.hkind{font-family:var(--font-display);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);}
+.hq{font-size:15px;font-weight:500;line-height:1.5;margin-bottom:6px;}
+.ha{font-size:14.5px;line-height:1.55;}
+.ha b{font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);margin-right:6px;}
+.he{font-size:13.5px;line-height:1.55;color:var(--text-muted);margin-top:6px;}
+mark{background:color-mix(in srgb,var(--accent) 28%,transparent);color:inherit;border-radius:3px;padding:0 1px;}
+.shint{font-size:13.5px;color:var(--text-muted);}
 .note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
   padding:12px 14px;font-size:13.5px;color:var(--text-muted);line-height:1.55;margin-top:18px;}
 .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
@@ -135,6 +151,7 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
     <button class="tab" id="t-quiz"  role="tab" aria-selected="false">Quiz</button>
     <button class="tab" id="t-scen"  role="tab" aria-selected="false">Scenarios</button>
     <button class="tab" id="t-prog"  role="tab" aria-selected="false">Progress</button>
+    <button class="tab" id="t-srch"  role="tab" aria-selected="false">Search</button>
   </div>
 
   <div class="filters">
@@ -145,6 +162,10 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
   <div id="p-quiz" hidden></div>
   <div id="p-scen" hidden></div>
   <div id="p-prog" hidden></div>
+  <div id="p-srch" hidden>
+    <div class="sbox"><input type="search" id="sq" placeholder="Search this domain: a term, tool, acronym or idea" aria-label="Search this domain" autocomplete="off" spellcheck="false"><span class="scount" id="scount"></span></div>
+    <div id="sres"></div>
+  </div>
 
   <div class="foot">Original study material written against CompTIA's published CS0-003 objectives.
   Not official CompTIA content, and not affiliated with, authorized by or endorsed by CompTIA.</div>
@@ -278,10 +299,11 @@ function drawProgress(){
   };
 }
 
-var panels = ['flash','quiz','scen','prog'];
+var panels = ['flash','quiz','scen','prog','srch'];
 function show(which){
   panels.forEach(function(p){
     document.getElementById('p-'+p).hidden = (p !== which);
+    var fl = document.querySelector('.filters'); if(fl) fl.hidden = (which === 'srch');
     var t = document.getElementById('t-'+p);
     t.setAttribute('aria-selected', String(p === which));
   });
@@ -289,6 +311,7 @@ function show(which){
   if(which==='quiz') quizPanel.draw();
   if(which==='scen') scenPanel.draw();
   if(which==='prog') drawProgress();
+  if(which==='srch'){ drawSearch(); var qi = document.getElementById('sq'); if(qi) qi.focus(); }
 }
 panels.forEach(function(p){ document.getElementById('t-'+p).onclick = function(){ show(p); }; });
 
@@ -306,6 +329,58 @@ document.getElementById('examonly').onclick = function(){
   examOnly = !examOnly; this.setAttribute('aria-pressed', String(examOnly));
   newFlash(); quizPanel.reset(); scenPanel.reset();
 };
+
+
+/* ---------- search ----------
+   Searches every flashcard, quiz question and scenario in this domain, exam and
+   general knowledge alike, ignoring the objective filters. Results show the
+   answer, so searching is reference, not practice: nothing is recorded. */
+var SIDX = null;
+function plain(h){ var d = document.createElement('div'); d.innerHTML = String(h).replace(/<br>/g, '\n'); return d.textContent; }
+function buildIndex(){
+  SIDX = [];
+  FLASH.forEach(function(c){ SIDX.push({kind:'Flashcard', o:c.o, g:c.g, q:plain(c.f), a:plain(c.b), e:''}); });
+  QUIZ.forEach(function(q){ SIDX.push({kind:'Quiz', o:q.o, g:q.g, q:plain(q.q), a:plain(q.c[q.a]), e:plain(q.e)}); });
+  SCEN.forEach(function(q){ SIDX.push({kind:'Scenario', o:q.o, g:q.g, q:plain(q.s)+'\n'+plain(q.q), a:plain(q.c[q.a]), e:plain(q.e)}); });
+  SIDX.forEach(function(x){ x.hay = (x.o+' '+x.q+' '+x.a+' '+x.e).toLowerCase(); });
+}
+function escH(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function hl(text, terms){
+  var h = escH(text);
+  terms.forEach(function(t){
+    var re = new RegExp('(' + escH(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    h = h.replace(/(<[^>]*>)|([^<]+)/g, function(m, tag, txt){ return tag ? tag : txt.replace(re, '<mark>$1</mark>'); });
+  });
+  return h.replace(/\n/g, '<br>');
+}
+function drawSearch(){
+  if(!SIDX) buildIndex();
+  var inp = document.getElementById('sq'), out = document.getElementById('sres'), cnt = document.getElementById('scount');
+  var q = inp.value.trim().toLowerCase();
+  if(q.length < 2){
+    cnt.textContent = SIDX.length + ' items';
+    out.innerHTML = '<p class="shint">Type at least two characters. Every word must match, in any order: try <em>legal hold</em>, <em>nmap</em>, <em>rto</em> or <em>' + OBJS[0] + '</em>.</p>';
+    return;
+  }
+  var terms = q.split(/\s+/).filter(Boolean);
+  var hits = SIDX.filter(function(x){ return terms.every(function(t){ return x.hay.indexOf(t) >= 0; }); });
+  hits.sort(function(a, b){ var ia = a.q.toLowerCase().indexOf(terms[0]) >= 0 ? 0 : 1, ib = b.q.toLowerCase().indexOf(terms[0]) >= 0 ? 0 : 1; return ia - ib; });
+  cnt.textContent = hits.length + (hits.length === 1 ? ' match' : ' matches');
+  if(!hits.length){ out.innerHTML = '<p class="shint">Nothing in this domain matches. Check the spelling, try fewer words, or search another domain.</p>'; return; }
+  out.innerHTML = hits.slice(0, 60).map(function(x){
+    return '<div class="hit"><div class="tagrow"><span class="otag" data-o="'+x.o+'">'+x.o+'</span>'
+      + (x.g ? '<span class="kind gk">General knowledge</span>' : '<span class="kind ex">Exam objective</span>')
+      + '<span class="hkind">'+x.kind+'</span></div>'
+      + '<div class="hq">'+hl(x.q, terms)+'</div>'
+      + '<div class="ha"><b>Answer</b>'+hl(x.a, terms)+'</div>'
+      + (x.e ? '<div class="he">'+hl(x.e, terms)+'</div>' : '') + '</div>';
+  }).join('') + (hits.length > 60 ? '<p class="shint">Showing the first 60. Add a word to narrow it down.</p>' : '');
+}
+document.getElementById('sq').addEventListener('input', drawSearch);
+document.addEventListener('keydown', function(ev){
+  var t = ev.target && ev.target.tagName;
+  if(ev.key === '/' && t !== 'INPUT' && t !== 'TEXTAREA'){ ev.preventDefault(); show('srch'); }
+});
 
 newFlash(); show('flash');
 
