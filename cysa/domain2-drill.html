@@ -125,6 +125,7 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
 /* Search: one box over every item in this domain; results show the answer in place. */
 .filters[hidden]{display:none;}
 .sbox{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.sbox-top{margin:20px 0 0;}
 .sbox input{flex:1;min-width:0;font-family:var(--font-body);font-size:15px;padding:10px 13px;
   border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);}
 .sbox input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
@@ -151,12 +152,13 @@ mark{background:color-mix(in srgb,var(--accent) 28%,transparent);color:inherit;b
   objectives 2.1 to 2.5. Answer first, read the explanation second &mdash; recall is what gets
   marked, not recognition.</p>
 
+  <div class="sbox sbox-top"><input type="search" id="sq" placeholder="Search this domain &mdash; a term, tool, acronym or objective" aria-label="Search this domain" autocomplete="off" spellcheck="false"><span class="scount" id="scount"></span></div>
+
   <div class="tabs" role="tablist">
     <button class="tab" id="t-flash" role="tab" aria-selected="true">Dirty Bird's</button>
     <button class="tab" id="t-quiz"  role="tab" aria-selected="false">Quiz</button>
     <button class="tab" id="t-scen"  role="tab" aria-selected="false">Scenarios</button>
     <button class="tab" id="t-prog"  role="tab" aria-selected="false">Progress</button>
-    <button class="tab" id="t-srch"  role="tab" aria-selected="false">Search</button>
   </div>
 
   <div class="filters">
@@ -168,7 +170,6 @@ mark{background:color-mix(in srgb,var(--accent) 28%,transparent);color:inherit;b
   <div id="p-scen" hidden></div>
   <div id="p-prog" hidden></div>
   <div id="p-srch" hidden>
-    <div class="sbox"><input type="search" id="sq" placeholder="Search this domain: a term, tool, acronym or idea" aria-label="Search this domain" autocomplete="off" spellcheck="false"><span class="scount" id="scount"></span></div>
     <div id="sres"></div>
   </div>
 
@@ -310,15 +311,16 @@ function show(which){
     document.getElementById('p-'+p).hidden = (p !== which);
     var fl = document.querySelector('.filters'); if(fl) fl.hidden = (which === 'srch');
     var t = document.getElementById('t-'+p);
-    t.setAttribute('aria-selected', String(p === which));
+    if(t) t.setAttribute('aria-selected', String(p === which));
   });
   if(which==='flash') drawFlash();
   if(which==='quiz') quizPanel.draw();
   if(which==='scen') scenPanel.draw();
   if(which==='prog') drawProgress();
-  if(which==='srch'){ drawSearch(); var qi = document.getElementById('sq'); if(qi) qi.focus(); }
+  if(which==='srch') drawSearch();
+  else lastPanel = which;
 }
-panels.forEach(function(p){ document.getElementById('t-'+p).onclick = function(){ show(p); }; });
+panels.forEach(function(p){ var t = document.getElementById('t-'+p); if(t) t.onclick = function(){ if(sqEl.value){ sqEl.value=''; document.getElementById('scount').textContent=''; } show(p); }; });
 
 Array.prototype.forEach.call(document.querySelectorAll('.obj'), function(b){
   b.onclick = function(){
@@ -381,10 +383,17 @@ function drawSearch(){
       + (x.e ? '<div class="he">'+hl(x.e, terms)+'</div>' : '') + '</div>';
   }).join('') + (hits.length > 60 ? '<p class="shint">Showing the first 60. Add a word to narrow it down.</p>' : '');
 }
-document.getElementById('sq').addEventListener('input', drawSearch);
+var lastPanel = 'flash';
+var sqEl = document.getElementById('sq');
+function onSearch(){
+  if(sqEl.value.trim()){ if(document.getElementById('p-srch').hidden) show('srch'); else drawSearch(); }
+  else { document.getElementById('scount').textContent = ''; show(lastPanel); }
+}
+sqEl.addEventListener('input', onSearch);
+sqEl.addEventListener('keydown', function(ev){ if(ev.key === 'Escape'){ sqEl.value = ''; onSearch(); sqEl.blur(); } });
 document.addEventListener('keydown', function(ev){
   var t = ev.target && ev.target.tagName;
-  if(ev.key === '/' && t !== 'INPUT' && t !== 'TEXTAREA'){ ev.preventDefault(); show('srch'); }
+  if(ev.key === '/' && t !== 'INPUT' && t !== 'TEXTAREA'){ ev.preventDefault(); sqEl.focus(); }
 });
 
 newFlash(); show('flash');
