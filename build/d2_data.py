@@ -496,3 +496,34 @@ GK_QUIZ = [
   ['Base', 'Temporal', 'Environmental', 'Supplemental'],
   1, 'Exploit code maturity is a temporal metric, and it rises as working exploits appear. Base metrics describe the flaw itself and do not change over time.'),
 ]
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-26 after a scope read of the Sybex study guide (outlines and
+# Exam Essentials only). EXAM: 2.5 policies (the policy framework), penetration
+# testing. GENERAL KNOWLEDGE: FISMA, specialized scan targets. Original prose.
+# ---------------------------------------------------------------------------
+
+FLASHCARDS += [
+ ('2.5', 'Distinguish policies, standards, procedures and guidelines.',
+  'Policy: management\'s high-level statement of intent and authority; mandatory.\nStandard: the specific, mandatory requirements that implement a policy (for example, a minimum TLS version).\nProcedure: step-by-step instructions for carrying out a task; mandatory.\nGuideline: recommended practice that is optional.\nFrameworks behind them can be prescriptive (a fixed control list) or risk-based (choose controls to match assessed risk).'),
+ ('2.5', 'Which security policies does a typical program include?',
+  'An information security policy as the umbrella, then acceptable use, data ownership, data classification, data retention, account management and password policies, among others. The exact set follows the organization\'s culture and business needs, and every policy needs an exception process: what a request must contain, who approves it, and which compensating controls apply.'),
+ ('2.5', 'What are the phases of a penetration test in NIST\'s model?',
+  'Planning (rules of engagement, scope, written authorization), discovery (information gathering and vulnerability identification), attack (exploiting findings, which can loop back into more discovery), and reporting (findings, risk and remediation). The report is the deliverable; testing without authorization is an attack, whatever the intent.'),
+]
+
+QUIZ += [
+ ('2.5', 'A document says "All servers must use TLS 1.2 or later." Which document type is this?',
+  ['Policy', 'Standard', 'Procedure', 'Guideline'],
+  1, 'It is a specific, mandatory technical requirement that implements broader policy intent, which makes it a standard. A procedure would give the steps to configure TLS, and a guideline would recommend rather than require.'),
+ ('2.5', 'During a penetration test, the team exploits a web server and uses it to find more internal hosts. Which phase are they in?',
+  ['Planning', 'Attack, looping back into discovery', 'Reporting', 'Remediation'],
+  1, 'In NIST\'s model the attack phase can feed new discovery: a foothold reveals more targets. Planning ends before testing starts, and reporting comes last.'),
+]
+
+GK_FLASHCARDS += [
+ ('2.1', 'What is FISMA, and how does it drive vulnerability scanning?',
+  'The US Federal Information Security Modernization Act requires federal agencies, and contractors running systems for them, to operate security programs based on NIST standards, including continuous monitoring and regular vulnerability scanning. Like PCI DSS, it is an external source of scanning requirements.'),
+ ('2.1', 'Which specialized technologies complicate vulnerability scanning beyond ICS?',
+  'Vehicles and their CAN-bus components, drones, building automation (HVAC, lighting, elevators), physical access control systems (badge readers and controllers), medical devices and mobile devices. They often run embedded or proprietary software, may crash under ordinary scans, and frequently cannot be patched by the owner, so passive monitoring, vendor coordination and network isolation matter.'),
+]

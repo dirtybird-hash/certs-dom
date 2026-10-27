@@ -241,3 +241,55 @@ GK_QUIZ = [
   ['The reset takes 24 hours to apply', 'Domain controllers still accept tickets signed with the previous password', 'krbtgt cannot be reset', 'Golden tickets do not depend on krbtgt'],
   1, 'Active Directory keeps the current and previous krbtgt keys so tickets survive a normal change. A second reset retires the stolen key.'),
 ]
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-26 after a scope read of the Sybex CS0-003 study guide (chapter
+# outlines and Exam Essentials only; nothing copied). Each item was checked
+# against cysa-spine.json. EXAM: 3.2 legal hold, preservation, validating data
+# integrity, impact; 3.3 forensic analysis, BC/DR, lessons-learned outputs.
+# Original prose.
+# ---------------------------------------------------------------------------
+
+FLASHCARDS += [
+ ('3.2', 'What is a legal hold, and what does it change for IT?',
+  'A directive, usually from legal counsel when litigation or an investigation is pending or reasonably expected, to preserve every potentially relevant record. Normal retention and deletion stop for the covered data: auto-delete policies, log rotation and mailbox purges are suspended, or independent verifiable copies are made. Destroying held data, even by routine automation, can bring court sanctions.'),
+ ('3.2', 'What does evidence preservation require during an incident?',
+  'Collect in order of volatility, record exactly what was taken, from where, when and by whom, hash the evidence at acquisition, store it securely with access controlled and logged, and work only on copies. Preservation is what keeps evidence usable later, whether the case goes to court, to a regulator or only to an insurer.'),
+ ('3.2', 'How do you validate the integrity of acquired evidence?',
+  'Hash the source and the image at acquisition and confirm they match, then re-hash the image before every analysis and when it is handed over. A write blocker stops the acquisition from changing the source. A matching hash shows the copy is bit-for-bit identical and has not changed since; the chain of custody shows who could have changed it.'),
+ ('3.2', 'Which kinds of impact decide an incident\'s severity?',
+  'Functional impact: how far the incident degrades the organization\'s ability to operate.\nEconomic impact: the money lost or spent.\nInformation impact: what data was exposed or altered, and how sensitive it is.\nRecoverability: the time and effort needed to restore service, from routine to impossible.\nDowntime is part of the picture too. Together these set priority and decide who must be told.'),
+ ('3.3', 'What are the steps of a forensic investigation?',
+  'Scope the investigation and its questions; identify where relevant data lives; plan the acquisition (order, tools, legal constraints); acquire with validation (write blockers, hashing); analyze copies, never originals; report findings with the supporting evidence. Typical targets are system information, file creation, modification and access times, logs, and memory.'),
+ ('3.3', 'What does a business impact analysis produce, and why does BC/DR depend on it?',
+  'A BIA identifies the critical business processes, the systems and people they depend on, and what an outage costs over time. From that come the recovery time objective (how fast) and recovery point objective (how much data loss is tolerable) for each process. Without a BIA, continuity and recovery plans protect the wrong things in the wrong order.'),
+ ('3.3', 'Besides a lessons-learned meeting, what should post-incident activity produce?',
+  'A formal incident summary report; new or updated IoCs fed back into detection; changes to the IR plan and playbooks, made through change control; evidence retained according to legal and policy requirements; and continued monitoring for the attacker\'s return.'),
+]
+
+QUIZ += [
+ ('3.2', 'Legal counsel issues a hold on a departing executive\'s mailbox. The mail system automatically purges messages after 90 days. What must happen?',
+  ['Nothing; the retention policy is already approved', 'Suspend the purge for that mailbox, or preserve a verified copy, for as long as the hold lasts', 'Export the mailbox once the purge has run', 'Ask the executive to forward relevant messages to legal'],
+  1, 'A legal hold overrides routine deletion for the covered data. Letting the automated purge run would destroy held evidence, which is sanctionable even without intent. Asking the custodian to choose what to keep defeats the point.'),
+ ('3.2', 'An analyst hashes a disk image after acquisition and again before analysis a week later, and the hashes differ. What does that mean?',
+  ['The image is fine; hashes vary with system time', 'The image has changed and can no longer be shown to match the original', 'A different hashing algorithm was used, which is acceptable', 'The original disk has been repaired'],
+  1, 'A hash of unchanged data is always the same. A mismatch means the copy was altered, so its integrity can no longer be demonstrated. Re-acquire if the source still exists, and find out how the copy changed.'),
+ ('3.2', 'Ransomware has encrypted a file server holding no regulated data, and restoring it from backup will take three days. Which impact dominates?',
+  ['Information impact', 'Functional impact and recoverability', 'Economic impact only', 'Reputational impact'],
+  1, 'No sensitive data was exposed, so information impact is low. The loss of the service, and the time needed to bring it back, are what drive severity here.'),
+ ('3.3', 'In a forensic investigation, what must happen before acquisition?',
+  ['Analysis of the suspect files', 'Scoping the questions and planning where the data is and how to acquire it', 'Writing the final report', 'Reimaging the affected system'],
+  1, 'Scoping and planning decide what to collect, in what order and with which tools. Acquiring first risks missing volatile data or collecting the wrong things. Reimaging destroys the evidence.'),
+]
+
+SCENARIOS += [
+ ('3.2', 'Two weeks after a contained intrusion, the company receives notice of a lawsuit from a customer whose data may have been exposed. The incident\'s logs sit on a SIEM that keeps 30 days, the forensic images are on an analyst\'s workstation, and nobody recorded who has handled them.',
+  'What is the most urgent problem to fix?',
+  ['Rewriting the incident report for the lawyers', 'Preserving the logs before the 30-day window deletes them, and starting chain-of-custody records for the images', 'Running a new vulnerability scan', 'Deleting the images to limit liability'],
+  1, 'The lawsuit triggers a duty to preserve. Logs that age out next week will be gone for good, so they come first. Undocumented handling of the images weakens their value, and documenting custody from now on, including how they were stored until now, limits the damage. Deleting evidence after notice of litigation is spoliation.'),
+]
+
+GK_FLASHCARDS += [
+ ('3.2', 'How can incidents be classified by attack vector?',
+  'A common scheme, from NIST\'s incident handling guide, sorts them by how they started: external or removable media, attrition (brute force that degrades or destroys), web, email, impersonation (spoofing, man-in-the-middle, rogue access points), improper usage (an authorized user breaking acceptable-use rules), loss or theft of equipment, and other. A shared vocabulary lets incidents be counted and compared.'),
+]

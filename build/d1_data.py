@@ -572,3 +572,33 @@ GK_QUIZ = [
   ["STIX is a protocol; TAXII is a format", "STIX is a format for describing threat intelligence; TAXII is a protocol for exchanging it", "Both are threat intelligence platforms", "STIX is for vulnerabilities; TAXII is for malware"],
   1, "STIX describes the intelligence; TAXII carries it. They are designed to be used together."),
 ]
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-26 after a scope read of the Sybex study guide (outlines and
+# Exam Essentials only). EXAM: 1.3 Joe Sandbox and Cuckoo Sandbox; 1.4 supply
+# chain (vendor due diligence, hardware source authenticity). GENERAL
+# KNOWLEDGE: NAC, threat-source categories. Original prose.
+# ---------------------------------------------------------------------------
+
+FLASHCARDS += [
+ ("1.3", "Joe Sandbox versus Cuckoo Sandbox.",
+  "Both detonate a suspicious file or URL in an instrumented virtual machine and report what it does: processes created, files and Registry keys written, network connections, dropped payloads. Cuckoo is open source and self-hosted, so samples stay in-house. Joe Sandbox is a commercial service (cloud or on-premises) with deep reporting and anti-evasion features. Either way, malware that detects the sandbox can stay quiet, so a clean result is not proof of safety."),
+ ("1.4", "How does an organization manage supply chain risk from vendors?",
+  "Vendor due diligence before and during the relationship: security questionnaires, audits and attestations (such as SOC 2 reports), contract terms covering breach notification and right to audit, and ongoing monitoring. For hardware, verify source authenticity: buy through authorized channels, check tamper-evident packaging and serial numbers, and validate firmware, because devices can be altered after they leave the manufacturer."),
+]
+
+QUIZ += [
+ ("1.3", "An analyst must detonate a suspicious attachment that may contain confidential customer data and cannot leave the company. Which choice fits?",
+  ["Upload it to a public multiscanner", "A self-hosted Cuckoo Sandbox instance", "Open it on an analyst workstation with antivirus enabled", "Submit only its hash to VirusTotal and treat no hits as clean"],
+  1, "A self-hosted sandbox analyzes behavior without sending the file outside. Public services share submissions. A hash lookup only finds known samples, and opening the file on a workstation is the infection you are trying to avoid."),
+ ("1.4", "A batch of network switches arrives through an unfamiliar reseller at a steep discount, and the packaging seals look disturbed. What is the best response?",
+  ["Install them; switches are commodity hardware", "Quarantine them and verify authenticity with the manufacturer (serials, firmware) before use", "Reflash the firmware and deploy", "Return one unit and keep the rest"],
+  1, "Gray-market sourcing plus broken seals are classic supply chain red flags. Verify serial numbers and firmware integrity with the manufacturer before the devices touch the network. Reflashing does not address tampered hardware."),
+]
+
+GK_FLASHCARDS += [
+ ("1.1", "What does network access control (NAC) enforce?",
+  "Two things at the point of connection: that the user or device is authorized (often 802.1X against RADIUS), and that the device meets a security baseline (patched, endpoint protection running, approved OS). Non-compliant devices are blocked or placed on a quarantine VLAN until remediated. Agents give deeper posture checks; agentless NAC suits devices that cannot run software."),
+ ("1.4", "Name the four categories of threat sources in NIST's risk assessment guidance.",
+  "Adversarial: people or groups deliberately attacking.\nAccidental: well-meaning people making mistakes.\nStructural: equipment, software or environmental controls failing from age, overload or defects.\nEnvironmental: natural or human-made disasters outside the organization's control.\nRisk planning that only considers attackers misses the other three."),
+]
