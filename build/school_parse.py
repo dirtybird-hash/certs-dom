@@ -37,6 +37,8 @@ DECKS = [
     ('Authorization',             'Authorization.txt'),
     ('Data Privacy',              'Data Privacy.txt'),
     ('Security & Network Monitoring', 'Security & Network Monitoring.txt'),
+    ('Digital Forensics',         'Digital Forensics.txt'),
+    ('Malware Threats',           'Malware Threats.txt'),
 ]
 
 # Corrections are shown UNDER the original answer, never in place of it: the
@@ -44,6 +46,9 @@ DECKS = [
 # the start of the question. A key that matches no card is an error, so a
 # correction cannot silently stop showing after a deck is edited.
 CORRECTIONS = {
+    ('Digital Forensics', 'What is the purpose of the chain of custody?'):
+        'Broader than tampering: chain of custody documents who handled the evidence, when, and why, '
+        'so its integrity can be shown and it stays admissible in court.',
     ('Security & Network Monitoring', 'You are managing a Linux system and need to capture SSH traffic'):
         'Check the syntax: tcpdump -i ens33 -v -A -s0 port 22. The snapshot flag is -s0 '
         '(a zero, meaning no length limit), and the filter is "port 22" with no dash.',

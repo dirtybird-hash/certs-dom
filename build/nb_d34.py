@@ -21,7 +21,7 @@ dict(id="diamond", o="3.1", t="Diamond Model of Intrusion Analysis", q="diamond"
 <ul><li><strong>Adversary</strong>: who is attacking.</li>
 <li><strong>Capability</strong>: the tools and techniques used (malware, exploit).</li>
 <li><strong>Infrastructure</strong>: what they used to deliver and control it (IPs, domains, email accounts).</li>
-<li><strong>Victim</strong>: who or what was targeted.</li></ul>
+<li><strong>Victim</strong>: who or what was targeted. Some class slides call this corner <em>Target</em>.</li></ul>
 <p>Edges connect them: an adversary uses a capability over infrastructure against a victim. The value is <strong>pivoting</strong>: from one known corner (a C2 domain) you discover others (other victims of that infrastructure, the adversary behind it). Meta-features include timestamp, phase, result, direction, methodology and resources; the social-political and technology axes describe the adversary-victim relationship and how capability meets infrastructure.</p>
 """ + T.format("A question about analyzing relationships between attacker, tools, infrastructure and target, or pivoting from one to find the others, is the Diamond Model, not the Kill Chain.")),
 
@@ -31,6 +31,8 @@ dict(id="attack", o="3.1", t="MITRE ATT&CK", q="att&ck", h="""
 <li><strong>Techniques and sub-techniques</strong> (the &ldquo;how&rdquo;), with IDs such as T1059 (Command and Scripting Interpreter) and T1059.001 (PowerShell).</li>
 <li><strong>Groups, software, mitigations and detections</strong> linked to techniques.</li></ul>
 <p>Uses: map detections to find gaps (ATT&amp;CK Navigator heat maps), describe incidents in a common language, plan adversary emulation. Matrices exist for Enterprise, Mobile and ICS.</p>
+<p><em>Check:</em> older class material describes the Enterprise matrix as the Kill Chain plus six more stages, 13 in all. The current matrix has 14 tactics; Reconnaissance and Resource Development were added in 2020.</p>
+<p><strong>ATT&amp;CK Navigator</strong> is the free web tool for building colored layers over the matrix. Typical uses: shade the techniques a specific threat group is known to use (a threat profile), overlay the techniques your detections cover, and the uncovered cells left over are your gaps to close or hunt for.</p>
 """ + T.format("ATT&amp;CK is not a sequence. Unlike the Kill Chain, attackers can use tactics in any order and repeat them.")),
 
 dict(id="testing-methods", o="3.1", t="OSSTMM and the OWASP Testing Guide", q="osstmm", h="""
@@ -48,6 +50,8 @@ dict(id="ir-lifecycle", o="3.2", t="The incident response life cycle", q="contai
 <li><strong>Post-incident activity</strong></li></ol>
 <p>It loops: detection can send you back to containment as scope grows, and lessons learned feed the next round of preparation. (Some courses use a six-step version: preparation, identification, containment, eradication, recovery, lessons learned. Same content, split differently.) NIST published Revision 3 of SP 800-61 in April 2025, reorganized around the CSF 2.0 functions. CS0-003 was written against Revision 2, so answer with the four phases above.</p>
 <p><strong>Event vs incident</strong>: an event is any observable occurrence; an incident is an event that violates or threatens security policy. All incidents are events; most events are not incidents.</p>
+<p><strong>Common incident types</strong>: data breach (unauthorized access to or disclosure of sensitive data), malware (including ransomware), denial of service, insider misuse (intentional or accidental), account compromise, and loss or theft of equipment. Playbooks are usually written per type.</p>
+<p><strong>Goals of incident response</strong>, roughly in priority order: limit damage and keep critical operations running, protect sensitive data, recover to normal operations, preserve evidence, and prevent a repeat. Response also protects stakeholder trust: customers, regulators and partners judge you by how you handle an incident as well as by the fact that it happened.</p>
 """),
 
 dict(id="evidence", o="3.2", t="Evidence: chain of custody, integrity, preservation, legal hold", q="chain of custody", h="""
@@ -84,6 +88,19 @@ dict(id="preparation", o="3.3", t="Preparation: plans, playbooks, tools, tableto
 <li><strong>BC/DR</strong>: business continuity keeps critical functions running during disruption; disaster recovery restores IT. The <strong>BIA</strong> sets priorities; RTO (how fast) and RPO (how much data loss is tolerable) set targets.</li></ul>
 """ + T.format("A plan is the overall document; a playbook is the per-scenario procedure. &ldquo;Step-by-step actions for a ransomware outbreak&rdquo; is a playbook.")),
 
+dict(id="ir-team", o="3.3", t="Incident response team roles", q="incident commander", h="""
+<p>Roles are assigned during preparation, so nobody argues about authority in the middle of an incident.</p>
+<div class="tblwrap"><table><tr><th>Role</th><th>Responsible for</th></tr>
+<tr><td><strong>Incident commander</strong> (incident lead)</td><td>Runs the response: coordinates the team, makes or escalates decisions, owns communication and status</td></tr>
+<tr><td><strong>Security analysts / responders</strong></td><td>Triage, investigate, scope, collect evidence, recommend containment and eradication</td></tr>
+<tr><td><strong>IT operations and system owners</strong></td><td>Carry out isolation, restores, patching and rebuilds; know how the systems really work</td></tr>
+<tr><td><strong>Legal counsel</strong></td><td>Notification duties, liability, privilege, evidence handling, contact with law enforcement</td></tr>
+<tr><td><strong>Management / executives</strong></td><td>Business decisions (shut a service down, pay for outside help), approval of risk</td></tr>
+<tr><td><strong>Communications / PR</strong></td><td>Customer, media and partner messaging, in one voice</td></tr>
+<tr><td><strong>HR</strong></td><td>Insider cases and anything involving employee discipline</td></tr></table></div>
+<p>Good coordination means clear lines of communication (who reports to whom, on which channel), a single source of truth for status, and early engagement of external stakeholders such as vendors, insurers and regulators when the plan calls for it.</p>
+""" + T.format("Analysts investigate and recommend; the incident commander decides and coordinates. Notifying regulators or the press is never an analyst&rsquo;s call.")),
+
 dict(id="post-incident", o="3.3", t="Post-incident: forensics, root cause, lessons learned", q="lessons learned", h="""
 <ul><li><strong>Forensic analysis</strong>: detailed examination of preserved evidence to reconstruct exactly what happened, often after recovery so it doesn&rsquo;t slow restoration.</li>
 <li><strong>Root cause analysis</strong>: find the underlying cause, not the symptom. The phishing email was the trigger; the root cause might be no MFA plus users with local admin rights. Techniques: the five whys, fishbone diagrams.</li>
@@ -104,6 +121,20 @@ dict(id="vm-reporting", o="4.1", t="Vulnerability reporting and compliance repor
 <li><strong>prioritization</strong>: what to do first and by when</li></ul>
 <p>Tailor it to the reader: executives want risk trends and business impact; system owners want host lists and exact fixes. <strong>Compliance reports</strong> show status against a specific requirement (PCI DSS passing scans, HIPAA controls) for auditors and regulators.</p>
 """),
+
+dict(id="compliance", o="4.1", t="Compliance: regulations by industry and running a program", q="compliance", h="""
+<p><strong>Compliance</strong> means meeting the security rules that apply to you, by law, contract or industry standard. Reports against those rules are what 4.1 calls compliance reports.</p>
+<div class="tblwrap"><table><tr><th>Sector</th><th>Rules</th><th>Protects</th></tr>
+<tr><td>Healthcare (US)</td><td>HIPAA, HITECH</td><td>Patient health information (PHI)</td></tr>
+<tr><td>Finance (US)</td><td>SOX, GLBA</td><td>Financial reporting integrity (SOX); customer financial data (GLBA)</td></tr>
+<tr><td>Anyone taking cards</td><td>PCI DSS (industry standard, enforced by contract)</td><td>Cardholder data</td></tr>
+<tr><td>US federal</td><td>FISMA, FedRAMP (for cloud providers)</td><td>Government systems and data</td></tr>
+<tr><td>EU residents&rsquo; data</td><td>GDPR</td><td>Personal data, wherever the company is based</td></tr>
+<tr><td>California residents</td><td>CCPA (amended by CPRA)</td><td>Consumer privacy rights</td></tr>
+<tr><td>Any organization</td><td>ISO/IEC 27001 (voluntary, certifiable)</td><td>A whole information security management system</td></tr></table></div>
+<p><strong>Building a program</strong>: identify which rules apply (by industry, location and data type) &rarr; assess risk and gaps &rarr; write policies and procedures &rarr; implement technical, operational and managerial controls &rarr; train staff &rarr; monitor and audit continuously. It needs leadership commitment, cooperation across departments, and regular review as rules and threats change.</p>
+<p><strong>Measuring it</strong>: KPIs (incident response times, policy adherence, patch SLO attainment), internal and external audits, and benchmarking against peers. Common obstacles are overlapping regulations across jurisdictions, limited budget and staff, fast-changing threats, and human error.</p>
+""" + T.format("Compliance is not the same as security. A compliant organization can still be breached; the regulations set a minimum.")),
 
 dict(id="action-plans", o="4.1", t="Action plans", q="action plan", h="""
 <div class="tblwrap"><table><tr><th>Action</th><th>When it fits</th></tr>

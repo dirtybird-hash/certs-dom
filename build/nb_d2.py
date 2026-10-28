@@ -18,6 +18,7 @@ dict(id="scan-considerations", o="2.1", t="Special considerations when scanning"
 <tr><td>Sensitivity levels</td><td>How aggressive the checks are; high sensitivity finds more but can crash services. Disable dangerous plug-ins (DoS checks) on production</td></tr>
 <tr><td>Segmentation</td><td>Firewalls between zones block or skew results; place a scanner or agent inside each segment</td></tr>
 <tr><td>Regulatory requirements</td><td>PCI DSS requires quarterly internal and external scans (external by an Approved Scanning Vendor) and after significant change</td></tr></table></div>
+<p><strong>How often?</strong> Frequency follows risk: the organization&rsquo;s size and risk appetite, how exposed and critical the assets are, industry and regulatory requirements, and what the team can actually remediate. Internet-facing and high-value systems are scanned more often; many organizations move toward continuous scanning with agents. Scanning more often than you can fix just grows the backlog.</p>
 """),
 
 dict(id="scan-types", o="2.1", t="Scan types compared", q="credentialed", h="""
@@ -28,7 +29,27 @@ dict(id="scan-types", o="2.1", t="Scan types compared", q="credentialed", h="""
 <tr><td>Passive vs active</td><td>Watches existing traffic; no load and no risk; finds only what talks</td><td>Sends probes; thorough; can disrupt fragile systems</td></tr>
 <tr><td>Static vs dynamic</td><td>Analyzes code or binaries without running them (SAST, reverse engineering)</td><td>Tests the running application (DAST, fuzzing)</td></tr></table></div>
 <p><strong>Reverse engineering</strong>: disassembling or decompiling a binary to understand what it does without source code (Ghidra, IDA, debuggers). <strong>Fuzzing</strong>: feeding large volumes of malformed or random input to find crashes that indicate memory bugs.</p>
+<p><strong>By target</strong>, scans are usually grouped as <strong>network</strong> (hosts, open ports, services, device configurations), <strong>web application</strong> (injection, XSS, authentication and session flaws: Burp, ZAP, Nikto) and <strong>database</strong> (default accounts, weak permissions, missing patches, unencrypted sensitive columns). Most programs need all three, because a clean network scan says nothing about the app or the data store behind it.</p>
+<p><strong>Automated vs. manual.</strong> Automated scanners are fast, repeatable and cover thousands of known checks, but they miss business-logic flaws and produce false positives. Manual testing by a skilled analyst finds what tools can&rsquo;t, such as chained weaknesses or broken authorization logic, but it is slow and expensive. Use automation for breadth and regular coverage, and manual review to validate findings and probe the most important systems.</p>
 """ + T.format("A non-credentialed scan reporting fewer findings does not mean the host is safer. It means the scanner saw less. Credentialed scans are the accurate baseline for patch status.")),
+
+dict(id="fuzzing-re", o="2.1", t="Fuzzing and reverse engineering", q="fuzzing", h="""
+<p>CS0-003 lists both under <em>static vs. dynamic</em> analysis: fuzzing is dynamic (the program runs), reverse engineering is usually static (you study the code without running it), though analysts often combine it with debugging.</p>
+<p><strong>Fuzzing</strong> throws large volumes of invalid, unexpected or random input at a program and watches for failures: crashes, hangs, memory errors, assertion failures or leaked data. Each failure points to input handling the developer didn&rsquo;t anticipate, which is where overflows and injection bugs live.</p>
+<div class="tblwrap"><table><tr><th>Fuzzer part</th><th>Job</th></tr>
+<tr><td><strong>Poet</strong> (generator)</td><td>Creates the test cases</td></tr>
+<tr><td><strong>Courier</strong> (delivery)</td><td>Feeds each test case to the target: a file, network packet, API call or form field</td></tr>
+<tr><td><strong>Oracle</strong> (monitor)</td><td>Decides whether the target failed, and records the input that caused it</td></tr></table></div>
+<div class="tblwrap"><table><tr><th>How test cases are made</th><th>Idea</th><th>Trade-off</th></tr>
+<tr><td><strong>Random</strong> (&ldquo;dumb&rdquo;)</td><td>Pure random data</td><td>Easy to set up; most inputs get rejected at the first validation check</td></tr>
+<tr><td><strong>Mutation / template-based</strong></td><td>Takes valid sample inputs and alters them; evolutionary fuzzers keep the mutations that reach new code</td><td>Good results with little knowledge of the format</td></tr>
+<tr><td><strong>Generation-based</strong> (&ldquo;smart&rdquo;)</td><td>Builds inputs from a model of the protocol or file format</td><td>Reaches deep code; the model takes effort to write</td></tr></table></div>
+<p>Fuzzing belongs in testing, before release (part of a secure SDLC). Against production, it can crash the very service you are protecting, so treat it like any dangerous scan.</p>
+<p><strong>Reverse engineering</strong> works backward from a compiled program to understand what it does when you have no source code. For malware, the goals are to learn its capabilities, extract indicators (C2 domains, mutex names, file paths, encryption keys), write detections, and decide how to remove it.</p>
+<ul><li><strong>Tools</strong>: disassemblers and decompilers (Ghidra, IDA) for static work; debuggers (GDB, Immunity, x64dbg) to step through it as it runs; <code>strings</code> and hashing for a first look.</li>
+<li><strong>Obstacles</strong>: attackers use <strong>obfuscation</strong>, <strong>packing</strong> (compressed or encrypted code that unpacks itself at run time), encryption, and anti-debugging or VM-detection tricks to slow analysts down. A packed sample shows almost nothing in <code>strings</code>, which is itself a clue.</li>
+<li>Always analyze in an isolated lab or sandbox, never on a production host.</li></ul>
+""" + T.format("Fuzzing finds flaws by running the program with bad input (dynamic). Reverse engineering explains a binary without its source (usually static). If the question says &ldquo;malformed input&rdquo; or &ldquo;crashes&rdquo;, it is fuzzing.")),
 
 dict(id="critical-infra", o="2.1", t="Critical infrastructure: OT, ICS, SCADA", q="scada", h="""
 <p><strong>OT</strong> is technology that controls physical processes. <strong>ICS</strong> is the broader family of control systems (PLCs, distributed control systems, HMIs). <strong>SCADA</strong> is ICS spread over a wide area, such as pipelines, power grids or water systems, with central supervisory control.</p>
@@ -41,6 +62,7 @@ dict(id="critical-infra", o="2.1", t="Critical infrastructure: OT, ICS, SCADA", 
 
 dict(id="baseline-frameworks", o="2.1", t="Baseline scanning and industry frameworks", q="cis", h="""
 <p><strong>Security baseline scanning</strong> checks configuration against a standard (password policy, services disabled, audit settings) rather than looking for missing patches. Results show drift from the approved build.</p>
+<p>Where baselines come from: <strong>CIS Benchmarks</strong>, <strong>DISA STIGs</strong> (US Department of Defense), and vendor baselines such as <strong>Microsoft&rsquo;s security baselines</strong>. Windows alone has thousands of Group Policy settings, and only some matter for security, so Microsoft publishes recommended values with the reasoning behind each. Its Security Compliance Toolkit includes Policy Analyzer (compare your settings with the baseline) and LGPO (apply a baseline to a stand-alone machine). Start from a published baseline, document your deviations, then scan for drift.</p>
 <div class="tblwrap"><table><tr><th>Framework</th><th>What it is</th></tr>
 <tr><td><strong>PCI DSS</strong></td><td>Card industry standard for anyone storing, processing or transmitting card data; mandates scanning, segmentation, logging</td></tr>
 <tr><td><strong>CIS Benchmarks</strong></td><td>Free, consensus hardening guides per product (Windows, Ubuntu, AWS, Kubernetes), often used as scan policies</td></tr>
@@ -59,6 +81,7 @@ dict(id="assessment-tools", o="2.2", t="Assessment tools: which does what", q="n
 <tr><td>Nikto</td><td>Command-line web <em>server</em> scanner: dangerous files, outdated versions, default content, misconfigurations</td></tr>
 <tr><td rowspan="2">Vulnerability scanners</td><td>Nessus</td><td>Commercial (Tenable) network vulnerability scanner with plugin-based checks</td></tr>
 <tr><td>OpenVAS</td><td>Open-source vulnerability scanner (Greenbone)</td></tr>
+<tr><td><em>Qualys</em> (class)</td><td>Commercial cloud-based vulnerability management platform (scanning, agents, compliance). Named in class but <strong>not on the CS0-003 tool list</strong>.</td></tr>
 <tr><td rowspan="2">Debuggers</td><td>Immunity Debugger</td><td>Windows, used for exploit development and malware analysis</td></tr>
 <tr><td>GDB</td><td>GNU debugger, command line, Linux/Unix programs</td></tr>
 <tr><td rowspan="3">Multipurpose</td><td>Nmap</td><td>Discovery, port scanning, version and OS detection, NSE scripts</td></tr>
@@ -165,6 +188,32 @@ dict(id="owasp-flaws", o="2.4", t="Access control, crypto failures, design and c
 """),
 
 # ---------------------------------------------------------------- 2.5
+dict(id="nsa-mitigations", o="2.4", t="NSA's top ten mitigation strategies", q="mitigation", h="""
+<p>A widely cited short list of controls from the US National Security Agency. Useful as a checklist when a question asks for the best general mitigation.</p>
+<div class="tblwrap"><table><tr><th>#</th><th>Strategy</th><th>In CySA+ terms</th></tr>
+<tr><td>1</td><td>Update and upgrade software immediately</td><td>Patch management</td></tr>
+<tr><td>2</td><td>Defend privileges and accounts</td><td>Least privilege, PAM</td></tr>
+<tr><td>3</td><td>Enforce signed software execution policies</td><td>Application allow-listing, code signing</td></tr>
+<tr><td>4</td><td>Exercise a system recovery plan</td><td>Tested backups, BC/DR</td></tr>
+<tr><td>5</td><td>Actively manage systems and configurations</td><td>Asset inventory, baselines, configuration management</td></tr>
+<tr><td>6</td><td>Continuously hunt for network intrusions</td><td>Threat hunting, assume breach</td></tr>
+<tr><td>7</td><td>Leverage modern hardware security features</td><td>TPM, Secure Boot, UEFI</td></tr>
+<tr><td>8</td><td>Segregate networks using application-aware defenses</td><td>Segmentation, next-generation firewalls</td></tr>
+<tr><td>9</td><td>Integrate threat reputation services</td><td>Threat intelligence feeds, IP and domain reputation</td></tr>
+<tr><td>10</td><td>Transition to multi-factor authentication</td><td>MFA</td></tr></table></div>
+"""),
+
+dict(id="vm-program", o="2.5", t="Running a vulnerability management program", q="vulnerability management", h="""
+<p>Scanning is one step in a cycle, not the program itself. A <strong>vulnerability management program</strong> is the policy and process around it: what gets scanned and how often, who owns each asset, how findings are prioritized, how fast each severity must be fixed (SLOs), how exceptions are approved, and how results are reported.</p>
+<p>The cycle: <strong>discover assets</strong> &rarr; <strong>scan</strong> &rarr; <strong>validate and prioritize</strong> &rarr; <strong>remediate or mitigate</strong> &rarr; <strong>verify with a rescan</strong> &rarr; <strong>report</strong> &rarr; repeat.</p>
+<div class="tblwrap"><table><tr><th>Common challenge</th><th>What helps</th></tr>
+<tr><td>False positives waste time and erode trust in the scanner</td><td>Credentialed scans, validation before ticketing, documented suppressions with review dates</td></tr>
+<tr><td>Limited resources: more findings than people or maintenance windows</td><td>Risk-based prioritization (exposure, exploitation, asset value) instead of fixing by raw count</td></tr>
+<tr><td>Shortage of skilled staff</td><td>Automation and orchestration for routine work; training; managed services where needed</td></tr>
+<tr><td>Outdated scanner or plug-ins miss new vulnerabilities</td><td>Keep scanner software and feeds current</td></tr>
+<tr><td>System owners not engaged</td><td>Involve stakeholders early, report in their terms, agree on SLOs</td></tr></table></div>
+""" + T.format("A completed scan is not a reduced risk. If the findings aren&rsquo;t prioritized, fixed and rescanned, the program hasn&rsquo;t done its job.")),
+
 dict(id="control-types", o="2.5", t="Control types and compensating controls", q="compensating", h="""
 <p>Two different ways to classify the same control:</p>
 <div class="tblwrap"><table><tr><th>By category (who/what implements it)</th><th>By function (what it does)</th></tr>
@@ -173,6 +222,7 @@ dict(id="control-types", o="2.5", t="Control types and compensating controls", q
 <tr><td><strong>Technical</strong>: implemented in technology (encryption, ACLs, EDR)</td><td><strong>Responsive</strong>: acts during an incident (IR team, automated containment)</td></tr>
 <tr><td></td><td><strong>Corrective</strong>: restores after an incident (restore from backup, patch)</td></tr></table></div>
 <p>A <strong>compensating control</strong> provides comparable protection when the required control can&rsquo;t be used, for example isolating an unpatchable legacy server on its own VLAN behind an allow-list firewall. It needs documenting and periodic review.</p>
+<p><strong>Class vocabulary vs. CompTIA&rsquo;s.</strong> The course groups controls as <em>administrative, physical and technical</em>, with seven functions: directive, deterrent, preventive, compensating, detective, corrective and recovery. CS0-003 objective 2.5 uses <strong>managerial, operational and technical</strong>, and <strong>preventative, detective, responsive and corrective</strong>. They map closely: administrative &asymp; managerial; physical controls such as guards and locks are usually counted as operational or physical depending on the source; recovery sits under corrective. On the exam, use CompTIA&rsquo;s words.</p>
 """ + T.format("Category and function are separate questions. A firewall is technical (category) and preventative (function). Read whether the question asks &ldquo;type&rdquo; meaning category or function.")),
 
 dict(id="patching", o="2.5", t="Patching, configuration and maintenance windows", q="rollback", h="""
@@ -196,6 +246,7 @@ dict(id="attack-surface", o="2.5", t="Attack surface management", q="bug bounty"
 <li><strong>Security controls testing</strong>: verify controls actually work (does the WAF block this payload? does the EDR alert on this technique?).</li>
 <li><strong>Penetration testing</strong> exploits weaknesses to show real impact, within an agreed scope. <strong>Adversary emulation</strong> mimics a specific threat actor&rsquo;s known TTPs (often mapped to ATT&amp;CK) to test detection. Red team attacks, blue team defends, purple team works together.</li>
 <li><strong>Bug bounty</strong>: pay outside researchers for verified findings under published rules.</li>
+<li><strong>Tools that automate this</strong>: <strong>CAASM</strong> (cyber asset attack surface management) builds one inventory from all your existing tools; <strong>RBVM</strong> (risk-based vulnerability management) ranks findings by exploitability and business impact rather than CVSS alone; <strong>CRQ</strong> (cyber risk quantification) expresses risk in money so leaders can compare it with other business risks.</li>
 <li><strong>Attack surface reduction</strong>: remove what isn&rsquo;t needed, such as unused services, open ports, stale accounts and old DNS records.</li></ul>
 """),
 
@@ -208,6 +259,7 @@ dict(id="secure-coding", o="2.5", t="Secure coding, SDLC and threat modeling", q
 <tr><td><strong>Data protection</strong> (encrypt in transit and at rest, minimize stored data)</td><td>Cryptographic failures, data exposure</td></tr>
 <tr><td><strong>Parameterized queries</strong></td><td>SQL injection</td></tr></table></div>
 <p><strong>Secure SDLC</strong> builds security into each phase: requirements, design (threat modeling), development (secure coding, code review, SAST), testing (DAST, fuzzing), deployment (hardening), maintenance (patching, monitoring). Finding flaws early is far cheaper than after release.</p>
+<p>Two common references for secure coding: the <strong>OWASP</strong> Top 10 for web applications and the <strong>CWE/SANS Top 25</strong> most dangerous software weaknesses. <strong>DevSecOps</strong> puts the security checks (SAST, dependency scanning, DAST) into the CI/CD pipeline so they run on every change.</p>
 <p><strong>Threat modeling</strong> asks what can go wrong before you build. STRIDE is a common method: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege.</p>
 """),
 ]

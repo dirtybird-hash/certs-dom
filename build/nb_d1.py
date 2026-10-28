@@ -37,6 +37,7 @@ dict(id="os-concepts", o="1.1", t="OS concepts: Registry, file locations, proces
 <tr><td>explorer.exe</td><td>One per logged-on user</td><td>Spawning cmd or PowerShell with encoded arguments</td></tr>
 <tr><td>Office apps</td><td>Open documents</td><td>Spawning cmd.exe, powershell.exe or wscript.exe</td></tr></table></div>
 <p><strong>System hardening.</strong> Reduce attack surface: remove unneeded services and software, close unused ports, apply a configuration baseline (CIS benchmarks, Group Policy), enforce least privilege, patch, and turn on logging. <strong>Hardware architecture</strong> matters because protections such as TPM, Secure Boot and memory-protection features (DEP, ASLR) depend on it.</p>
+<p>Hardening applies at every layer: <strong>application</strong> (remove sample content, disable unused features, patch), <strong>operating system</strong>, <strong>server</strong>, <strong>endpoint</strong>, <strong>database</strong> (remove default accounts, least-privilege service accounts, encrypt sensitive columns) and <strong>network</strong> devices (disable unused ports and services, use SSH instead of Telnet, change default credentials). It runs for the whole life of a system, from build to decommission, and standards such as PCI DSS and HIPAA require it.</p>
 """ + T.format("A misspelled lookalike in the right folder (svch0st.exe, lsas.exe) or the right name in the wrong folder are both process indicators. Check name, path and parent together.")),
 
 dict(id="infrastructure", o="1.1", t="Serverless, virtualization and containers", q="container", h="""
@@ -63,6 +64,14 @@ dict(id="iam", o="1.1", t="Identity: MFA, SSO, federation, PAM, passwordless, CA
 <li><strong>PAM</strong> controls admin accounts: vaulted credentials, just-in-time elevation, session recording, password rotation.</li>
 <li><strong>Passwordless</strong> uses FIDO2/WebAuthn keys, platform biometrics or authenticator push instead of a shared secret, which removes phishing and credential-stuffing of passwords.</li>
 <li><strong>CASB</strong> sits between users and cloud services to give visibility into shadow IT, enforce policy, and apply DLP to SaaS. Can work by API or inline proxy.</li></ul>
+<p><strong>Factor categories</strong>: knowledge (password, PIN), possession (phone, smart card, hardware key), inherence (fingerprint, face), plus location and behavior. <strong>Two-step verification</strong> just means two checks in sequence, and both can be the same category (a password, then a security question). <strong>Two-factor authentication</strong> requires two <em>different</em> categories. Every 2FA login is two-step; not every two-step login is 2FA.</p>
+<p><strong>How SSO works</strong>: the user signs in once to an identity provider (IdP). The IdP issues a signed token or assertion; each application (service provider) trusts the IdP&rsquo;s signature instead of checking the password itself. Stealing that session token is therefore as good as stealing the login, which is why token lifetime and revocation matter.</p>
+<div class="tblwrap"><table><tr><th>Strength</th><th>Examples</th><th>Weakness</th></tr>
+<tr><td>Weakest</td><td>Password only</td><td>Phished, guessed, reused</td></tr>
+<tr><td>Fair</td><td>Password + SMS or voice code</td><td>SIM swap, interception, real-time phishing</td></tr>
+<tr><td>Better</td><td>Password + authenticator push or OTP app, or hardware OTP token</td><td>Push fatigue (MFA bombing), real-time phishing proxies</td></tr>
+<tr><td>Best</td><td><strong>Phishing-resistant</strong> passwordless: FIDO2/WebAuthn security keys and passkeys, Windows Hello for Business, certificate-based authentication</td><td>Cost, enrollment and recovery processes</td></tr></table></div>
+<p>Phishing-resistant methods bind the login cryptographically to the real site, so a lookalike page can&rsquo;t relay it.</p>
 """ + T.format("OAuth on its own is authorization, not authentication. If the question is about proving who a user is across organizations, think SAML or OpenID Connect.")),
 
 dict(id="encryption", o="1.1", t="PKI and SSL/TLS inspection", q="pki", h="""
@@ -77,6 +86,7 @@ dict(id="sensitive-data", o="1.1", t="Sensitive data protection: DLP, PII, CHD",
 <p><strong>DLP</strong> finds sensitive data and stops it leaving by policy. It inspects data in three states: <strong>at rest</strong> (discovery scans of shares and databases), <strong>in motion</strong> (network and email gateways), and <strong>in use</strong> (endpoint agents controlling copy, print, USB). Detection uses pattern matching (regex for card or ID numbers), exact data matching, fingerprints of documents, and classification labels.</p>
 <p><strong>PII</strong> is anything that identifies a person alone or in combination: name with date of birth, government ID numbers, biometrics. Privacy laws (GDPR, state laws, HIPAA for health data) govern it.</p>
 <p><strong>CHD</strong> (cardholder data) is the primary account number plus cardholder name, expiry and service code. PCI DSS governs it, and <strong>sensitive authentication data</strong> (full track data, CVV2, PIN) must never be stored after authorization.</p>
+<p>A practical DLP program runs in four steps: <strong>know</strong> your data (discover and classify it), <strong>protect</strong> it (encryption, access restrictions, labels), <strong>prevent loss</strong> (policies that block or warn on risky sharing), and <strong>govern</strong> it (retain and delete according to policy and regulation). DLP guards against insiders as much as outside attackers: most leaks are accidental oversharing.</p>
 """ + T.format("Encryption protects data if it is stolen; DLP stops it being sent. A question about blocking an employee from emailing card numbers out wants DLP.")),
 
 # ---------------------------------------------------------------- 1.2
@@ -111,6 +121,21 @@ dict(id="app-indicators", o="1.2", t="Application indicators", q="new account", 
 <li><strong>Service interruption</strong>: crashes and restarts can be DoS or exploitation of a memory bug.</li>
 <li><strong>Application logs</strong>: web access logs (status codes, user agents, URIs), auth logs, and app-specific audit trails are where these show up.</li></ul>
 """ + T.format("Servers mostly receive connections. A server that starts making outbound connections, especially to raw IPs or odd ports, is a stronger signal than the same traffic from a workstation.")),
+
+dict(id="ioc-checklist", o="1.2", t="Common IoCs: the classic checklist", q="ioc", h="""
+<p>Training material often gives a longer list of everyday indicators than the objective wording. Each one is only meaningful against a baseline.</p>
+<div class="tblwrap"><table><tr><th>Indicator</th><th>Why it matters</th></tr>
+<tr><td>Unusual outbound traffic</td><td>The clearest sign data or control traffic is leaving: check volume, destination and time of day.</td></tr>
+<tr><td>Privileged account anomalies</td><td>Admin accounts touching systems or data they never use, or used at odd hours, suggest a compromised or misused account.</td></tr>
+<tr><td>Geographic irregularities</td><td>Logons or connections from countries the organization has no business in; at the user level this becomes impossible travel.</td></tr>
+<tr><td>Login red flags</td><td>Many failed attempts across accounts (spraying) or many against one account, especially when a success follows.</td></tr>
+<tr><td>Swells in database read volume</td><td>A sudden jump in rows read is a typical sign of bulk extraction before exfiltration.</td></tr>
+<tr><td>Unusual HTTP response sizes</td><td>Responses far larger than normal for a page can mean an injection is dumping data.</td></tr>
+<tr><td>Many requests for the same file</td><td>Repeated attempts on one resource suggest someone probing or retrying a theft.</td></tr>
+<tr><td>Mismatched port and application traffic</td><td>A protocol on a port it doesn&rsquo;t belong on (HTTP over 53, SSH over 443) points to tunneling or evasion.</td></tr>
+<tr><td>Suspicious registry or system file changes</td><td>Persistence and tampering by malware.</td></tr>
+<tr><td>DNS request anomalies</td><td>High volumes, long random-looking names (DGA), many NXDOMAIN replies or heavy TXT queries can mean C2 or DNS tunneling.</td></tr></table></div>
+""" + T.format("An IoC is evidence after the fact. An IoA (indicator of attack) describes behavior while the attack is still under way. If the question stresses real time and intent, IoA is the better answer.")),
 
 dict(id="other-indicators", o="1.2", t="Social engineering and obfuscated links", q="obfuscated", h="""
 <p>Social engineering indicators show up in people and email rather than logs: urgency, authority, requests to bypass process, mismatched sender details.</p>
@@ -234,6 +259,25 @@ dict(id="threat-actors", o="1.4", t="Threat actors", q="threat actor", h="""
 <p><strong>APT</strong> describes the behavior (advanced, persistent, a threat with intent). Many APT groups are nation-states, but the terms are not identical.</p>
 """ + T.format("An unintentional insider is still an insider threat. A well-meaning employee who emails a spreadsheet of customer data to the wrong address belongs in this row, not &ldquo;no threat&rdquo;.")),
 
+dict(id="colonial", o="1.4", t="Case study: Colonial Pipeline (2021)", q="ransomware", h="""
+<p>A worked example the class uses, which touches several objectives at once.</p>
+<ul><li><strong>Actor</strong>: DarkSide, a criminal group running <strong>ransomware-as-a-service</strong> (RaaS): developers rent the ransomware to affiliates and take a share of the payments. Organized crime, motivated by money (1.4).</li>
+<li><strong>Initial access</strong>: a legacy VPN account protected only by a password, with <strong>no MFA</strong>. The password had been exposed in an earlier breach, a reminder of the cost of password reuse (1.1, 1.3).</li>
+<li><strong>Actions</strong>: roughly 100 GB of data stolen before encryption (double extortion), then ransomware across the IT network.</li>
+<li><strong>Response</strong>: the company shut down the <strong>OT</strong> pipeline operations as a precaution even though the ransomware hit IT, because it couldn&rsquo;t be sure of the boundary between them. It brought in an outside IR firm and notified the FBI and CISA, and paid about $4.4 million in bitcoin. The US Department of Justice later recovered about $2.3 million of it (3.2, 4.2).</li>
+<li><strong>Impact</strong>: the attack began on May 7, 2021; operations restarted on May 12, 2021, with fuel shortages and panic buying across the Southeast. (One class slide gives the restart year as 2022. It was 2021.)</li></ul>
+<p><strong>Lessons</strong>: MFA on every remote-access path, disable dormant accounts, segment IT from OT, have tested IR and BC plans, and treat leaked-credential intelligence as urgent.</p>
+"""),
+
+dict(id="stuxnet", o="1.4", t="Case study: Stuxnet (discovered 2010)", q="stuxnet", h="""
+<p>The other worked example the class uses, and the standard illustration of an attack on OT.</p>
+<ul><li><strong>Target</strong>: the uranium enrichment centrifuges at Natanz, Iran, which were run by <strong>Siemens S7 PLCs</strong> programmed with Step 7 software. The goal was physical damage made to look like equipment failure.</li>
+<li><strong>Actor</strong>: widely attributed to a nation-state operation. It is the textbook <strong>APT</strong>: well funded, patient and narrowly targeted.</li>
+<li><strong>Delivery</strong>: the plant network was air-gapped, so the attackers first infected <strong>contractor companies</strong> that installed industrial control systems and let infected staff carry the worm in. It spread on <strong>USB drives</strong>, across local networks through a <strong>print spooler zero-day</strong>, and through infected Step 7 project files. Several zero-days were used in all.</li>
+<li><strong>Discovery</strong>: inspectors noticed centrifuges failing at an unusual rate in early 2010. Later that year a security firm in Belarus, called in to look at Iranian PCs that kept crashing, found the malicious files.</li></ul>
+<p><strong>Lessons</strong>: an air gap is not a guarantee (removable media and the supply chain bridge it), control removable media, monitor OT networks and PLC logic for unexpected change, and assess third-party and contractor risk.</p>
+"""),
+
 dict(id="ttp", o="1.4", t="TTPs and the Pyramid of Pain", q="ttp", h="""
 <p><strong>Tactics</strong> are the attacker&rsquo;s goals (initial access, persistence, exfiltration). <strong>Techniques</strong> are how they reach a goal (phishing with an attachment, scheduled task). <strong>Procedures</strong> are the specific way one group does it (this macro, this task name, this time of day). MITRE ATT&amp;CK is organized exactly this way: tactics as columns, techniques beneath.</p>
 <p><strong>Why TTPs beat IOCs</strong> (the Pyramid of Pain idea): blocking a hash or an IP costs the attacker seconds to change. Detecting a technique, like credential dumping from LSASS, forces them to change how they operate, which is expensive.</p>
@@ -256,7 +300,24 @@ dict(id="collection-sources", o="1.4", t="Collection methods and sources", q="is
 <tr><td>Deep and dark web monitoring (leaked credentials, access for sale)</td><td></td></tr></table></div>
 <p><strong>Internal sources</strong> are often the most relevant intelligence you have: attacks that already hit you are the ones most likely to come back.</p>
 <p>Sharing formats: <strong>STIX</strong> describes threat information in a structured way (indicators, actors, campaigns, relationships); <strong>TAXII</strong> is the protocol that transports STIX between systems. The <strong>Traffic Light Protocol</strong> (TLP) marks how widely shared intelligence may be passed on: RED (named recipients only), AMBER (and AMBER+STRICT), GREEN (community), CLEAR (public).</p>
+<p>Commercial intelligence platforms combine many of these sources with analysis and search, for example Google Threat Intelligence (which builds on VirusTotal and Mandiant research) or Recorded Future. Named products are general knowledge; the exam tests the source types.</p>
 """ + T.format("ISACs are closed, membership-based sharing communities, even though members share freely within them. Don&rsquo;t file them under open source.")),
+
+dict(id="ti-lifecycle", o="1.4", t="Threat intelligence lifecycle and types", q="threat intelligence", h="""
+<p><strong>Threat intelligence</strong> is threat data that has been collected, processed and analyzed until it explains an adversary&rsquo;s motives, targets and methods well enough to drive a decision. Raw feeds are data; intelligence is what you can act on.</p>
+<p><strong>The lifecycle</strong> (an iterative loop):</p>
+<ol><li><strong>Planning and direction</strong>: stakeholders state what they need to know (&ldquo;is this new ransomware strain a threat to us?&rdquo;).</li>
+<li><strong>Collection</strong>: gather raw data from feeds, OSINT, ISACs, dark web monitoring and internal logs.</li>
+<li><strong>Processing</strong>: normalize, deduplicate, translate and structure it.</li>
+<li><strong>Analysis</strong>: turn it into findings with a stated confidence level.</li>
+<li><strong>Dissemination</strong>: deliver it in the right form to each audience.</li>
+<li><strong>Feedback</strong>: consumers say what helped, which sets the next round of requirements.</li></ol>
+<div class="tblwrap"><table><tr><th>Type</th><th>Audience</th><th>Content</th><th>Shelf life</th></tr>
+<tr><td><strong>Strategic</strong></td><td>Executives, risk owners</td><td>Trends, motives, geopolitical and industry risk, in business language</td><td>Long</td></tr>
+<tr><td><strong>Operational</strong></td><td>Security leaders, IR and hunt teams</td><td>Specific campaigns and actors: their TTPs, targets and timing</td><td>Medium</td></tr>
+<tr><td><strong>Tactical</strong></td><td>SOC analysts, security tools</td><td>Indicators: IPs, domains, hashes, signatures</td><td>Short</td></tr></table></div>
+<p>Sources disagree on labels: some add a fourth category, <em>technical</em>, for raw indicators, and the class slides call operational intelligence &ldquo;technical&rdquo;. What matters is the pattern: the higher the audience, the broader and longer-lasting the intelligence.</p>
+""" + T.format("Intelligence without requirements is just data. If a scenario has a team drowning in feeds nobody asked for, the missing step is planning and direction, with feedback to tune it.")),
 
 dict(id="intel-sharing", o="1.4", t="Who uses threat intelligence", q="threat intelligence sharing", h="""
 <ul><li><strong>Incident response</strong>: attributes and scopes an incident faster; known IOCs show where else to look.</li>
@@ -275,6 +336,17 @@ dict(id="threat-hunting", o="1.4", t="Threat hunting, IoCs, active defense, hone
 <li><strong>Business-critical assets and processes</strong>: hunt where the damage would be worst, such as domain controllers, payment systems and crown-jewel data.</li></ul>
 <p><strong>Active defense</strong> means engaging the attacker inside your own environment to detect, slow or study them: deception, decoys, tarpits. It does not mean &ldquo;hacking back&rdquo; against the attacker&rsquo;s systems, which is generally illegal.</p>
 <p><strong>Honeypot</strong>: a decoy system with no legitimate users, so any interaction is suspicious. Variants: honeynet (a network of them), honeyfile, honeytoken (a fake credential or record that alerts when used).</p>
+<p><strong>Three ways to start a hunt</strong>:</p>
+<ul><li><strong>Hypothesis-driven</strong>: start from a new TTP or intel report (&ldquo;attackers are abusing scheduled tasks for persistence&rdquo;) and test whether it is happening here.</li>
+<li><strong>Indicator-driven</strong>: search for known IoCs, and for <strong>indicators of attack (IoAs)</strong>. An IoC is evidence that something already happened (a hash, a C2 IP). An IoA is behavior that shows an attack in progress (credential dumping, lateral movement), whatever tool is used.</li>
+<li><strong>Analytics-driven</strong>: baselining and machine learning surface anomalies, which analysts then investigate.</li></ul>
+<p><strong>Hunt steps</strong>: <strong>trigger</strong> (a hypothesis or anomaly points to an area) &rarr; <strong>investigation</strong> (dig in with EDR, logs and network data until it is benign or confirmed) &rarr; <strong>resolution</strong> (hand confirmed activity to incident response, and turn what you learned into new automated detections).</p>
+<div class="tblwrap"><table><tr><th></th><th>Threat intelligence</th><th>Threat hunting</th></tr>
+<tr><td>Purpose</td><td>Understand threats and adversaries</td><td>Find threats already inside</td></tr>
+<tr><td>Data</td><td>Mostly external: feeds, reports, dark web, ISACs</td><td>Mostly internal: logs, network traffic, endpoint data</td></tr>
+<tr><td>Timing</td><td>Ahead of an attack, to inform defenses</td><td>Ongoing, assuming compromise</td></tr>
+<tr><td>Output</td><td>Indicators, profiles, strategic insight</td><td>Confirmed findings, incidents, new detections</td></tr></table></div>
+<p>They feed each other: intelligence suggests what to hunt for, and hunts produce new intelligence.</p>
 """ + T.format("Threat hunting starts from a hypothesis, not an alert. If the scenario begins with an alert firing, it is incident response or triage, not hunting.")),
 
 # ---------------------------------------------------------------- 1.5

@@ -22,7 +22,7 @@ import json, html, pathlib
 
 HERE = pathlib.Path(__file__).parent
 decks = json.load(open(HERE / 'school_cards.json'))
-SLOTS = 11                      # --d0 .. --d10 defined in the template
+SLOTS = 13                      # --d0 .. --d12 defined in the template
 
 
 def esc(s):
