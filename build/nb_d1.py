@@ -89,6 +89,28 @@ dict(id="sensitive-data", o="1.1", t="Sensitive data protection: DLP, PII, CHD",
 <p>A practical DLP program runs in four steps: <strong>know</strong> your data (discover and classify it), <strong>protect</strong> it (encryption, access restrictions, labels), <strong>prevent loss</strong> (policies that block or warn on risky sharing), and <strong>govern</strong> it (retain and delete according to policy and regulation). DLP guards against insiders as much as outside attackers: most leaks are accidental oversharing.</p>
 """ + T.format("Encryption protects data if it is stolen; DLP stops it being sent. A question about blocking an employee from emailing card numbers out wants DLP.")),
 
+dict(id="zt-pdp-pep", o="1.1", t="Zero trust: policy decision point vs policy enforcement point", q="zero trust", h="""
+<p>Zero trust splits every access request into two jobs, and questions expect you to know which component does which. The reference model is NIST SP 800-207.</p>
+<div class="tblwrap"><table><tr><th>Component</th><th>Plane</th><th>Job</th><th>Examples</th></tr>
+<tr><td><strong>Policy engine (PE)</strong>, part of the PDP</td><td>Control</td><td>Runs the trust algorithm: weighs identity, device posture, location, time, threat intelligence and recent behavior against policy, then returns grant, deny or revoke</td><td>Conditional access engine, the policy service of a ZTNA broker</td></tr>
+<tr><td><strong>Policy administrator (PA)</strong>, part of the PDP</td><td>Control</td><td>Acts on the engine&rsquo;s decision: tells the PEP to open or tear down the session and issues the session token or credential</td><td>The component that pushes session instructions to gateways</td></tr>
+<tr><td><strong>Policy enforcement point (PEP)</strong></td><td>Data</td><td>Sits in the path between the subject and the resource; allows, monitors and terminates the connection exactly as instructed. It makes no decisions of its own</td><td>Gateway, next-generation firewall, reverse proxy, API gateway, an agent on the endpoint</td></tr></table></div>
+<p><strong>The flow:</strong> a user or device asks for a resource, the PEP intercepts the request, the PDP evaluates it (the engine decides, the administrator instructs), and the PEP either opens a session to that one resource or drops it. Decisions are made per session, so the PDP can re-evaluate partway through and have the PEP cut the connection if the device falls out of compliance.</p>
+<p>The engine&rsquo;s inputs include the identity provider, device posture from endpoint management or EDR, threat intelligence, SIEM activity logs and data access policies. For an analyst, the two sides log different things: PDP logs explain <em>why</em> access was granted or denied; PEP logs show <em>what traffic</em> actually passed.</p>
+<p>Memory aid: <strong>the decision point decides, the enforcement point executes.</strong></p>
+""" + T.format("If the component in the question evaluates or scores the request, it is the PDP (specifically the policy engine). If it sits inline and passes or blocks traffic, it is the PEP, however capable a firewall it is.")),
+
+dict(id="sase-sse", o="1.1", t="SASE vs SSE vs SD-WAN vs SDN", q="SASE", h="""
+<p>Four acronyms that sound alike and are easy to swap. Two describe where security is delivered from; two describe how the network is steered.</p>
+<div class="tblwrap"><table><tr><th>Term</th><th>What it is</th><th>Made of</th></tr>
+<tr><td><strong>SDN</strong> (software-defined networking)</td><td>Separates the control plane (a central controller decides paths) from the data plane (switches forward packets), so the network is programmable in software</td><td>Controller, southbound APIs to devices (OpenFlow), northbound APIs to applications</td></tr>
+<tr><td><strong>SD-WAN</strong> (software-defined WAN)</td><td>SDN ideas applied to wide-area links: a central policy sends each application&rsquo;s traffic over the best available link (MPLS, broadband, LTE)</td><td>Edge appliances at each site, a central orchestrator</td></tr>
+<tr><td><strong>SSE</strong> (security service edge)</td><td>The security stack alone, delivered from the cloud close to the user</td><td>SWG, CASB, ZTNA, often FWaaS and DLP</td></tr>
+<tr><td><strong>SASE</strong> (secure access service edge)</td><td>SSE plus SD-WAN: networking and security converged into one cloud service</td><td>SD-WAN + SWG + CASB + ZTNA + FWaaS</td></tr></table></div>
+<p>The quick formula is <strong>SASE = SSE + SD-WAN</strong>. An organization that keeps its existing WAN and moves only its security controls to the cloud has bought SSE.</p>
+<p>Exam scope: SASE and SDN are on the CS0-003 list (CompTIA prints SASE as &ldquo;secure access secure edge&rdquo;). SSE and SD-WAN are general knowledge, included so you can tell the four apart.</p>
+""" + T.format("SDN is about separating the control and data planes, not about security as a service. An answer describing a cloud-delivered security stack for remote users is SASE (or SSE), not SDN.")),
+
 # ---------------------------------------------------------------- 1.2
 dict(id="network-indicators", o="1.2", t="Network indicators", q="beacon", h="""
 <div class="tblwrap"><table><tr><th>Indicator</th><th>What it looks like</th><th>Usual meaning</th></tr>
@@ -141,6 +163,34 @@ dict(id="other-indicators", o="1.2", t="Social engineering and obfuscated links"
 <p>Social engineering indicators show up in people and email rather than logs: urgency, authority, requests to bypass process, mismatched sender details.</p>
 <p><strong>Obfuscated links</strong> hide the real destination: URL shorteners, lookalike domains (rn for m, Cyrillic letters), <code>@</code> tricks (<code>https://bank.com@evil.net</code> goes to evil.net), long subdomains (<code>bank.com.login.evil.net</code>), percent-encoding, and redirect chains through trusted sites. Read the registered domain, which is the part just before the top-level domain.</p>
 """),
+
+dict(id="indicator-tools", o="1.2", t="Catching the indicators: baselines, flow data, FIM and allow-listing", q="baseline", h="""
+<p>Every 1.2 indicator is a departure from normal, so detection starts with a baseline and then needs a tool that measures against it.</p>
+<div class="tblwrap"><table><tr><th>Indicator</th><th>What catches it</th></tr>
+<tr><td>Bandwidth, traffic spikes, beaconing, irregular peer-to-peer, scans</td><td><strong>Flow data</strong> (NetFlow, IPFIX, sFlow): one record per conversation with the 5-tuple (source and destination IP and port, protocol), byte and packet counts and timestamps, but no payload. Cheap enough to keep for months, so it is the baseline for volume and who-talks-to-whom. Switch to packet capture when you need the content</td></tr>
+<tr><td>Activity on unexpected ports</td><td>Flow data compared with a map of approved services per host; firewall deny logs</td></tr>
+<tr><td>Processor, memory, drive consumption</td><td>Performance monitoring with thresholds taken from the baseline (Perfmon, <code>top</code>, SNMP, EDR telemetry). Alert on sustained deviation, not a single spike</td></tr>
+<tr><td>Unauthorized software</td><td><strong>Application allow-listing</strong> (AppLocker, Windows Defender Application Control): deny by default, so anything not on the list is blocked and logged; a software inventory to compare against</td></tr>
+<tr><td>Malicious or abnormal processes</td><td>EDR, and Sysmon process creation (Event ID 1) with parent process, path and full command line</td></tr>
+<tr><td>File system changes</td><td><strong>File integrity monitoring (FIM)</strong>: hash critical files and configurations, compare with the known-good hash, alert on any change (Tripwire, Wazuh). PCI DSS requires it</td></tr>
+<tr><td>Registry changes</td><td>Sysmon registry events (Event IDs 12&ndash;14); Autoruns output compared with a saved baseline</td></tr>
+<tr><td>Scheduled tasks, new accounts, new privileges</td><td>Windows Security log: 4698 (scheduled task created), 4720 (user account created), 4732 (member added to a local security group)</td></tr></table></div>
+<p>A useful baseline is captured during known-good operation, covers time of day and day of week, and is refreshed after legitimate change. Otherwise every new application looks like an indicator.</p>
+<p>General knowledge from class: a <strong>Smurf attack</strong> is an old amplification DDoS. ICMP echo requests carrying the victim&rsquo;s spoofed source address are sent to a network&rsquo;s broadcast address, and every host on that network replies to the victim. On the victim&rsquo;s side it looks like a sudden flood of ICMP echo replies, a traffic spike.</p>
+""" + T.format("A baseline recorded while an attacker is already inside teaches your tools that the attacker is normal. Building a new baseline straight after an incident, before confirming the environment is clean, is a classic wrong answer.")),
+
+dict(id="fileless", o="1.2", t="Fileless malware: detection and mitigation", q="powershell", h="""
+<p><strong>Fileless malware</strong> runs in memory and uses tools already on the system, so there is no malicious executable on disk for signature antivirus to find. It is still malware with a payload; &ldquo;fileless&rdquo; describes where it lives.</p>
+<p><strong>How it typically runs:</strong> a phishing document or an exploited service launches PowerShell, WMI, <code>mshta</code>, <code>rundll32</code> or <code>regsvr32</code>. The script pulls code straight into memory (<code>IEX (New-Object Net.WebClient).DownloadString(...)</code>) or decodes a Base64 blob. To survive a reboot it stores a script rather than a binary: in a registry Run key, a WMI event subscription, or a scheduled task that relaunches PowerShell.</p>
+<p><strong>Indicators</strong> (the 1.2 host indicators and 1.3 command analysis):</p>
+<ul><li>Odd parent-child chains: <code>winword.exe</code> or <code>excel.exe</code> starting <code>powershell.exe</code> or <code>cmd.exe</code>.</li>
+<li>Encoded or hidden commands: <code>-enc</code>, <code>-w hidden</code>, <code>-ep bypass</code>.</li>
+<li>Long scripts stored in registry values; new WMI event filters and consumers (Sysmon Event IDs 19&ndash;21).</li>
+<li>A system process making network connections it normally never makes, or executable memory regions that aren&rsquo;t backed by any file on disk.</li></ul>
+<p><strong>Detection:</strong> PowerShell Script Block Logging (Event ID 4104) records the decoded script; AMSI lets security tools inspect scripts as they run; EDR watches behavior and memory; Sysmon logs process creation with full command lines. Because the evidence is in memory, capture a memory image before the host is shut down and analyze it with a tool such as Volatility.</p>
+<p><strong>Mitigation:</strong> script and application allow-listing (AppLocker or WDAC script rules), PowerShell Constrained Language Mode, removing PowerShell 2.0 (it predates script block logging and AMSI, so attackers downgrade to it), blocking macros in Office files from the internet, least privilege, and patching whatever gave initial access.</p>
+<p>Fileless malware isn&rsquo;t named in the CS0-003 objectives; it gets tested through the host indicators in 1.2 and the suspicious-command analysis in 1.3.</p>
+""" + T.format("A clean full-disk antivirus scan does not clear a host suspected of fileless malware. And powering the host off destroys the evidence: capture memory first.")),
 
 # ---------------------------------------------------------------- 1.3
 dict(id="packet-capture", o="1.3", t="Packet capture: Wireshark and tcpdump", q="tcpdump", h="""

