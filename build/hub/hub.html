@@ -1,0 +1,225 @@
+<title>CompTIA Toolkit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: single column, one card per certification, ordered as the track is taken.
+   Tokens match the Security+ toolkit so the two read as one system. */
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
+  --text:#171b1f; --text-muted:#5a6570;
+  --accent:#0d7b86; --accent-ink:#ffffff;
+  --ok:#1f8a5c; --ok-bg:#e7f4ee; --bad:#b8432f; --warn:#a9791c; --warn-bg:#fbf1d9;
+  --c-ap:#b3437c; --c-net:#2f5fd6; --c-sec:#0d7b86; --c-cysa:#6d4bc4;
+  --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
+  --radius:16px;
+  --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
+    --text:#e7edf1; --text-muted:#93a2ac;
+    --accent:#3fd0dd; --accent-ink:#06262a;
+    --ok:#55d69a; --ok-bg:#12291f; --bad:#ff8a75; --warn:#e0b24d; --warn-bg:#332a15;
+    --c-ap:#ea86b8; --c-net:#7ea2ff; --c-sec:#3fd0dd; --c-cysa:#a98cf0;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e;
+  --text:#e7edf1; --text-muted:#93a2ac;
+  --accent:#3fd0dd; --accent-ink:#06262a;
+  --ok:#55d69a; --ok-bg:#12291f; --bad:#ff8a75; --warn:#e0b24d; --warn-bg:#332a15;
+  --c-ap:#ea86b8; --c-net:#7ea2ff; --c-sec:#3fd0dd; --c-cysa:#a98cf0;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;
+  font-size:16px;line-height:1.55;}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:26px 60px;}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-0.01em;text-wrap:balance;margin:0;}
+p{margin:0 0 12px;}
+a{color:var(--accent);}
+
+.eyebrow{font-family:var(--font-display);font-size:11.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 8px;}
+.head h1{font-size:clamp(26px,5.5vw,34px);line-height:1.12;margin-bottom:10px;}
+.head p{color:var(--text-muted);max-width:60ch;}
+
+.certs{display:grid;gap:12px;margin-top:26px;}
+.cert{position:relative;background:var(--surface);
+  border:1px solid var(--border);border-left:4px solid var(--ca);border-radius:var(--radius);
+  padding:18px 20px;box-shadow:var(--shadow);transition:transform .15s,border-color .15s;}
+.cert.linked:hover{transform:translateY(-2px);border-color:var(--ca);}
+.cert.soon{box-shadow:none;background:var(--surface-2);}
+.cert-body{display:block;text-decoration:none;color:inherit;}
+.cert-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;
+  padding-right:120px;}
+.cert h2{font-size:18px;}
+.code{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);}
+
+/* Status chip: a real button, so the state is the reader's to set. Absolutely
+   positioned and outside the card's link, so clicking it never navigates. */
+.chip{position:absolute;top:17px;right:18px;z-index:2;
+  font-family:var(--font-display);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:999px;padding:3px 9px;white-space:nowrap;cursor:pointer;
+  border:1px solid transparent;background:var(--surface-2);color:var(--text-muted);
+  transition:box-shadow .15s;}
+.chip:hover{box-shadow:0 0 0 2px color-mix(in srgb,currentColor 28%,transparent);}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.chip.certified{background:var(--ok-bg);color:var(--ok);}
+.chip.studying{background:var(--warn-bg);color:var(--warn);}
+.chip.none{background:var(--surface-2);color:var(--text-muted);border-color:var(--border);}
+.cert p{font-size:14.5px;color:var(--text-muted);margin:0 0 10px;}
+.tools{display:flex;gap:6px;flex-wrap:wrap;}
+.tool{font-family:var(--font-display);font-size:11px;border:1px solid var(--border);
+  border-radius:7px;padding:3px 8px;color:var(--text-muted);background:var(--bg);}
+.tool.on{color:var(--ca);border-color:var(--ca);}
+.go{font-family:var(--font-display);font-size:12.5px;color:var(--ca);margin-top:10px;display:inline-block;}
+
+.note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
+  padding:13px 15px;font-size:13.5px;line-height:1.55;color:var(--text-muted);margin-top:26px;}
+.note strong{color:var(--text);}
+.resetrow{margin-top:11px;}
+.reset{font-family:var(--font-display);font-size:11.5px;padding:5px 11px;border-radius:9px;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);}
+.reset:hover{border-color:var(--accent);color:var(--accent);}
+.reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/*SCHED-CSS*/
+.foot{margin-top:22px;font-size:12.5px;color:var(--text-muted);
+  border-top:1px solid var(--border);padding-top:14px;}
+</style>
+
+<div class="wrap">
+
+  <div class="head">
+    <p class="eyebrow">Study toolkit</p>
+    <h1>CompTIA Toolkit</h1>
+    <p>One place for every certification on the track. Each one keeps its own notes, drills and
+    progress &mdash; pick a cert to open its tools.</p>
+    <a class="jump" href="#scheduler">Test Prep Scheduler &darr;</a>
+  </div>
+
+  <div class="certs">
+
+    <div class="cert soon" style="--ca:var(--c-ap)">
+      <button type="button" class="chip" data-cert="aplus" data-name="A+ Core 2"></button>
+      <div class="cert-body">
+        <div class="cert-top">
+          <h2>A+ Core 2</h2><span class="code">220-1202</span>
+        </div>
+        <p>Material exists but is not wired in yet &mdash; interactive study console, seven day
+        mini-labs and a PBQ incident-response exam, built outside this system.</p>
+        <div class="tools"><span class="tool">Study console</span><span class="tool">Day mini-labs</span><span class="tool">PBQ exam</span></div>
+        <span class="go">Slot reserved &mdash; files to be added</span>
+      </div>
+    </div>
+
+    <div class="cert linked" style="--ca:var(--c-net)">
+      <button type="button" class="chip" data-cert="netplus" data-name="Network+"></button>
+      <a class="cert-body" href="https://dirtybird-hash.github.io/netplus-study-guide2/">
+        <div class="cert-top">
+          <h2>Network+</h2><span class="code">N10-009</span>
+        </div>
+        <p>The interactive study guide, built to the published objectives: 36 sections with
+        autosaving notes, 292 recall cards, 108 practice questions, a two-way port drill, a
+        subnet trainer that generates problems endlessly, and the OSI Rack Trainer for
+        objective 1.1.</p>
+        <div class="tools"><span class="tool on">Read</span><span class="tool on">Ports</span><span class="tool on">Subnetting</span><span class="tool on">OSI Rack</span><span class="tool on">Cards</span><span class="tool on">Quiz</span><span class="tool on">Progress</span></div>
+        <span class="go">Open the Network+ guide &rarr;</span>
+      </a>
+    </div>
+
+    <div class="cert linked" style="--ca:var(--c-sec)">
+      <button type="button" class="chip" data-cert="secplus" data-name="Security+"></button>
+      <a class="cert-body" href="https://claude.ai/artifact/VBQTcEFCBoLm2HbFYQ3MFE">
+        <div class="cert-top">
+          <h2>Security+</h2><span class="code">SY0-701</span>
+        </div>
+        <p>All five domains built and verified against the published objectives: 179 notebook
+        topics, 655 match pairs, 560 flashcards, 258 quiz questions and 75 scenarios, plus the
+        full acronym list.</p>
+        <div class="tools"><span class="tool on">Notebook</span><span class="tool on">Match</span><span class="tool on">Drill</span><span class="tool on">Acronyms</span></div>
+        <span class="go">Open the Security+ toolkit &rarr;</span>
+      </a>
+    </div>
+
+    <div class="cert linked" style="--ca:var(--c-cysa)">
+      <button type="button" class="chip" data-cert="cysa" data-name="CySA+"></button>
+      <a class="cert-body" href="https://claude.ai/artifact/PrxFejEDNFYfNB7V7Ahjvq">
+        <div class="cert-top">
+          <h2>CySA+</h2><span class="code">CS0-003</span>
+        </div>
+        <p>All four domains built drill-first &mdash; 257 exam flashcards, 127 quiz questions and
+        32 scenarios, ten hands-on performance tasks, general-knowledge items badged separately,
+        and the course flashcards typed during class.</p>
+        <div class="tools"><span class="tool on">Drill</span><span class="tool on">Performance Tasks</span><span class="tool on">Simple Flash</span><span class="tool">Notebook</span><span class="tool">Match</span></div>
+        <span class="go">Open the CySA+ toolkit &rarr;</span>
+      </a>
+    </div>
+
+  </div>
+
+<!--SCHED-HTML-->
+  <div class="note">
+    <strong>Progress is saved per certification, in this browser.</strong> Each cert's drills and
+    its scheduler plan write under their own key prefix, so Security+ Domain 1 and CySA+ Domain 1 never
+    collide. It stays on the device you studied on and is not synced anywhere.
+    <br><br>
+    The status tag on each card is yours to set &mdash; click it to cycle through
+    <em>Certified</em>, <em>Studying now</em> and <em>Not started</em>. Nothing on the page reads
+    it; it is a label for you, saved under <code>certhub:status:v1</code>.
+    <div class="resetrow"><button type="button" class="reset" id="reset">Reset status tags</button></div>
+  </div>
+
+  <div class="foot">
+    Personal study material. Not official CompTIA content, and not affiliated with, authorized by
+    or endorsed by CompTIA. A+, Network+, Security+, CySA+ and the exam codes above are
+    trademarks of CompTIA, Inc.
+  </div>
+
+</div>
+
+<script>
+/* Status tags. Hardcoded "Certified" was wrong the moment a cert changed state, so the
+   state lives in this browser instead and the card only supplies its default. */
+var KEY = "certhub:status:v1";
+var ORDER  = ["certified", "studying", "none"];
+var LABELS = {certified:"Certified", studying:"Studying now", none:"Not started"};
+var DEFAULTS = {aplus:"certified", netplus:"certified", secplus:"certified", cysa:"studying"};
+
+var st = {};
+try{ var raw = localStorage.getItem(KEY); if(raw) st = JSON.parse(raw) || {}; }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+function stateOf(id){
+  var s = st[id] || DEFAULTS[id] || "none";
+  return ORDER.indexOf(s) === -1 ? "none" : s;
+}
+function paint(b){
+  var id = b.getAttribute("data-cert"), s = stateOf(id);
+  b.className = "chip " + s;
+  b.textContent = LABELS[s];
+  b.setAttribute("title", "Click to change status");
+  b.setAttribute("aria-label", b.getAttribute("data-name") + " status: " + LABELS[s]
+    + ". Click to change.");
+}
+var chips = document.querySelectorAll(".chip");
+Array.prototype.forEach.call(chips, function(b){
+  paint(b);
+  b.addEventListener("click", function(ev){
+    ev.preventDefault(); ev.stopPropagation();
+    var id = b.getAttribute("data-cert");
+    st[id] = ORDER[(ORDER.indexOf(stateOf(id)) + 1) % ORDER.length];
+    save(); paint(b);
+  });
+});
+document.getElementById("reset").addEventListener("click", function(){
+  st = {}; save();
+  Array.prototype.forEach.call(chips, paint);
+});
+</script>
+<script>
+/*SCHED-JS*/
+</script>

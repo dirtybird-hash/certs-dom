@@ -64,10 +64,13 @@ read a JSON patch file and apply it through `NB`. Patch shape:
 flat list of `{"a": acronym, "x": expansion, "dm": domain, "o": objective}`. Retargeting to
 another exam means replacing `acr_data.json` with that exam's published acronym list.
 
-`prep_page.py` + `prep_style.css` + `prep_data.json` — generates the Test Prep Scheduler.
-`prep_data.json` carries per-objective topic lists and card counts, which is how the planner
-sizes each block. The planner reads `domainNdrill:v1` from localStorage and reweights the
-remaining days by measured accuracy.
+`hub_page.py` — builds the root hub with the Test Prep Scheduler. Sources: `hub/hub.html` (hub
+fragment, artifact links), `hub/sched.html`, `hub/sched.css`, `hub/sched.js`, and `sched_data.json`
+(domain weights and objective titles for every cert in the dropdown). Writes `out/cert-hub.html`
+(publish to the CompTIA Toolkit artifact) and the repo's `index.html` (links rewritten to repo paths).
+Run from the repo root: `python build/hub_page.py`. Adding a cert to the dropdown means adding it
+to `sched_data.json` and to `LINKS` in `hub_page.py`. The old Security+-only generator
+(`prep_page.py`, `prep_style.css`, `prep_data.json`) is retired.
 
 ## Validation, every time
 
@@ -89,22 +92,22 @@ counts *lines*, not matches. Use Python `str.count` on whitespace-flattened text
 
 Per-viewer, per-origin. Each artifact has its own origin and cannot read another's data; on
 this Pages site every page shares one origin, so cross-tool reads work here and only here.
-That difference is not cosmetic — the Scheduler's reweighting is inert on the artifact version.
+That difference is not cosmetic — the Scheduler's accuracy weighting is inert on the artifact version.
 
 | Tool | Key |
 |---|---|
 | Drill | `domainNdrill:v1` → `{cardStatus, objStats: {"4.6": {c, t}}}` |
 | Match | `domainNmatch:v2` |
 | Acronym Drill | `sec701-acr-v1` |
-| Scheduler | `sec701-prep-v1` |
+| Scheduler (root hub) | `<cert>:prep:v1` per cert (`cysa:`, `secplus:`, `netplus:`, `aplus:`); selected cert in `certhub:prep-cert:v1` |
 
 ## Retargeting to another exam
 
 1. Parse the new objectives PDF into a bullet list; it is the spine for every coverage check.
 2. Copy a domain trio per new domain, swap the data arrays, objective config, accent tokens
    and storage key prefix.
-3. Replace `acr_data.json` with the new acronym list and `prep_data.json` with the new
-   objective/topic map.
+3. Replace `acr_data.json` with the new acronym list, and add the exam to `sched_data.json` for the
+   Scheduler.
 4. Update `build_repo.py`'s three maps, rebuild, validate, publish.
 
 Coverage checks compare notebook text against the objective bullets. Expect false negatives

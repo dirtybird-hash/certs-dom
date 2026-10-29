@@ -18,9 +18,8 @@ SRC = pathlib.Path('/home/claude')
 OUT = pathlib.Path('/home/claude/repo')
 OUT.mkdir(exist_ok=True)
 
-# The root cert picker. Source file -> published name at the repo root.
-ROOT = {'cert-hub.html': 'index.html'}
-ROOT_DESC = {'index.html': 'Study tools for every CompTIA certification on the track.'}
+# The root cert picker (with the Test Prep Scheduler) is built by build/hub_page.py,
+# which writes both the artifact fragment and the repo's index.html. It is not built here.
 
 SECPLUS_HUB = "https://claude.ai/artifact/VBQTcEFCBoLm2HbFYQ3MFE"
 
@@ -44,7 +43,6 @@ SECPLUS_URLS = {
   "https://claude.ai/artifact/Wyhp4zXtxfBbihG4azVnRt": "domain5-drill.html",
   SECPLUS_HUB: "index.html",
   "https://claude.ai/artifact/AWyxEkC2q9eHzRvyDUNkb1": "acronym-drill.html",
-  "https://claude.ai/artifact/PQbQXhnhBj4rniTPMzJprV": "prep-scheduler.html",
 }
 
 SECPLUS_FILES = {'security-toolkit.html': 'index.html'}
@@ -52,7 +50,6 @@ for d in range(1, 6):
     for kind in ('notebook', 'match', 'drill'):
         SECPLUS_FILES[f'domain{d}-{kind}.html'] = f'domain{d}-{kind}.html'
 SECPLUS_FILES['acronym-drill.html'] = 'acronym-drill.html'
-SECPLUS_FILES['prep-scheduler.html'] = 'prep-scheduler.html'
 
 SECPLUS_DESC = {'index.html': 'Study tools for the CompTIA Security+ SY0-701 exam, organized by domain.'}
 for d in range(1, 6):
@@ -60,7 +57,6 @@ for d in range(1, 6):
     SECPLUS_DESC[f'domain{d}-match.html']    = f'Term-and-definition matching game for Security+ Domain {d}.'
     SECPLUS_DESC[f'domain{d}-drill.html']    = f'Flashcards, quiz and scenario practice for Security+ Domain {d}.'
 SECPLUS_DESC['acronym-drill.html']  = 'All 333 CompTIA Security+ SY0-701 acronyms as flashcards, a quiz and a searchable list.'
-SECPLUS_DESC['prep-scheduler.html'] = 'Turns your Security+ exam date into a day-by-day study and drill plan that follows your weak spots.'
 
 CERT_HUB = "https://claude.ai/artifact/B7ZnpG2Vvn7rt55DFHh9Ws"
 
@@ -137,14 +133,6 @@ def build(srcname, outpath, desc, urls):
     print(f'{str(rel):34} {len(doc)//1024:4} KB   title="{title}"')
     return True
 
-
-# The cert hub links to each cert's hub artifact; in the repo those become folder paths.
-ROOT_URLS = {
-  "https://claude.ai/artifact/VBQTcEFCBoLm2HbFYQ3MFE": "security-plus/index.html",
-  "https://claude.ai/artifact/PrxFejEDNFYfNB7V7Ahjvq": "cysa/index.html",
-}
-for srcname, outname in ROOT.items():
-    build(srcname, OUT / outname, ROOT_DESC[outname], ROOT_URLS)
 
 for folder, cfg in CERTS.items():
     print(f'\n-- {folder}/')

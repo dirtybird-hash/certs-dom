@@ -1,0 +1,57 @@
+  <section class="sched" id="scheduler" aria-labelledby="sched-h">
+    <p class="eyebrow">Plan</p>
+    <h2 id="sched-h">Test Prep Scheduler</h2>
+    <p class="lead">Pick a certification and enter its exam date. The study breakdown and a day-by-day
+    checklist build themselves from the cert's published objectives, weighted by each domain's share of
+    the exam. Each cert keeps its own plan and checkmarks.</p>
+
+    <div class="sform">
+      <div class="fld full">
+        <label for="s-cert">Which test?</label>
+        <select id="s-cert"></select>
+      </div>
+      <div class="fld">
+        <label for="s-date">Exam date</label>
+        <input type="date" id="s-date">
+      </div>
+      <div class="fld">
+        <label for="s-time">Exam time</label>
+        <input type="time" id="s-time" value="09:00">
+      </div>
+      <div class="fld full" id="s-presets-row" hidden>
+        <label>Quick dates</label>
+        <div class="presets" id="s-presets"></div>
+      </div>
+      <div class="fld">
+        <label for="s-wd">Weekday minutes</label>
+        <input type="number" id="s-wd" min="0" max="600" step="15" value="60" inputmode="numeric">
+      </div>
+      <div class="fld">
+        <label for="s-we">Weekend minutes</label>
+        <input type="number" id="s-we" min="0" max="600" step="15" value="120" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="sempty" id="s-empty">Enter an exam date and the study breakdown appears here.</div>
+
+    <div id="s-live" hidden>
+      <div class="sstats" id="s-stats"></div>
+      <div class="sprog" aria-hidden="true"><span id="s-bar"></span></div>
+      <div id="s-warn"></div>
+
+      <p class="sh3">Study breakdown</p>
+      <table class="brk" id="s-brk"></table>
+
+      <p class="sh3" id="s-today-h">Today</p>
+      <div class="today" id="s-today"></div>
+
+      <p class="sh3">Full checklist</p>
+      <div id="s-days"></div>
+
+      <div class="sactions">
+        <button type="button" class="sbtn" id="s-rebuild">Rebuild from today</button>
+        <button type="button" class="sbtn quiet" id="s-clear">Clear this cert's plan</button>
+      </div>
+      <p class="snote" id="s-note"></p>
+    </div>
+  </section>

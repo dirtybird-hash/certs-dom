@@ -1,0 +1,568 @@
+{
+ "cysa": {
+  "name": "CySA+",
+  "code": "CS0-003",
+  "domains": [
+   {
+    "n": "1",
+    "name": "Security Operations",
+    "w": 33,
+    "objs": [
+     {
+      "o": "1.1",
+      "t": "Explain the importance of system and network architecture concepts in security operations"
+     },
+     {
+      "o": "1.2",
+      "t": "Given a scenario, analyze indicators of potentially malicious activity"
+     },
+     {
+      "o": "1.3",
+      "t": "Given a scenario, use appropriate tools or techniques to determine malicious activity"
+     },
+     {
+      "o": "1.4",
+      "t": "Compare and contrast threat-intelligence and threat-hunting concepts"
+     },
+     {
+      "o": "1.5",
+      "t": "Explain the importance of efficiency and process improvement in security operations"
+     }
+    ]
+   },
+   {
+    "n": "2",
+    "name": "Vulnerability Management",
+    "w": 30,
+    "objs": [
+     {
+      "o": "2.1",
+      "t": "Given a scenario, implement vulnerability scanning methods and concepts"
+     },
+     {
+      "o": "2.2",
+      "t": "Given a scenario, analyze output from vulnerability assessment tools"
+     },
+     {
+      "o": "2.3",
+      "t": "Given a scenario, analyze data to prioritize vulnerabilities"
+     },
+     {
+      "o": "2.4",
+      "t": "Given a scenario, recommend controls to mitigate attacks and software vulnerabilities"
+     },
+     {
+      "o": "2.5",
+      "t": "Explain concepts related to vulnerability response, handling, and management"
+     }
+    ]
+   },
+   {
+    "n": "3",
+    "name": "Incident Response and Management",
+    "w": 20,
+    "objs": [
+     {
+      "o": "3.1",
+      "t": "Explain concepts related to attack methodology frameworks"
+     },
+     {
+      "o": "3.2",
+      "t": "Given a scenario, perform incident response activities"
+     },
+     {
+      "o": "3.3",
+      "t": "Explain the preparation and post-incident activity phases of the incident management life cycle"
+     }
+    ]
+   },
+   {
+    "n": "4",
+    "name": "Reporting and Communication",
+    "w": 17,
+    "objs": [
+     {
+      "o": "4.1",
+      "t": "Explain the importance of vulnerability management reporting and communication"
+     },
+     {
+      "o": "4.2",
+      "t": "Explain the importance of incident response reporting and communication"
+     }
+    ]
+   }
+  ]
+ },
+ "secplus": {
+  "name": "Security+",
+  "code": "SY0-701",
+  "domains": [
+   {
+    "n": "1",
+    "name": "General Security Concepts",
+    "w": 12,
+    "objs": [
+     {
+      "o": "1.1",
+      "t": "Security Controls"
+     },
+     {
+      "o": "1.2",
+      "t": "Core Concepts"
+     },
+     {
+      "o": "1.3",
+      "t": "Change Management"
+     },
+     {
+      "o": "1.4",
+      "t": "Cryptography"
+     }
+    ]
+   },
+   {
+    "n": "2",
+    "name": "Threats, Vulnerabilities & Mitigations",
+    "w": 22,
+    "objs": [
+     {
+      "o": "2.1",
+      "t": "Threat Actors"
+     },
+     {
+      "o": "2.2",
+      "t": "Vectors & Attack Surfaces"
+     },
+     {
+      "o": "2.3",
+      "t": "Vulnerabilities"
+     },
+     {
+      "o": "2.4",
+      "t": "Malicious Activity"
+     },
+     {
+      "o": "2.5",
+      "t": "Mitigation"
+     }
+    ]
+   },
+   {
+    "n": "3",
+    "name": "Security Architecture",
+    "w": 18,
+    "objs": [
+     {
+      "o": "3.1",
+      "t": "Architecture Models"
+     },
+     {
+      "o": "3.2",
+      "t": "Secure Infrastructure"
+     },
+     {
+      "o": "3.3",
+      "t": "Protecting Data"
+     },
+     {
+      "o": "3.4",
+      "t": "Resilience & Recovery"
+     }
+    ]
+   },
+   {
+    "n": "4",
+    "name": "Security Operations",
+    "w": 28,
+    "objs": [
+     {
+      "o": "4.1",
+      "t": "Security Techniques"
+     },
+     {
+      "o": "4.2",
+      "t": "Asset Management"
+     },
+     {
+      "o": "4.3",
+      "t": "Vulnerability Management"
+     },
+     {
+      "o": "4.4",
+      "t": "Alerting & Monitoring"
+     },
+     {
+      "o": "4.5",
+      "t": "Enterprise Capabilities"
+     },
+     {
+      "o": "4.6",
+      "t": "Identity & Access Management"
+     },
+     {
+      "o": "4.7",
+      "t": "Automation & Orchestration"
+     },
+     {
+      "o": "4.8",
+      "t": "Incident Response"
+     },
+     {
+      "o": "4.9",
+      "t": "Investigation Data Sources"
+     }
+    ]
+   },
+   {
+    "n": "5",
+    "name": "Program Management & Oversight",
+    "w": 20,
+    "objs": [
+     {
+      "o": "5.1",
+      "t": "Security Governance"
+     },
+     {
+      "o": "5.2",
+      "t": "Risk Management"
+     },
+     {
+      "o": "5.3",
+      "t": "Third-Party Risk"
+     },
+     {
+      "o": "5.4",
+      "t": "Security Compliance"
+     },
+     {
+      "o": "5.5",
+      "t": "Audits & Assessments"
+     },
+     {
+      "o": "5.6",
+      "t": "Security Awareness"
+     }
+    ]
+   }
+  ]
+ },
+ "netplus": {
+  "name": "Network+",
+  "code": "N10-009",
+  "domains": [
+   {
+    "n": "1",
+    "name": "Networking Concepts",
+    "w": 23,
+    "objs": [
+     {
+      "o": "1.1",
+      "t": "Explain concepts related to the OSI reference model"
+     },
+     {
+      "o": "1.2",
+      "t": "Compare and contrast networking appliances, applications, and functions"
+     },
+     {
+      "o": "1.3",
+      "t": "Summarize cloud concepts and connectivity options"
+     },
+     {
+      "o": "1.4",
+      "t": "Explain common networking ports, protocols, services, and traffic types"
+     },
+     {
+      "o": "1.5",
+      "t": "Compare and contrast transmission media and transceivers"
+     },
+     {
+      "o": "1.6",
+      "t": "Compare and contrast network topologies, architectures, and types"
+     },
+     {
+      "o": "1.7",
+      "t": "Given a scenario, use appropriate IPv4 network addressing"
+     },
+     {
+      "o": "1.8",
+      "t": "Summarize evolving use cases for modern network environments"
+     }
+    ]
+   },
+   {
+    "n": "2",
+    "name": "Network Implementation",
+    "w": 20,
+    "objs": [
+     {
+      "o": "2.1",
+      "t": "Explain characteristics of routing technologies"
+     },
+     {
+      "o": "2.2",
+      "t": "Given a scenario, configure switching technologies and features"
+     },
+     {
+      "o": "2.3",
+      "t": "Given a scenario, select and configure wireless devices and technologies"
+     },
+     {
+      "o": "2.4",
+      "t": "Explain important factors of physical installations"
+     }
+    ]
+   },
+   {
+    "n": "3",
+    "name": "Network Operations",
+    "w": 19,
+    "objs": [
+     {
+      "o": "3.1",
+      "t": "Explain the purpose of organizational processes and procedures"
+     },
+     {
+      "o": "3.2",
+      "t": "Given a scenario, use network monitoring technologies"
+     },
+     {
+      "o": "3.3",
+      "t": "Explain disaster recovery (DR) concepts"
+     },
+     {
+      "o": "3.4",
+      "t": "Given a scenario, implement IPv4 and IPv6 network services"
+     },
+     {
+      "o": "3.5",
+      "t": "Compare and contrast network access and management methods"
+     }
+    ]
+   },
+   {
+    "n": "4",
+    "name": "Network Security",
+    "w": 14,
+    "objs": [
+     {
+      "o": "4.1",
+      "t": "Explain the importance of basic network security concepts"
+     },
+     {
+      "o": "4.2",
+      "t": "Summarize various types of attacks and their impact to the network"
+     },
+     {
+      "o": "4.3",
+      "t": "Given a scenario, apply network security features, defense techniques, and solutions"
+     }
+    ]
+   },
+   {
+    "n": "5",
+    "name": "Network Troubleshooting",
+    "w": 24,
+    "objs": [
+     {
+      "o": "5.1",
+      "t": "Explain the troubleshooting methodology"
+     },
+     {
+      "o": "5.2",
+      "t": "Given a scenario, troubleshoot common cabling and physical interface issues"
+     },
+     {
+      "o": "5.3",
+      "t": "Given a scenario, troubleshoot common issues with network services"
+     },
+     {
+      "o": "5.4",
+      "t": "Given a scenario, troubleshoot common performance issues"
+     },
+     {
+      "o": "5.5",
+      "t": "Given a scenario, use the appropriate tool or protocol to solve networking issues"
+     }
+    ]
+   }
+  ]
+ },
+ "aplus": {
+  "name": "A+ Core 2",
+  "code": "220-1202",
+  "domains": [
+   {
+    "n": "1",
+    "name": "Operating Systems",
+    "w": 28,
+    "objs": [
+     {
+      "o": "1.1",
+      "t": "Explain common operating system types and their purposes"
+     },
+     {
+      "o": "1.2",
+      "t": "Given a scenario, perform OS installations and upgrades in a diverse environment"
+     },
+     {
+      "o": "1.3",
+      "t": "Compare and contrast basic features of Microsoft Windows editions"
+     },
+     {
+      "o": "1.4",
+      "t": "Given a scenario, use Microsoft Windows operating system features and tools"
+     },
+     {
+      "o": "1.5",
+      "t": "Given a scenario, use the appropriate Microsoft command-line tools"
+     },
+     {
+      "o": "1.6",
+      "t": "Given a scenario, configure Microsoft Windows settings"
+     },
+     {
+      "o": "1.7",
+      "t": "Given a scenario, configure Microsoft Windows networking features on a client/desktop"
+     },
+     {
+      "o": "1.8",
+      "t": "Explain common features and tools of the macOS/desktop operating system"
+     },
+     {
+      "o": "1.9",
+      "t": "Identify common features and tools of the Linux client/desktop operating system"
+     },
+     {
+      "o": "1.10",
+      "t": "Given a scenario, install applications according to requirements"
+     },
+     {
+      "o": "1.11",
+      "t": "Given a scenario, install and configure cloud-based productivity tools"
+     }
+    ]
+   },
+   {
+    "n": "2",
+    "name": "Security",
+    "w": 28,
+    "objs": [
+     {
+      "o": "2.1",
+      "t": "Summarize various security measures and their purposes"
+     },
+     {
+      "o": "2.2",
+      "t": "Given a scenario, configure and apply basic Microsoft Windows OS security settings"
+     },
+     {
+      "o": "2.3",
+      "t": "Compare and contrast wireless security protocols and authentication methods"
+     },
+     {
+      "o": "2.4",
+      "t": "Summarize types of malware and tools/methods for detection, removal, and prevention"
+     },
+     {
+      "o": "2.5",
+      "t": "Compare and contrast common social engineering attacks, threats, and vulnerabilities"
+     },
+     {
+      "o": "2.6",
+      "t": "Given a scenario, implement procedures for basic SOHO malware removal"
+     },
+     {
+      "o": "2.7",
+      "t": "Given a scenario, apply workstation security options and hardening techniques"
+     },
+     {
+      "o": "2.8",
+      "t": "Given a scenario, apply common methods for securing mobile devices"
+     },
+     {
+      "o": "2.9",
+      "t": "Compare and contrast common data destruction and disposal methods"
+     },
+     {
+      "o": "2.10",
+      "t": "Given a scenario, apply security settings on SOHO wireless and wired networks"
+     },
+     {
+      "o": "2.11",
+      "t": "Given a scenario, configure relevant security settings in a browser"
+     }
+    ]
+   },
+   {
+    "n": "3",
+    "name": "Software Troubleshooting",
+    "w": 23,
+    "objs": [
+     {
+      "o": "3.1",
+      "t": "Given a scenario, troubleshoot common Windows OS issues"
+     },
+     {
+      "o": "3.2",
+      "t": "Given a scenario, troubleshoot common mobile OS and application issues"
+     },
+     {
+      "o": "3.3",
+      "t": "Given a scenario, troubleshoot common mobile OS and application security issues"
+     },
+     {
+      "o": "3.4",
+      "t": "Given a scenario, troubleshoot common personal computer (PC) security issues"
+     }
+    ]
+   },
+   {
+    "n": "4",
+    "name": "Operational Procedures",
+    "w": 21,
+    "objs": [
+     {
+      "o": "4.1",
+      "t": "Given a scenario, implement best practices associated with documentation and support systems information management"
+     },
+     {
+      "o": "4.2",
+      "t": "Given a scenario, apply change management procedures"
+     },
+     {
+      "o": "4.3",
+      "t": "Given a scenario, implement workstation backup and recovery methods"
+     },
+     {
+      "o": "4.4",
+      "t": "Given a scenario, use common safety procedures"
+     },
+     {
+      "o": "4.5",
+      "t": "Summarize environmental impacts and local environment controls"
+     },
+     {
+      "o": "4.6",
+      "t": "Explain the importance of prohibited content/activity and privacy, licensing, and policy concepts"
+     },
+     {
+      "o": "4.7",
+      "t": "Given a scenario, use proper communication techniques and professionalism"
+     },
+     {
+      "o": "4.8",
+      "t": "Explain the basics of scripting"
+     },
+     {
+      "o": "4.9",
+      "t": "Given a scenario, use remote access technologies"
+     },
+     {
+      "o": "4.10",
+      "t": "Explain basic concepts related to artificial intelligence (AI)"
+     }
+    ]
+   }
+  ]
+ }
+}

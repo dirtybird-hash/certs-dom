@@ -13,7 +13,7 @@ Open `index.html` in any browser — no build step, no dependencies, no server r
 | — | Network+ **N10-009** | Material exists outside this repo; not wired in yet |
 | — | CySA+ **CS0-003** | Not started |
 
-`index.html` at the root is the certification picker. Each cert folder holds its own hub plus its tools.
+`index.html` at the root is the certification picker and holds the Test Prep Scheduler. Each cert folder holds its own hub plus its tools.
 
 ## What each tool does
 
@@ -25,7 +25,7 @@ Open `index.html` in any browser — no build step, no dependencies, no server r
 
 **Acronym Drill** — the exam's full published acronym list, drilled both directions, with a quiz that draws its wrong answers from the same domain so the choices stay plausible.
 
-**Test Prep Scheduler** — enter your exam date, time and the minutes you can give it on weekdays and weekends, and it lays out the remaining days: reading paired with drilling while there is ground to cover, mixed question rounds in the middle, then scenarios and gotcha tables at the end. It reads the accuracy the Drill pages have recorded and re-orders the plan around your weakest objectives.
+**Test Prep Scheduler** (on the root hub) — pick the certification (A+ Core 2, Network+, Security+ or CySA+), enter the exam date and the minutes you can give it on weekdays and weekends, and it builds a study breakdown by domain plus a day-by-day checklist: study and drill blocks for every objective, mixed rounds in the middle, a timed practice exam and a light review at the end. For Security+ and CySA+ it reads the accuracy the Drill pages have recorded and puts your weakest objectives first. Each cert keeps its own plan and checkmarks.
 
 ## Security+ coverage
 
