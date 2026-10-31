@@ -8,10 +8,10 @@ Open `index.html` in any browser — no build step, no dependencies, no server r
 
 | Folder | Exam | State |
 |---|---|---|
-| `security-plus/` | Security+ **SY0-701** | Complete — all five domains built and verified against the published objectives |
-| — | A+ Core 2 **220-1202** | Material exists outside this repo; not wired in yet |
-| — | Network+ **N10-009** | Material exists outside this repo; not wired in yet |
-| — | CySA+ **CS0-003** | Not started |
+| `cysa/` | CySA+ **CS0-003** | In progress — all four domains built: Notebook, four Drills, Ops Lab, Performance Tasks, Simple Flash |
+| `security-plus/` | Security+ **SY0-701** | Complete — all five domains built and verified against the published objectives (exam passed) |
+| — | Network+ **N10-009** | Separate repo, [netplus-study-guide2](https://github.com/dirtybird-hash/netplus-study-guide2), linked from the root hub |
+| — | A+ Core 2 **220-1202** | Slot reserved on the root hub; files not added yet |
 
 `index.html` at the root is the certification picker and holds the Test Prep Scheduler. Each cert folder holds its own hub plus its tools.
 
@@ -38,6 +38,19 @@ All five domains — 100% of the exam by weight.
 | 3.0 Security Architecture | 18% | 37 topics | 143 pairs | 115 / 50 / 15 |
 | 4.0 Security Operations | 28% | 48 topics | 194 pairs | 165 / 72 / 15 |
 | 5.0 Security Program Management & Oversight | 20% | 24 topics | 111 pairs | 96 / 45 / 15 |
+
+## CySA+ coverage
+
+All four domains — 100% of the exam by weight. Exam items exclude the separately badged general-knowledge cards.
+
+| Domain | Weight | Notebook | Drill (exam items) |
+|---|---|---|---|
+| 1.0 Security Operations | 33% | 40 topics | 121 flash / 74 quiz / 20 scenarios |
+| 2.0 Vulnerability Management | 30% | 26 topics | 101 / 55 / 10 |
+| 3.0 Incident Response & Management | 20% | 11 topics | 40 / 23 / 5 |
+| 4.0 Reporting & Communication | 17% | 11 topics | 32 / 13 / 4 |
+
+Plus all 128 CS0-003 acronyms in the Notebook, 39 Ops Lab drills with a CVSS workbench, and ten Performance Tasks.
 
 ## Notes
 
