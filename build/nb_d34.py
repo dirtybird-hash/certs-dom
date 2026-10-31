@@ -14,6 +14,7 @@ dict(id="kill-chain", o="3.1", t="Cyber Kill Chain", q="kill chain", h="""
 <tr><td>6</td><td>Command and Control</td><td>Establishes the remote channel</td><td>Egress filtering, DNS/proxy blocking</td></tr>
 <tr><td>7</td><td>Actions on Objectives</td><td>Steals, encrypts, destroys</td><td>DLP, segmentation, backups</td></tr></table></div>
 <p>Break any link and the chain fails, so the earlier you stop it, the less damage. Criticism: it is linear and perimeter-focused, and handles insiders and lateral movement poorly.</p>
+<p>Delivery is usually the first stage defenders can see; reconnaissance is often passive and weaponization happens on the attacker&rsquo;s own systems. Detection at installation or command and control means the attacker already has a foothold, which normally triggers incident response.</p>
 """ + T.format("Weaponization happens on the attacker&rsquo;s side before anything touches you. Building the malicious file is weaponization; emailing it is delivery.")),
 
 dict(id="diamond", o="3.1", t="Diamond Model of Intrusion Analysis", q="diamond", h="""
@@ -23,6 +24,7 @@ dict(id="diamond", o="3.1", t="Diamond Model of Intrusion Analysis", q="diamond"
 <li><strong>Infrastructure</strong>: what they used to deliver and control it (IPs, domains, email accounts).</li>
 <li><strong>Victim</strong>: who or what was targeted. Some class slides call this corner <em>Target</em>.</li></ul>
 <p>Edges connect them: an adversary uses a capability over infrastructure against a victim. The value is <strong>pivoting</strong>: from one known corner (a C2 domain) you discover others (other victims of that infrastructure, the adversary behind it). Meta-features include timestamp, phase, result, direction, methodology and resources; the social-political and technology axes describe the adversary-victim relationship and how capability meets infrastructure.</p>
+<p>The Diamond Model is mostly used after an intrusion and in threat intelligence work: attackers reuse infrastructure and malware across campaigns, so an indicator from your incident can link to other victims and to a named group.</p>
 """ + T.format("A question about analyzing relationships between attacker, tools, infrastructure and target, or pivoting from one to find the others, is the Diamond Model, not the Kill Chain.")),
 
 dict(id="attack", o="3.1", t="MITRE ATT&CK", q="att&ck", h="""
@@ -33,12 +35,14 @@ dict(id="attack", o="3.1", t="MITRE ATT&CK", q="att&ck", h="""
 <p>Uses: map detections to find gaps (ATT&amp;CK Navigator heat maps), describe incidents in a common language, plan adversary emulation. Matrices exist for Enterprise, Mobile and ICS.</p>
 <p><em>Check:</em> older class material describes the Enterprise matrix as the Kill Chain plus six more stages, 13 in all. The current matrix has 14 tactics; Reconnaissance and Resource Development were added in 2020.</p>
 <p><strong>ATT&amp;CK Navigator</strong> is the free web tool for building colored layers over the matrix. Typical uses: shade the techniques a specific threat group is known to use (a threat profile), overlay the techniques your detections cover, and the uncovered cells left over are your gaps to close or hunt for.</p>
+<p><strong>Tactic, technique, procedure in one line each.</strong> Tactic: the goal at that moment (credential access). Technique: the method (OS credential dumping). Procedure: exactly how a particular group did it, meaning the tool, the command sequence and the targets. Procedures are what you can write a detection or a hunt query for, and repeated procedures are how analysts link an incident to a known group.</p>
 """ + T.format("ATT&amp;CK is not a sequence. Unlike the Kill Chain, attackers can use tactics in any order and repeat them.")),
 
 dict(id="testing-methods", o="3.1", t="OSSTMM and the OWASP Testing Guide", q="osstmm", h="""
 <p>Both are testing methodologies, not attack models:</p>
 <ul><li><strong>OSSTMM</strong> (Open Source Security Testing Methodology Manual, from ISECOM): a peer-reviewed method for measuring operational security across channels (human, physical, wireless, telecommunications, data networks), with metrics for attack surface. Scientific and measurement-focused.</li>
 <li><strong>OWASP Testing Guide</strong> (WSTG): a detailed method for testing web applications, organized by area (information gathering, configuration, identity, authentication, authorization, session management, input validation, error handling, cryptography, business logic, client-side).</li></ul>
+<p><strong>What makes each one distinctive.</strong> OSSTMM tests the deployed reality instead of the paperwork: rather than reading the password policy, the tester checks whether weak passwords are actually rejected. It treats security as something measured from observed evidence. The OWASP Testing Guide stands out for <strong>business logic</strong> testing, meaning flaws in how the application is designed to work rather than coding bugs. Examples: changing a price held in a hidden form field, or reaching the final step of a multi-step approval by submitting that request directly.</p>
 """ + T.format("If the scope is a web application, the OWASP Testing Guide. If it is the organization&rsquo;s overall operational security, including people and physical, OSSTMM.")),
 
 # ---------------------------------------------------------------- 3.2
@@ -52,6 +56,7 @@ dict(id="ir-lifecycle", o="3.2", t="The incident response life cycle", q="contai
 <p><strong>Event vs incident</strong>: an event is any observable occurrence; an incident is an event that violates or threatens security policy. All incidents are events; most events are not incidents.</p>
 <p><strong>Common incident types</strong>: data breach (unauthorized access to or disclosure of sensitive data), malware (including ransomware), denial of service, insider misuse (intentional or accidental), account compromise, and loss or theft of equipment. Playbooks are usually written per type.</p>
 <p><strong>Goals of incident response</strong>, roughly in priority order: limit damage and keep critical operations running, protect sensitive data, recover to normal operations, preserve evidence, and prevent a repeat. Response also protects stakeholder trust: customers, regulators and partners judge you by how you handle an incident as well as by the fact that it happened.</p>
+<p><strong>A vulnerability is not an incident.</strong> A missing patch or a scanner finding goes through vulnerability management (ticket, owner, SLO). It becomes an incident only when there is evidence it is being, or has been, exploited in your environment. Declaring incidents for open findings wastes the response team and buries real cases.</p>
 """),
 
 dict(id="evidence", o="3.2", t="Evidence: chain of custody, integrity, preservation, legal hold", q="chain of custody", h="""
@@ -70,12 +75,15 @@ dict(id="cer", o="3.2", t="Containment, eradication and recovery", q="isolation"
 <tr><td>Recovery</td><td><strong>Re-imaging</strong> from a known-good image (more reliable than cleaning), restoring data from clean backups, patching and hardening before reconnecting, heightened monitoring afterward</td></tr></table></div>
 <p><strong>Compensating controls</strong> fill gaps while a permanent fix waits, such as WAF rules for an unpatched app or extra monitoring on a system that can&rsquo;t be rebuilt yet.</p>
 <p>Containment can tip off the attacker. If they might destroy data or move faster, sometimes you watch briefly (in a sandboxed segment) to learn scope before cutting them off. Decide that with management and legal.</p>
+<p><strong>Short-term vs long-term containment.</strong> Short-term containment stops the spread now: isolate the host through EDR, disable the account, block the indicator. Long-term containment holds the line while eradication and rebuilding take days: move affected systems to a restricted segment, tighten firewall rules, add monitoring, run temporary clean systems so the business keeps working. Record every containment decision and who approved it, because each one trades evidence and uptime against further damage.</p>
+<p>The phases overlap in practice. Finding a second compromised host during eradication sends that host back through analysis and containment while the first one is already being rebuilt.</p>
 """ + T.format("Re-imaging is preferred over cleaning because you can never be sure cleaning removed every persistence mechanism. Restore data, not system binaries, from backups taken before the compromise.")),
 
 dict(id="detection-analysis", o="3.2", t="Detection and analysis: IoCs and log analysis", q="ioc", h="""
 <p>Detection sources: SIEM alerts, EDR, IDS/IPS, antivirus, FIM, third-party notifications, users reporting something odd.</p>
 <p>Analysis steps: validate the alert (true or false positive), correlate across sources to build a timeline, determine scope, classify severity (functional impact, information impact, recoverability), then decide whether it&rsquo;s an incident and escalate.</p>
 <p>Useful log sources: Windows Security log (4624 logon, 4625 failed logon, 4672 special privileges, 4688 process creation, 4720 account created, 4732 added to local group, 1102 audit log cleared), Linux <code>auth.log</code>/<code>secure</code>, web server access logs, firewall and proxy logs, DNS logs, cloud audit trails (AWS CloudTrail, Azure Activity Log).</p>
+<p><strong>IoCs are evidence, not verdicts.</strong> They come in three broad kinds: <strong>network</strong> (connections to known-bad addresses, odd ports, DNS tunneling), <strong>host</strong> (unexpected processes, new accounts, registry or file changes, hashes matching known malware) and <strong>behavioral</strong> (impossible travel, a server suddenly generating unusual DNS volume). One indicator alone justifies investigation; several that line up justify declaring an incident. Pivot from one source to the next: a firewall log shows a suspicious destination, which gives you the internal source address, whose EDR telemetry shows the process that made the connection.</p>
 """ + T.format("Event ID 1102 (audit log cleared) is itself an indicator. Legitimate admins rarely clear the Security log.")),
 
 # ---------------------------------------------------------------- 3.3
@@ -86,6 +94,8 @@ dict(id="preparation", o="3.3", t="Preparation: plans, playbooks, tools, tableto
 <li><strong>Tabletop exercise</strong>: the team talks through a scenario in a meeting, without touching systems, to find gaps in the plan. Cheapest exercise type. Others: walkthroughs, simulations, full-scale exercises.</li>
 <li><strong>Training</strong>: technical training for responders and awareness training for staff, who are often the first detectors.</li>
 <li><strong>BC/DR</strong>: business continuity keeps critical functions running during disruption; disaster recovery restores IT. The <strong>BIA</strong> sets priorities; RTO (how fast) and RPO (how much data loss is tolerable) set targets.</li></ul>
+<p><strong>Ready means tested, not just bought.</strong> Before an incident: logging is turned on and reaching the SIEM, alert thresholds are tuned against a baseline, responders already hold the access they will need (no permission requests at 2 a.m.), forensic storage exists and is secured, and backups have been restored in a test, not just taken.</p>
+<p><strong>Training has three audiences.</strong> <strong>Technical</strong>: responders practice SIEM queries, imaging and log and malware analysis. <strong>Operational</strong>: incident handlers know documentation standards, evidence handling and the communication protocol. <strong>Executive</strong>: leaders know their escalation decisions and crisis communication role. Phishing simulations and red-team/blue-team exercises measure readiness as well as build it.</p>
 """ + T.format("A plan is the overall document; a playbook is the per-scenario procedure. &ldquo;Step-by-step actions for a ransomware outbreak&rdquo; is a playbook.")),
 
 dict(id="ir-team", o="3.3", t="Incident response team roles", q="incident commander", h="""
@@ -120,6 +130,8 @@ dict(id="vm-reporting", o="4.1", t="Vulnerability reporting and compliance repor
 <li><strong>recurrence</strong>: has it come back after being fixed? Recurrence points to a process failure such as a golden image that was never updated</li>
 <li><strong>prioritization</strong>: what to do first and by when</li></ul>
 <p>Tailor it to the reader: executives want risk trends and business impact; system owners want host lists and exact fixes. <strong>Compliance reports</strong> show status against a specific requirement (PCI DSS passing scans, HIPAA controls) for auditors and regulators.</p>
+<p><strong>Translate the finding.</strong> &ldquo;CVE-XXXX-XXXX, remote code execution, CVSS 9.8, on 10.20.4.15&rdquo; means little to a CFO. &ldquo;An attacker on the internet could take control of the server that processes card payments; the fix needs a 30-minute outage this week&rdquo; gets a decision. Give every finding an <strong>owner</strong> and a due date. Weekly scans that show the same critical findings month after month usually mean nobody was accountable, not that the scanner is wrong.</p>
+<p>Scanner platforms (Tenable, Qualys, Greenbone) generate standard reports, but check that they speak to the audience before you send them.</p>
 """),
 
 dict(id="compliance", o="4.1", t="Compliance: regulations by industry and running a program", q="compliance", h="""
@@ -154,6 +166,7 @@ dict(id="inhibitors", o="4.1", t="Inhibitors to remediation", q="inhibitor", h="
 <li><strong>Legacy systems</strong>: out of support, no patches available at all.</li>
 <li><strong>Proprietary systems</strong>: only the vendor may change them; self-patching voids support or certification (medical devices, ICS).</li></ul>
 <p>The usual answer to an inhibitor is a compensating control plus a documented exception and review date, not ignoring the finding.</p>
+<p><strong>Fixing the agreement, not just living with it.</strong> When an SLA promises very high availability, write maintenance windows and emergency-patch exceptions into it, so a critical fix doesn't become a breach of contract. When an MOU or contract splits duties between organizations (one company runs the systems and another owns security tasks), name who patches what and by when. Otherwise each side waits on the other.</p>
 """ + T.format("An SLA is a contract with measurable obligations; an MOU is a statement of intent between parties, usually not legally binding. Both can block a patch window.")),
 
 dict(id="vm-metrics", o="4.1", t="Vulnerability metrics and KPIs", q="kpi", h="""
@@ -162,6 +175,8 @@ dict(id="vm-metrics", o="4.1", t="Vulnerability metrics and KPIs", q="kpi", h=""
 <li><strong>Critical vulnerabilities and zero-days</strong>: tracked separately because they need immediate attention and leadership visibility.</li>
 <li><strong>SLOs</strong>: percentage of findings fixed within target time per severity. Measures performance against policy.</li></ul>
 <p>A <strong>KPI</strong> is a metric chosen to show whether you are meeting a goal. Mean time to remediate by severity is a common one.</p>
+<p><strong>What a critical or zero-day report should contain:</strong> affected assets, how exposed they are (internet-facing or internal), whether exploit code exists or attacks are under way, the compensating controls available now, and the recommended steps with owners.</p>
+<p><strong>Worked example: Log4Shell (CVE-2021-44228, December 2021, CVSS 10).</strong> The Java logging library sat inside thousands of products, so the first job was finding every instance. Where patching had to wait, there were stopgaps: removing the vulnerable <code>JndiLookup</code> class from the library, and WAF rules as a temporary extra layer (they couldn&rsquo;t catch every exploit string). An early configuration flag was later shown to be insufficient. That is exactly why reports must track which compensating control is in place and when the real patch lands.</p>
 """),
 
 dict(id="stakeholders-vm", o="4.1", t="Stakeholder identification (vulnerability management)", q="stakeholder", h="""
@@ -173,6 +188,8 @@ dict(id="declaration", o="4.2", t="Stakeholders, declaration and escalation", q=
 <p><strong>Stakeholders</strong> for an incident are named in the IR plan before anything happens: CSIRT, IT, executives, legal, HR (insider cases), PR/communications, compliance, and external parties (law enforcement, regulators, insurers, customers, partners).</p>
 <p><strong>Declaration</strong>: the formal decision that an event is an incident, made by someone with defined authority using defined criteria. It triggers the plan, resources and notification clocks.</p>
 <p><strong>Escalation</strong>: moving the incident to higher authority or more resources as severity rises, along pre-agreed paths with time thresholds, such as &ldquo;critical incidents reported to the CISO within one hour.&rdquo;</p>
+<p><strong>Not every alert is an incident.</strong> The IR plan sets severity levels and the thresholds that trigger escalation. An analyst who finds something escalates it along the defined path; someone with declared authority decides whether it is an incident. Communication then runs through the whole response, not just at the end.</p>
+<blockquote><span class="tag">Exam trap</span>Declaration and escalation happen during detection and analysis, as soon as the evidence meets the plan&rsquo;s criteria. They are not post-incident steps, and regulatory notification clocks run from awareness or a formal determination (GDPR from awareness, the SEC rule from the materiality determination), never from recovery.</blockquote>
 """),
 
 dict(id="ir-report", o="4.2", t="Incident response report contents", q="executive summary", h="""
@@ -184,6 +201,7 @@ dict(id="ir-report", o="4.2", t="Incident response report contents", q="executiv
 <li><strong>Evidence</strong>: what was collected, hashes, chain of custody references.</li>
 <li><strong>Recommendations</strong>: specific improvements to prevent recurrence.</li>
 <li>Root cause and lessons learned are often included.</li></ul>
+<p>The &ldquo;why&rdquo; in the five W&rsquo;s is the preliminary explanation (a user opened a phishing attachment; a known risk had been accepted). The full root cause comes later from RCA, and the report should say which one it is giving.</p>
 """ + T.format("Technical detail does not belong in the executive summary. If the audience is the board, lead with impact, status and decisions needed.")),
 
 dict(id="ir-comms", o="4.2", t="Communications: legal, PR, regulators, law enforcement", q="law enforcement", h="""
@@ -201,6 +219,7 @@ dict(id="ir-metrics", o="4.2", t="Incident metrics: MTTD, MTTR, alert volume", q
 <tr><td><strong>MTTR</strong> mean time to remediate</td><td>Detection &rarr; fully fixed</td><td>End-to-end response capability</td></tr>
 <tr><td><strong>Alert volume</strong></td><td>Count of alerts per period</td><td>Workload and tuning needs; a weak measure of security on its own</td></tr></table></div>
 <p>The two MTTRs share an acronym, so read the question for which it means. CompTIA&rsquo;s acronym list also expands MTTR as mean time to repair.</p>
+<p><strong>Alert fatigue</strong> is what too many alerts do to people: when most alerts are false positives, analysts start skimming and real ones get missed. The fix is tuning (suppress known-benign patterns, raise thresholds, merge duplicates, add context with SOAR), not more analysts. Some programs track MTTD and MTTR per incident type, because averaging ransomware with lost laptops hides problems in both.</p>
 """ + T.format("Lower MTTD and MTTR are better. Rising alert volume is not success; it often means noisy rules and analyst fatigue.")),
 
 dict(id="rca-lessons", o="4.2", t="Root cause analysis and lessons learned in reporting", q="root cause", h="""

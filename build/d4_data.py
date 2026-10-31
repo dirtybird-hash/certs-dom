@@ -106,6 +106,11 @@ FLASHCARDS = [
  ('4.2',
   'What separates root cause analysis from lessons learned?',
   'Root cause analysis establishes the condition that permitted the incident. Lessons learned examines how the response itself performed — what worked, what did not, what to change. One is about the attack; the other is about the organization.'),
+ # -- fortified from D3/D4 video check, 2026-10-31
+ ('4.2', 'What is alert fatigue, and what fixes it?', 'Analysts start skimming and missing real alerts because most alerts are noise. The fix is tuning (suppressing known-benign patterns, raising thresholds, merging duplicates, adding context automatically), not simply hiring more people.'),
+ ('4.2', 'In which phase does incident declaration normally happen?', "Detection and analysis, as soon as the evidence meets the plan's criteria. Declaration and escalation are not post-incident steps, and regulatory clocks run from awareness or determination, never from recovery."),
+ ('4.1', 'What belongs in a report on a critical or zero-day vulnerability?', 'Affected assets, how exposed they are, whether exploit code or active attacks exist, the compensating controls available now, and recommended steps with owners and dates.'),
+ ('4.1', 'An SLA promises 99.99% uptime and keeps blocking patch windows. What is the lasting fix?', 'Amend the agreement so it includes maintenance windows and emergency-patch exceptions, and use compensating controls until it does. Otherwise every critical fix risks breaching the contract.'),
 ]
 
 QUIZ = [
@@ -169,6 +174,12 @@ QUIZ = [
   ['Root cause is technical and lessons learned is managerial', 'Root cause examines the condition that allowed the incident; lessons learned examines how the response performed', 'Root cause is for regulators and lessons learned is internal', 'They are the same activity at different times'],
   1,
   'One asks why the attack was possible; the other asks how well the organization handled it. Both are needed — an incident can have a well-understood root cause and a badly run response, or the reverse.'),
+ # -- fortified from D3/D4 video check, 2026-10-31
+ ('4.2', 'A SOC receives about 6,000 alerts a day, roughly 95% of them false positives, and missed a real intrusion last week. What is the problem, and what should be done first?', ['Alert fatigue; tune rules to cut noise and add context', 'Low MTTD; buy a second SIEM', 'Alert fatigue; turn off the SIEM', 'Too few alerts; lower all thresholds'], 0, 'High volume with mostly false positives produces alert fatigue. Tuning reduces noise so real alerts get attention; more alerts or another tool make it worse.'),
+ ('4.2', 'When should an event normally be declared an incident?', ['After recovery is complete', "During detection and analysis, once evidence meets the plan's criteria", 'During the lessons-learned meeting', 'Only after law enforcement confirms it'], 1, 'Declaration triggers the plan, resources and notification duties, so it happens as soon as the criteria are met during detection and analysis.'),
+ ('4.1', "A critical remote-code-execution flaw in a logging library is being exploited worldwide. One of your apps can't be patched for two weeks. What belongs in the report to leadership?", ['Only the CVSS score', 'The full packet captures', 'Affected assets, exposure, active-exploitation status, the compensating controls in place now, and the patch date with an owner', 'A recommendation to wait for the next quarterly scan'], 2, 'A critical or zero-day report needs what leadership must decide on: which assets, how exposed, whether attacks are under way, what stopgap is in place and when the real fix lands.'),
+ ('4.1', 'Weekly scans show the same eight critical findings for three months. The scanner is configured correctly. What is most likely missing?', ['A second scanner', 'Agentless scanning', 'A higher CVSS threshold', 'Clear ownership and deadlines for each finding, reported to management'], 3, 'Findings that persist despite accurate scans usually lack an accountable owner. Reporting with owners and due dates is what drives remediation.'),
+ ('4.1', 'Which description of a finding best suits the CFO?', ['An internet attacker could take control of the server that processes card payments; fixing it needs a 30-minute outage this week', 'CVE-XXXX-XXXX, RCE, CVSS 9.8, host 10.20.4.15', 'Plugin 12345 failed on port 443', 'TLS 1.0 enabled with weak ciphers'], 0, 'Executives decide on business risk and cost. Translating the finding into impact and the decision needed is what makes the report actionable.'),
 ]
 
 SCENARIOS = [
@@ -196,6 +207,8 @@ SCENARIOS = [
   ['Mean time to respond, at 90 minutes', 'Mean time to detect, at 34 days — the attacker operated undisturbed and detection came from a user, not a control', 'Mean time to remediate, at 11 days', 'Alert volume during the incident'],
   1,
   'The response was fast once detection happened, and 11 days of recovery is unremarkable for ransomware. The failure is 34 days of undetected dwell time ending with a human noticing — which points squarely at monitoring coverage and alerting quality rather than at the response team.'),
+ # -- fortified from D3/D4 video check, 2026-10-31
+ ('4.1', "A managed service provider's SLA guarantees 99.99% uptime for your e-commerce platform. It has refused two maintenance windows for a critical patch, citing the SLA. The flaw is internet-facing.", 'What is the best course of action?', ['Ignore the SLA and patch at midnight without notice', 'Accept the risk indefinitely', 'Remove the platform from the vulnerability scans', 'Apply compensating controls now (WAF rules, extra monitoring) and renegotiate the SLA to include maintenance windows and emergency-patch exceptions'], 3, 'The SLA is an inhibitor to remediation. Reduce exposure now with compensating controls, and fix the root problem by writing patch windows into the agreement.'),
 ]
 
 OBJTITLE = {"4.1": "Vulnerability Reporting & Communication", "4.2": "Incident Reporting & Communication"}

@@ -100,6 +100,13 @@ FLASHCARDS = [
  ('3.3',
   'Why is post-incident communication part of the life cycle rather than an afterthought?',
   'Because regulators, customers, insurers and staff all have claims on what is known, and several of those come with legal deadlines. Deciding in the moment who says what to whom is how organizations create a second incident out of the first.'),
+ # -- fortified from D3/D4 video check, 2026-10-31
+ ('3.2', 'Short-term vs long-term containment?', 'Short-term stops the spread now: isolate the host, disable the account, block the indicator. Long-term holds the line while eradication and rebuilding take days: restricted segments, tighter rules, extra monitoring, temporary clean systems so the business keeps running.'),
+ ('3.2', 'When does a vulnerability become an incident?', 'When there is evidence it is being, or has been, exploited in your environment. Until then it is a vulnerability management item with an owner and a deadline, not a case for the response team.'),
+ ('3.2', 'Name the three broad kinds of IoC.', 'Network (known-bad destinations, odd ports, DNS tunneling), host (unexpected processes, new accounts, registry or file changes, known-malware hashes) and behavioral (impossible travel, a server suddenly producing unusual traffic). Indicators are evidence to investigate, not verdicts.'),
+ ('3.3', 'Which three audiences does incident response training cover?', 'Technical (responders: SIEM queries, imaging, analysis), operational (handlers: documentation, evidence handling, communication protocol) and executive (leaders: escalation decisions and crisis communication).'),
+ ('3.1', 'What is business logic testing in the OWASP Testing Guide?', "Testing whether the application's intended workflow can be abused, rather than looking for coding bugs: changing a price in a hidden field, skipping straight to the last step of an approval chain, reusing a one-time discount."),
+ ('3.1', 'In ATT&CK terms, what is a procedure?', 'The specific way a group carried out a technique: the tool, the exact commands and their order, and the targets. Procedures are concrete enough to detect and hunt for, and repeated procedures help link an incident to a known group.'),
 ]
 
 QUIZ = [
@@ -183,6 +190,12 @@ QUIZ = [
   ['To confirm the attacker has been removed from the network', 'To establish what was actually accessed, which drives notification duties and proves eradication was complete', 'Because regulators require it in all cases', 'To recover data lost during the incident'],
   1,
   'Containment stops the bleeding; forensics establishes the facts. Whether data was accessed or exfiltrated determines legal notification obligations and their deadlines, and it is the evidence that eradication was thorough rather than assumed.'),
+ # -- fortified from D3/D4 video check, 2026-10-31
+ ('3.2', 'EDR isolated an infected laptop within minutes. Over the next week, three affected servers were moved to a restricted VLAN with tighter rules while replacements were built. What was the second action?', ['Long-term containment', 'Short-term containment', 'Eradication', 'Recovery'], 0, 'Holding affected systems in a restricted segment while the rebuild happens is long-term containment. The minutes-long EDR isolation was the short-term step.'),
+ ('3.2', 'A scan finds a critical, unpatched flaw on an internal web server. There is no sign of exploitation. What is the right next step?', ['Declare an incident and activate the CSIRT', 'Open a remediation ticket with an owner and a deadline under the vulnerability management program', 'Reimage the server immediately', 'Notify regulators'], 1, 'A vulnerability without evidence of exploitation is handled through vulnerability management. Declaring an incident for it ties up the response team.'),
+ ('3.1', "A tester edits a hidden form field, changing an item's price from 499 to 1, and the order goes through. Which kind of testing found this?", ['Fuzzing', 'OSSTMM physical channel testing', 'Business logic testing (OWASP Testing Guide)', 'Credentialed vulnerability scanning'], 2, 'The code worked as written; the design trusted a value the user controls. That is a business logic flaw, a distinctive focus of the OWASP Testing Guide.'),
+ ('3.3', 'Which fact best shows an organization is actually prepared to respond?', ['It owns a SIEM and an EDR license', 'The IR plan was approved two years ago', 'All staff signed the acceptable use policy', 'Backups were restored successfully in a test last month and responders already hold the access they need'], 3, "Preparation means tested capability: restores that have actually worked, and access granted before the crisis. Owning tools or having an old signed plan doesn't prove either."),
+ ('3.1', 'In the Cyber Kill Chain, at which stage do defenders usually get their first chance to observe the attack?', ['Delivery', 'Weaponization', 'Reconnaissance', 'Actions on objectives'], 0, "Reconnaissance is often passive and weaponization happens on the attacker's own systems. Delivery (the email, the download, the USB stick) is usually the first thing that touches you."),
 ]
 
 SCENARIOS = [
@@ -210,6 +223,8 @@ SCENARIOS = [
   ['The plan is out of date and needs rewriting', 'The plan was never exercised; a tabletop would have surfaced both gaps before they cost seventy minutes', 'The team needs more technical training', 'Insurance requirements should be removed from the plan'],
   1,
   'Both failures are about authority and obligation, not technical skill, and both are exactly what a tabletop surfaces. A plan nobody has walked through is a document rather than a capability — which is why exercising sits in the preparation phase alongside writing it.'),
+ # -- fortified from D3/D4 video check, 2026-10-31
+ ('3.2', 'A firewall log shows 10.1.4.22 connecting every five minutes to an address on your threat-intel blocklist. Nothing else has alerted yet.', 'What is the best next investigative step?', ['Declare a major incident and notify customers', 'Block the address and close the ticket', 'Pivot to the host: check EDR telemetry on 10.1.4.22 for the process making those connections', 'Reimage 10.1.4.22 immediately'], 2, 'One strong network IoC justifies investigation. Pivoting to the host shows which process is calling out, which decides whether this is an incident and how far it has spread. Blocking alone, or wiping straight away, loses that answer.'),
 ]
 
 OBJTITLE = {"3.1": "Attack Methodology Frameworks", "3.2": "Incident Response Activities", "3.3": "Preparation & Post-Incident"}
