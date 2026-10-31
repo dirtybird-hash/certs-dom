@@ -31,6 +31,7 @@ dict(id="scan-types", o="2.1", t="Scan types compared", q="credentialed", h="""
 <p><strong>Reverse engineering</strong>: disassembling or decompiling a binary to understand what it does without source code (Ghidra, IDA, debuggers). <strong>Fuzzing</strong>: feeding large volumes of malformed or random input to find crashes that indicate memory bugs.</p>
 <p><strong>By target</strong>, scans are usually grouped as <strong>network</strong> (hosts, open ports, services, device configurations), <strong>web application</strong> (injection, XSS, authentication and session flaws: Burp, ZAP, Nikto) and <strong>database</strong> (default accounts, weak permissions, missing patches, unencrypted sensitive columns). Most programs need all three, because a clean network scan says nothing about the app or the data store behind it.</p>
 <p><strong>Automated vs. manual.</strong> Automated scanners are fast, repeatable and cover thousands of known checks, but they miss business-logic flaws and produce false positives. Manual testing by a skilled analyst finds what tools can&rsquo;t, such as chained weaknesses or broken authorization logic, but it is slow and expensive. Use automation for breadth and regular coverage, and manual review to validate findings and probe the most important systems.</p>
+<p><strong>Active vs passive, stated plainly.</strong> If you send packets to the target, it is active. A ping sweep (<code>nmap -sn</code>), a port scan and a vulnerability scan are all active, even though none of them exploit anything. Passive means observing without touching the target: reading mirrored traffic, a passive asset-discovery sensor on a SPAN port, or OSINT. The difference between a vulnerability scan and a penetration test is <em>exploitation</em>, not active versus passive.</p>
 """ + T.format("A non-credentialed scan reporting fewer findings does not mean the host is safer. It means the scanner saw less. Credentialed scans are the accurate baseline for patch status.")),
 
 dict(id="fuzzing-re", o="2.1", t="Fuzzing and reverse engineering", q="fuzzing", h="""
@@ -49,6 +50,7 @@ dict(id="fuzzing-re", o="2.1", t="Fuzzing and reverse engineering", q="fuzzing",
 <ul><li><strong>Tools</strong>: disassemblers and decompilers (Ghidra, IDA) for static work; debuggers (GDB, Immunity, x64dbg) to step through it as it runs; <code>strings</code> and hashing for a first look.</li>
 <li><strong>Obstacles</strong>: attackers use <strong>obfuscation</strong>, <strong>packing</strong> (compressed or encrypted code that unpacks itself at run time), encryption, and anti-debugging or VM-detection tricks to slow analysts down. A packed sample shows almost nothing in <code>strings</code>, which is itself a clue.</li>
 <li>Always analyze in an isolated lab or sandbox, never on a production host.</li></ul>
+<p><strong>Mobile apps.</strong> An Android APK is a zip file. <code>apktool</code> decodes its resources and bytecode (to smali), and a decompiler such as jadx produces readable Java. Analysts look for hard-coded API keys and URLs, disabled certificate validation, debug flags and client-side checks that the server never repeats.</p>
 """ + T.format("Fuzzing finds flaws by running the program with bad input (dynamic). Reverse engineering explains a binary without its source (usually static). If the question says &ldquo;malformed input&rdquo; or &ldquo;crashes&rdquo;, it is fuzzing.")),
 
 dict(id="critical-infra", o="2.1", t="Critical infrastructure: OT, ICS, SCADA", q="scada", h="""
@@ -68,6 +70,7 @@ dict(id="baseline-frameworks", o="2.1", t="Baseline scanning and industry framew
 <tr><td><strong>CIS Benchmarks</strong></td><td>Free, consensus hardening guides per product (Windows, Ubuntu, AWS, Kubernetes), often used as scan policies</td></tr>
 <tr><td><strong>OWASP</strong></td><td>Open web-app security community: the Top 10 risk list, Testing Guide, ASVS, ZAP</td></tr>
 <tr><td><strong>ISO 27000 series</strong></td><td>International standards for an information security management system; 27001 is certifiable, 27002 gives control guidance</td></tr></table></div>
+<p><strong>Cloud-specific (enrichment, not on the printed list).</strong> The Cloud Security Alliance&rsquo;s <strong>Cloud Controls Matrix</strong> (CCM) is a control framework for cloud services, mapped to ISO 27001, NIST and others. The <strong>CAIQ</strong> is the questionnaire built from it, which providers complete to describe their controls. Many publish theirs in CSA&rsquo;s STAR registry.</p>
 """),
 
 # ---------------------------------------------------------------- 2.2
@@ -90,6 +93,17 @@ dict(id="assessment-tools", o="2.2", t="Assessment tools: which does what", q="n
 <tr><td rowspan="3">Cloud assessment</td><td>Scout Suite</td><td>Multi-cloud configuration audit (AWS, Azure, GCP)</td></tr>
 <tr><td>Prowler</td><td>Security best-practice and compliance checks, mainly AWS (now also Azure and GCP)</td></tr>
 <tr><td>Pacu</td><td>AWS <em>exploitation</em> framework for testing, the offensive one of the three</td></tr></table></div>
+<p><strong>Nikto in practice.</strong> <code>nikto -h https://10.0.10.15 -Tuning 9 -o report.html</code> scans one host, limits tests to a category and writes an HTML report. Tuning codes worth recognizing: <code>4</code> injection (XSS, script, HTML), <code>6</code> denial of service, <code>9</code> SQL injection. Typical findings: server version in the banner, missing anti-clickjacking (<code>X-Frame-Options</code>) and <code>X-Content-Type-Options</code> headers, directory indexing, default files, risky HTTP methods such as PUT or TRACE. Nikto is loud. Expect it to trip the IDS, and keep the DoS tests off production.</p>
+<p><strong>Burp Suite report evidence.</strong> Each issue has a severity and a confidence (certain, firm, tentative) plus the request and response that prove it. Reflected XSS: the value you sent in a parameter comes back unencoded in the page. Path traversal: a request such as <code>..\\..\\..\\windows\\win.ini</code> returns the file&rsquo;s contents (<code>/etc/passwd</code> lines like <code>root:x:0:0</code> on Linux).</p>
+<p><strong>Metasploit workflow.</strong></p>
+<pre><code>msfconsole
+search vsftpd
+use exploit/unix/ftp/vsftpd_234_backdoor
+show options
+set RHOSTS 10.0.10.20
+check        # supported by some modules: test without exploiting
+run</code></pre>
+<p>Module types: <strong>exploit</strong> (delivers a payload), <strong>auxiliary</strong> (scanners, fuzzers, brute forcers; no payload), <strong>post</strong> (after access). For an analyst, MSF validates a finding. A successful exploit confirms a true positive, but only with written authorization, and prefer <code>check</code> or an auxiliary scanner on production.</p>
 """ + T.format("Scout Suite and Prowler audit cloud configuration; Pacu attacks it. If the question says &ldquo;exploit&rdquo; or &ldquo;penetration test&rdquo; against AWS, the answer is Pacu.")),
 
 dict(id="nmap-output", o="2.2", t="Reading Nmap output", q="nmap", h="""
@@ -107,6 +121,10 @@ dict(id="nmap-output", o="2.2", t="Reading Nmap output", q="nmap", h="""
 <tr><td><code>-T0</code>&hellip;<code>-T5</code></td><td>Timing, paranoid to insane</td></tr>
 <tr><td><code>-oN/-oX/-oG</code></td><td>Normal, XML, grepable output</td></tr></table></div>
 <p><strong>Port states</strong>: <strong>open</strong> (a service answered), <strong>closed</strong> (host replied with a reset, nothing listening), <strong>filtered</strong> (no reply or an ICMP unreachable, so a firewall is in the way). The service column after <code>-sV</code> shows product and version, which is what you match against CVEs.</p>
+<p><strong>Scan types side by side.</strong> <code>-sT</code> completes the TCP handshake through the operating system, so it works without root, but the target&rsquo;s service sees and usually logs a full connection. <code>-sS</code> sends SYN, reads the SYN/ACK, then resets before the handshake completes, so it is faster and the application never sees a session (firewalls and IDS still do). <code>-sU</code> sends UDP probes; silence often means <em>open|filtered</em>, which is why UDP scans are slow and ambiguous.</p>
+<p><strong>Flags people mix up.</strong> <code>-sV</code> is version detection; <code>-v</code> is verbose. <code>-sn</code> skips the port scan but still sends probes (ARP on the local subnet; ICMP echo and TCP probes elsewhere), so a ping sweep is <em>active</em> reconnaissance.</p>
+<p><strong>Comparing two scans.</strong> Save XML with <code>-oX</code> and compare runs with <code>ndiff monday.xml friday.xml</code>, or Zenmap&rsquo;s Compare Results. Lines starting <code>+</code> are new and <code>-</code> are gone. A host or open port that wasn&rsquo;t in the baseline is how a rogue device or an unauthorized service shows up.</p>
+<p><strong>Some version strings are findings on their own.</strong> <code>vsftpd 2.3.4</code> answering on 21/tcp is the release that was briefly distributed with a backdoor (CVE-2011-2523). Matching a version banner to a known CVE is the core 2.2 read.</p>
 """ + T.format("Filtered does not mean closed. It means Nmap can&rsquo;t tell, usually because a firewall dropped the probe.")),
 
 dict(id="scan-report", o="2.2", t="Reading a vulnerability scan report", q="plugin", h="""
@@ -116,6 +134,12 @@ dict(id="scan-report", o="2.2", t="Reading a vulnerability scan report", q="plug
 <li><strong>Check the context</strong>: is the host internet-facing? Is the service even used?</li>
 <li><strong>Group</strong> findings by fix: one missing cumulative update can account for forty findings.</li>
 <li><strong>Informational</strong> findings (TLS details, OS detected) are not vulnerabilities but may support one.</li></ul>
+<p><strong>Findings you will see, and how to judge them.</strong></p>
+<ul><li><strong>SSL certificate cannot be trusted / self-signed.</strong> On an internal management interface it is often fixed by issuing a certificate from the internal CA, or accepted and documented. On a public site it is real: users learn to click through warnings, which makes interception easy.</li>
+<li><strong>DNS server cache snooping (UDP 53).</strong> The resolver answers non-recursive questions about what it has cached, so an outsider can learn which sites your users visit. Fix: only answer recursive queries for internal clients.</li>
+<li><strong>Severity bands.</strong> Nessus maps CVSS to Critical (9.0&ndash;10), High (7.0&ndash;8.9), Medium (4.0&ndash;6.9), Low (0.1&ndash;3.9) and Info. Info plugins such as OS identification and traceroute are inventory, not vulnerabilities.</li>
+<li><strong>Did the credentials work?</strong> Nessus&rsquo;s scan-information output states whether credentialed checks ran. A credentialed scan that silently failed looks exactly like a clean host.</li></ul>
+<p><strong>Greenbone and OpenVAS.</strong> CS0-003 names OpenVAS. Greenbone packages the OpenVAS scanner with a management interface (community and commercial editions). Its reports add a <strong>quality of detection</strong> (QoD) percentage: low QoD means the result was inferred, often from a banner, so validate it before you act.</p>
 """),
 
 # ---------------------------------------------------------------- 2.3
@@ -269,6 +293,7 @@ dict(id="control-types", o="2.5", t="Control types and compensating controls", q
 <tr><td></td><td><strong>Corrective</strong>: restores after an incident (restore from backup, patch)</td></tr></table></div>
 <p>A <strong>compensating control</strong> provides comparable protection when the required control can&rsquo;t be used, for example isolating an unpatchable legacy server on its own VLAN behind an allow-list firewall. It needs documenting and periodic review.</p>
 <p><strong>Class vocabulary vs. CompTIA&rsquo;s.</strong> The course groups controls as <em>administrative, physical and technical</em>, with seven functions: directive, deterrent, preventive, compensating, detective, corrective and recovery. CS0-003 objective 2.5 uses <strong>managerial, operational and technical</strong>, and <strong>preventative, detective, responsive and corrective</strong>. They map closely: administrative &asymp; managerial; physical controls such as guards and locks are usually counted as operational or physical depending on the source; recovery sits under corrective. On the exam, use CompTIA&rsquo;s words.</p>
+<p><strong>Where backups fit.</strong> Taking backups doesn&rsquo;t stop an incident, so a backup is not preventative. Restoring from it repairs the damage, which makes it <strong>corrective</strong> in CompTIA&rsquo;s CS0-003 list (frameworks that list a separate <em>recovery</em> function put it there). Also note the list has <strong>responsive</strong>, a function Security+ doesn&rsquo;t use.</p>
 """ + T.format("Category and function are separate questions. A firewall is technical (category) and preventative (function). Read whether the question asks &ldquo;type&rdquo; meaning category or function.")),
 
 dict(id="patching", o="2.5", t="Patching, configuration and maintenance windows", q="rollback", h="""
@@ -294,6 +319,7 @@ dict(id="attack-surface", o="2.5", t="Attack surface management", q="bug bounty"
 <li><strong>Bug bounty</strong>: pay outside researchers for verified findings under published rules.</li>
 <li><strong>Tools that automate this</strong>: <strong>CAASM</strong> (cyber asset attack surface management) builds one inventory from all your existing tools; <strong>RBVM</strong> (risk-based vulnerability management) ranks findings by exploitability and business impact rather than CVSS alone; <strong>CRQ</strong> (cyber risk quantification) expresses risk in money so leaders can compare it with other business risks.</li>
 <li><strong>Attack surface reduction</strong>: remove what isn&rsquo;t needed, such as unused services, open ports, stale accounts and old DNS records.</li></ul>
+<p><strong>Seeing your edge without touching it.</strong> Shodan and Censys continually scan the internet and index what answers. Searching them for your address ranges or domain shows exposed services and versions without you sending a single packet. That is passive from your side, and it is the same view an attacker starts with.</p>
 """),
 
 dict(id="secure-coding", o="2.5", t="Secure coding, SDLC and threat modeling", q="input validation", h="""
@@ -307,5 +333,14 @@ dict(id="secure-coding", o="2.5", t="Secure coding, SDLC and threat modeling", q
 <p><strong>Secure SDLC</strong> builds security into each phase: requirements, design (threat modeling), development (secure coding, code review, SAST), testing (DAST, fuzzing), deployment (hardening), maintenance (patching, monitoring). Finding flaws early is far cheaper than after release.</p>
 <p>Two common references for secure coding: the <strong>OWASP</strong> Top 10 for web applications and the <strong>CWE/SANS Top 25</strong> most dangerous software weaknesses. <strong>DevSecOps</strong> puts the security checks (SAST, dependency scanning, DAST) into the CI/CD pipeline so they run on every change.</p>
 <p><strong>Threat modeling</strong> asks what can go wrong before you build. STRIDE is a common method: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege.</p>
+<p><strong>Testing types in the SDLC.</strong></p>
+<div class="tblwrap"><table><tr><th>Test</th><th>Question it answers</th></tr>
+<tr><td>Unit</td><td>Does this one function behave, including on bad input? Written by developers, runs on every build</td></tr>
+<tr><td>Integration</td><td>Do the components work together?</td></tr>
+<tr><td>Regression</td><td>Did this change break something that used to work, or reopen a fixed vulnerability?</td></tr>
+<tr><td>Fuzz</td><td>Does malformed or random input crash it?</td></tr>
+<tr><td>Load / stress</td><td>Does it hold up under volume, and how does it fail?</td></tr>
+<tr><td>User acceptance</td><td>Does it do what the business asked for?</td></tr></table></div>
+<p><strong>DevSecOps</strong> runs security checks automatically at every commit and build (SAST, dependency or software composition scanning, secret scanning), so flaws surface when they are cheap to fix. <strong>Maturity models</strong> (CMM and CMMI) rate how repeatable a development process is: initial, managed or repeatable, defined, quantitatively managed, optimizing.</p>
 """),
 ]

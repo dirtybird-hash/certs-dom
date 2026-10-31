@@ -109,6 +109,12 @@ h1{font-size:clamp(25px,5.4vw,32px);line-height:1.14;margin-bottom:8px;}
 .body table{width:100%;border-collapse:collapse;font-size:13.5px;}
 .body th{background:var(--th);color:var(--th-ink);text-align:left;padding:7px 9px;border:1px solid var(--border);font-family:var(--font-display);font-size:11.5px;}
 .body td{padding:7px 9px;border:1px solid var(--border);vertical-align:top;}
+.body pre{font-family:var(--font-display);font-size:12.5px;line-height:1.55;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:0 0 13px;overflow-x:auto;white-space:pre;-webkit-overflow-scrolling:touch;}
+.body pre.wrap{white-space:pre-wrap;overflow-wrap:anywhere;}
+.body pre code{background:none;padding:0;font-size:inherit;overflow-wrap:normal;}
+.body figure{margin:0 0 14px;}
+.body figure svg{display:block;width:100%;max-width:460px;height:auto;margin:0 auto;}
+.body figcaption{font-size:12.5px;color:var(--text-muted);text-align:center;margin-top:6px;}
 .body code{font-family:var(--font-display);font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere;}
 .body blockquote{margin:0 0 12px;border-left:3px solid var(--trap);background:var(--trap-bg);border-radius:0 8px 8px 0;padding:10px 13px;font-size:14px;}
 .body blockquote .tag{font-family:var(--font-display);color:var(--trap);font-size:11px;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px;}

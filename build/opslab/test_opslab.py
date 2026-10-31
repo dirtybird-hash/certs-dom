@@ -1,7 +1,10 @@
 """Drive every Ops Lab drill right and wrong through the UI, check storage, review, workbench.
 Usage: PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 build/opslab/test_opslab.py
 """
-import pathlib, json
+import pathlib, json, sys
+sys.path.insert(0, str(pathlib.Path(__file__).parent)); sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+from ops_data import D as _D
+N = len(_D)   # drill count comes from the data file, not a hardcoded number
 from playwright.sync_api import sync_playwright
 
 PAGE = pathlib.Path('/home/claude/cysa-opslab.html').resolve().as_uri()
@@ -50,7 +53,7 @@ with sync_playwright() as pw:
     pg.route('**/fonts.googleapis.com/**', lambda r: r.abort())
     pg.goto(PAGE); pg.wait_for_timeout(100)
     drills = pg.evaluate('DRILLS.map(d => ({id:d.id, ty:d.ty, o:d.o, tr:d.tr}))')
-    check('36 drills loaded', len(drills) == 36, len(drills))
+    check(f'{N} drills loaded', len(drills) == N, len(drills))
     bad = []
     for d in drills:
         pg.goto(PAGE + '#d=' + d['id']); pg.wait_for_timeout(30)
@@ -71,14 +74,14 @@ with sync_playwright() as pw:
     # persistence across reload
     pg.goto(PAGE); pg.wait_for_timeout(80)
     txt = pg.inner_text('#app')
-    check('home shows retry queue 36 after reload', 'Retry missed (36)' in txt, txt[:300])
+    check(f'home shows retry queue {N} after reload', f'Retry missed ({N})' in txt, txt[:300])
     # review view
     pg.click('.nav [data-view="review"]'); pg.wait_for_timeout(50)
     rows = pg.evaluate("document.querySelectorAll('table.rv tbody tr').length")
     accs = pg.evaluate("[...document.querySelectorAll('.oa .p')].map(e=>e.textContent)")
-    check('review lists every drill and objective accuracy', rows == 36 and all('50%' in a for a in accs), (rows, accs[:4]))
+    check('review lists every drill and objective accuracy', rows == N and all('50%' in a for a in accs), (rows, accs[:4]))
     pg.click('[data-rf="retry"]'); pg.wait_for_timeout(30)
-    check('needs-retry filter', pg.evaluate("document.querySelectorAll('table.rv tbody tr').length") == 36)
+    check('needs-retry filter', pg.evaluate("document.querySelectorAll('table.rv tbody tr').length") == N)
     # unanswered guard
     pg.goto(PAGE + '#d=cv5'); pg.wait_for_timeout(30); pg.click('#chk')
     check('blank answer is not scored', pg.inner_text('#chkmsg') != '' and not pg.evaluate('OPS.CUR().checked'))

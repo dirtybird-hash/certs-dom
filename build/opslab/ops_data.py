@@ -501,3 +501,59 @@ add(id='tr10', tr='triage', o='1.3', ty='multi', diff='Applied', nb='user-behavi
     ans=[0, 1, 2],
     explain='Impossible travel is a strong signal with known false positives. Rule out VPN or proxy egress and device consistency, then confirm with the user out of band. If it isn\u2019t benign, revoke sessions and reset.',
     keep='Rule out VPN/proxy egress before calling impossible travel a compromise.')
+
+# -- gap report 2026-10-31: IDS rule reading, alert triage, Linux log sources
+add(id='tr11', tr='triage', o='1.3', ty='single', diff='Applied', nb='ids-rules',
+    title='Which rule fires?',
+    brief='Three local rules are loaded on a sensor where $HOME_NET is 10.0.0.0/16. One packet crosses it. Decide which rules alert.',
+    artT='local.rules + one packet',
+    art='alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"LOCAL outbound cmd.exe"; flow:to_server,established; content:"cmd.exe"; nocase; sid:1000101; rev:1;)\n\n'
+        'alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"LOCAL inbound request for cmd.exe"; flow:to_server,established; content:"cmd.exe"; nocase; sid:1000102; rev:1;)\n\n'
+        'alert udp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"LOCAL UDP to web port"; sid:1000103; rev:1;)\n'
+        '\n'
+        'PACKET  TCP 203.0.113.9:50122 -> 10.0.10.15:80  established, client to server\n'
+        'PAYLOAD GET /scripts/..%c0%af../winnt/system32/CMD.EXE?/c+dir HTTP/1.1',
+    prompt='Which rule or rules generate an alert?',
+    opts=[['None. The payload says CMD.EXE in capitals.', 'nocase makes the content match case-insensitive, so CMD.EXE matches "cmd.exe".'],
+          ['1000101 and 1000102.', '1000101 needs the source in $HOME_NET. Here the source is an internet address.'],
+          ['1000102 only.', 'TCP, external source to an internal host on 80, client to server, and the content matches with nocase.'],
+          ['1000103.', 'Its protocol is udp; this packet is TCP.']],
+    ans=2,
+    explain='Read a rule left to right: protocol, then source and direction, then destination and port, then every option. All parts must match. Only 1000102 has the right protocol, direction and content.',
+    keep='Protocol, direction and every option must all match. nocase ignores capitals.')
+
+add(id='tr12', tr='triage', o='1.3', ty='line', diff='Applied', nb='ids-rules',
+    title='Five alerts, one first',
+    brief='Overnight IDS alerts. Assets: 10.0.30.9 is the public web server (static nginx site, no database); 10.0.20.14 is an accounting workstation.',
+    artT='/var/log/snort/alert  (fast format)',
+    art=['10/31-01:02:11 [**] [1:1000201:1] LOCAL ICMP echo to DMZ [**] [Priority: 3] {ICMP} 198.51.100.7 -> 10.0.30.9',
+         '10/31-01:05:40 [**] [1:1000204:1] LOCAL Nikto user agent [**] [Priority: 2] {TCP} 203.0.113.50:51520 -> 10.0.30.9:80',
+         '10/31-01:07:02 [**] [1:1000202:3] LOCAL SQL injection pattern in URI [**] [Priority: 1] {TCP} 203.0.113.50:51561 -> 10.0.30.9:80',
+         '10/31-01:07:05 [**] [1:1000203:1] LOCAL outbound connection to port 4444 [**] [Priority: 1] {TCP} 10.0.20.14:49811 -> 198.51.100.66:4444',
+         '10/31-01:09:30 [**] [1:1000202:3] LOCAL SQL injection pattern in URI [**] [Priority: 1] {TCP} 203.0.113.50:51602 -> 10.0.30.9:80'],
+    prompt='Click the alert you escalate first.',
+    ans=3, lw={3: 'An internal workstation opened a session to an internet host on 4444, a common reverse-shell default. Something on the inside is already running and calling out.',
+               2: 'An injection attempt against a static site with no database. Check the response, but it is unlikely to have worked.',
+               1: 'A scanner identifying itself. Reconnaissance, noisy and expected on a public server.',
+               0: 'A ping to a public host. Low priority.'},
+    explain='Inbound alerts against the web server are attempts from one scanner; the target has nothing to inject into. The outbound 4444 connection comes from inside, from a workstation that has no reason to talk to that port. That points to a host that is probably already compromised.',
+    keep='Outbound from inside beats inbound attempts: an internal host calling out means something is already running.')
+
+add(id='tr13', tr='triage', o='1.2', ty='line', diff='Applied', nb='linux-logs',
+    title='Did the files leave?',
+    brief='An engineer, jlee, resigned yesterday. HR asks whether he copied the design archive in /srv/designs before leaving. These lines come from three sources on his Linux workstation.',
+    artT='eng-ws4: auth.log, dpkg.log, dmesg',
+    art=['auth.log  Oct 30 17:58:12 eng-ws4 sshd[1180]: Accepted publickey for jlee from 10.0.8.21 port 50311 ssh2',
+         'dpkg.log  2026-10-30 18:02:47 status installed vim:amd64 2:9.1.0016-1',
+         'dmesg     [ 8121.4402] usb 1-2: New USB device found, idVendor=0781, idProduct=5581',
+         'dmesg     [ 8121.9120] sd 6:0:0:0: [sdb] 60751872 512-byte logical blocks: (31.1 GB/29.0 GiB)',
+         'auth.log  Oct 30 18:06:33 eng-ws4 sudo:  jlee : TTY=pts/0 ; PWD=/home/jlee ; USER=root ; COMMAND=/usr/bin/mount /dev/sdb1 /mnt/usb',
+         'auth.log  Oct 30 18:07:02 eng-ws4 sudo:  jlee : TTY=pts/0 ; PWD=/srv/designs ; USER=root ; COMMAND=/usr/bin/cp -r /srv/designs /mnt/usb/'],
+    prompt='Click the line that shows the data being copied.',
+    ans=5, lw={5: 'sudo logs the exact command: a recursive copy of /srv/designs onto the mounted USB drive.',
+               4: 'Mounting the drive prepares the copy but doesn’t prove one happened.',
+               2: 'dmesg shows a USB device was attached. That is opportunity, not the act.',
+               3: 'The kernel recognizing a 31 GB disk confirms removable storage, not what was written to it.',
+               1: 'Installing an editor is unrelated.'},
+    explain='Each source answers a different question. dmesg shows a device was attached, auth.log’s sudo entries show what was done with it, and dpkg.log shows software changes. Together they make the timeline: drive attached, mounted, archive copied. Preserve the logs and the forwarded copies before HR acts.',
+    keep='dmesg = the device appeared; auth.log sudo lines = the commands run with it.')
