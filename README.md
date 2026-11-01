@@ -45,8 +45,8 @@ All four domains — 100% of the exam by weight. Exam items exclude the separate
 
 | Domain | Weight | Notebook | Drill (exam items) |
 |---|---|---|---|
-| 1.0 Security Operations | 33% | 40 topics | 121 flash / 74 quiz / 20 scenarios |
-| 2.0 Vulnerability Management | 30% | 26 topics | 101 / 55 / 10 |
+| 1.0 Security Operations | 33% | 40 topics | 126 flash / 78 quiz / 20 scenarios |
+| 2.0 Vulnerability Management | 30% | 26 topics | 104 / 59 / 11 |
 | 3.0 Incident Response & Management | 20% | 11 topics | 46 / 28 / 6 |
 | 4.0 Reporting & Communication | 17% | 11 topics | 36 / 18 / 5 |
 
