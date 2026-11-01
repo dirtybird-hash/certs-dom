@@ -219,7 +219,7 @@ dict(id="os-command-injection", o="2.4", t="OS command injection, step by step",
 <p><strong>Worked example.</strong> An internal page lets staff ping a host: the code runs <code>ping -c 4</code> followed by whatever was typed. The input <code>10.0.0.5</code> works as intended. The input <code>10.0.0.5; cat /etc/passwd</code> makes the shell run the ping and then print the password file. On Windows the same trick uses <code>&amp;</code>: <code>10.0.0.5 &amp; whoami</code>.</p>
 <div class="tblwrap"><table><tr><th>Characters</th><th>What the shell does with them</th></tr>
 <tr><td><code>;</code></td><td>Runs the next command (Linux)</td></tr>
-<tr><td><code>&amp;</code> and <code>&amp;&amp;</code></td><td>Runs the next command / runs it only if the first succeeded</td></tr>
+<tr><td><code>&amp;</code> and <code>&amp;&amp;</code></td><td><code>&amp;</code>: on Linux, runs the first command in the background and starts the next; in Windows <code>cmd</code>, simply runs both in turn. <code>&amp;&amp;</code>: runs the next only if the first succeeded</td></tr>
 <tr><td><code>|</code> and <code>||</code></td><td>Pipes output into the next command / runs it only if the first failed</td></tr>
 <tr><td><code>`cmd`</code> and <code>$(cmd)</code></td><td>Runs <code>cmd</code> and inserts its output</td></tr>
 <tr><td>Newline (<code>%0a</code>)</td><td>Starts a new command</td></tr></table></div>
