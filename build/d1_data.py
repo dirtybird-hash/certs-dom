@@ -229,6 +229,9 @@ FLASHCARDS = [
  ('1.2', 'What is typosquatting, and how do you defend against it?', 'Registering a domain one slip from a real one (paypa1.com, a different top-level domain) to catch mistyped visits or make phishing links look legitimate. Defend by registering obvious variants, monitoring new look-alike registrations and flagging newly registered domains at the mail gateway and proxy.'),
  ('1.4', 'YARA, Sigma, Snort: where does each kind of rule run?', 'YARA matches patterns in files and memory (malware hunting). Sigma is a vendor-neutral format for log detections, converted into SIEM queries. Snort/Suricata rules match network traffic.'),
  ('1.4', 'Why does one threat group have several names?', "Each vendor tracks and names groups independently, e.g. APT28 is also called Fancy Bear. Match on techniques and infrastructure rather than labels; ATT&CK's Groups pages map the names and list each group's techniques."),
+ # -- objectives check: uncovered bullets, 2026-10-31
+ ('1.2', 'When is bandwidth consumption an indicator rather than just a busy network?', "When it departs from the host's or link's baseline in a way the business can't explain: sustained outbound volume off-hours (exfiltration), steady high upload to one external destination, or a server suddenly saturating its link (DoS participation, crypto-mining pools, a compromised host serving files). Flow data against a baseline is how you see it."),
+ ('1.4', 'What do social media and the deep/dark web contribute as intelligence sources?', 'Social media and forums give early, unvetted signals: researchers posting new exploits, hacktivists announcing targets, employees oversharing. Dark-web markets and leak sites show stolen credentials, breach data and access for sale, often the first sign your organization was compromised. Both are low-confidence until corroborated.'),
 ]
 
 QUIZ = [
@@ -313,7 +316,7 @@ QUIZ = [
  ("1.1", "Your SIEM is configured to capture severity level 4 and above. Which events will it record?",
   ["Debug and Informational only", "Warning, Error, Critical, Alert and Emergency", "Everything, since 4 is the midpoint", "Notice, Informational and Debug"], 1,
   "Syslog numbers severity in reverse: 0 is Emergency and 7 is Debug, so \"4 and above\" in severity terms means level 4 down to level 0 — Warning through Emergency. Reading the numbers as increasing severity is the mistake this tests."),
- ("1.1", "A host is handed to you with a suspected foothold. Which observation most strongly suggests a malicious process rather than a normal one?",
+ ("1.2", "A host is handed to you with a suspected foothold. Which observation most strongly suggests a malicious process rather than a normal one?",
   ["It is consuming a high percentage of CPU", "A system-sounding executable is running from a user-writable directory", "It was started after the most recent reboot", "It has an unfamiliar name"], 1,
   "Legitimate system binaries run from protected system paths. The same name running out of a user profile directory is a strong indicator, because an attacker can write there without privilege. High CPU, recent start and unfamiliar names all have ordinary explanations."),
  ("1.1", "A container is compromised. Which concern is specific to containerization rather than virtualization?",
@@ -400,6 +403,9 @@ QUIZ = [
  ('1.2', 'Mail logs show a message from support@rnicrosoft-billing.com linking to a login page. Which indicator is this?', ['DGA beaconing', 'Typosquatting / look-alike domain', 'DNS tunneling', 'Impossible travel'], 1, "'rn' standing in for 'm' plus an added word is a look-alike registration designed to pass a quick glance. Read the registered domain itself."),
  ('1.4', "You need to sweep 2,000 endpoints' memory and files for a specific malware family's byte patterns. Which rule format fits?", ['Sigma', 'Snort', 'YARA', 'DMARC'], 2, 'YARA is built for pattern matching in files and memory. Sigma targets logs and Snort targets network traffic.'),
  ('1.4', 'A feed reports attackers ransoming internet-exposed MongoDB databases on TCP 27017. What is the threat-hunting response?', ['Wait for an IDS alert', 'Submit a report to the ISAC first', 'Open 27017 inbound to test it', 'Search external scans and internal assets for exposed or unauthorized 27017 instances and review their access logs'], 3, 'Hunting is proactive: use the intelligence to look for the exposure and for signs it was already abused, before any alert fires.'),
+ # -- objectives check: uncovered bullets, 2026-10-31
+ ('1.2', 'A file server normally sends about 2 GB a day to the internet. Last night it sent 140 GB to a single cloud storage address between 01:00 and 04:00. What is the most likely concern?', ['A failing network card', 'A routine backup to the approved provider', 'Data exfiltration', 'Normal patch download traffic'], 2, 'Sustained outbound volume far above baseline, off-hours, to one destination is the classic exfiltration pattern. Confirm against approved backup jobs before ruling it out; patches come in, not out.'),
+ ('1.4', "A threat-intel analyst finds your company's VPN credentials listed for sale on a dark-web market. What does this source type mean for confidence and action?", ['Ignore it; dark-web data is never reliable', 'Report it to the vendor and take no internal action', 'Confirm it by buying the credentials', "Treat it as low-confidence until corroborated, but act quickly: check the accounts' logons and force resets"], 3, 'Dark-web listings are unvetted, so confidence starts low, but the potential impact is high and the checks are cheap. Validate with your own logs and reset the accounts. Buying from criminals creates legal and ethical problems.'),
 ]
 
 SCENARIOS = [

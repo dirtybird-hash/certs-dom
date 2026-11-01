@@ -45,10 +45,10 @@ All four domains — 100% of the exam by weight. Exam items exclude the separate
 
 | Domain | Weight | Notebook | Drill (exam items) |
 |---|---|---|---|
-| 1.0 Security Operations | 33% | 40 topics | 126 flash / 78 quiz / 20 scenarios |
-| 2.0 Vulnerability Management | 30% | 26 topics | 104 / 59 / 11 |
+| 1.0 Security Operations | 33% | 40 topics | 128 flash / 80 quiz / 20 scenarios |
+| 2.0 Vulnerability Management | 30% | 26 topics | 104 / 60 / 11 |
 | 3.0 Incident Response & Management | 20% | 11 topics | 46 / 28 / 6 |
-| 4.0 Reporting & Communication | 17% | 11 topics | 36 / 18 / 5 |
+| 4.0 Reporting & Communication | 17% | 11 topics | 36 / 19 / 5 |
 
 Plus all 128 CS0-003 acronyms in the Notebook, 39 Ops Lab drills with a CVSS workbench, and ten Performance Tasks.
 
