@@ -232,6 +232,15 @@ FLASHCARDS = [
  # -- objectives check: uncovered bullets, 2026-10-31
  ('1.2', 'When is bandwidth consumption an indicator rather than just a busy network?', "When it departs from the host's or link's baseline in a way the business can't explain: sustained outbound volume off-hours (exfiltration), steady high upload to one external destination, or a server suddenly saturating its link (DoS participation, crypto-mining pools, a compromised host serving files). Flow data against a baseline is how you see it."),
  ('1.4', 'What do social media and the deep/dark web contribute as intelligence sources?', 'Social media and forums give early, unvetted signals: researchers posting new exploits, hacktivists announcing targets, employees oversharing. Dark-web markets and leak sites show stolen credentials, breach data and access for sale, often the first sign your organization was compromised. Both are low-confidence until corroborated.'),
+('1.3',
+  'Is PowerShell execution policy a security control?',
+  "No. Microsoft describes it as a safety feature that stops accidental script runs, not a security boundary. Any user can launch a process with -ExecutionPolicy Bypass (unless Group Policy pins it) or load a script straight into memory. Treat -ep bypass in a command line as an indicator, and rely on AppLocker or WDAC, Constrained Language Mode and Script Block Logging for actual control."),
+ ('1.3',
+  'Why parse untrusted JSON with JSON.parse() or json.loads() instead of eval()?',
+  "A parser only builds data. eval() runs the string as code, so a crafted value becomes code execution. Strict JSON also has no comments, no trailing commas and only double-quoted strings, so anything with // notes in it is not valid JSON."),
+ ('1.2',
+  'Fileless malware: what does a reboot remove, and what does it leave?',
+  "It clears the copy running in memory, and with it the best evidence. It leaves the persistence (Run key, WMI event subscription, scheduled task) that relaunches the script, plus traces in event logs, the registry and network flows. Rebooting is not remediation; removing persistence and the entry point is."),
 ]
 
 QUIZ = [
@@ -406,6 +415,15 @@ QUIZ = [
  # -- objectives check: uncovered bullets, 2026-10-31
  ('1.2', 'A file server normally sends about 2 GB a day to the internet. Last night it sent 140 GB to a single cloud storage address between 01:00 and 04:00. What is the most likely concern?', ['A failing network card', 'A routine backup to the approved provider', 'Data exfiltration', 'Normal patch download traffic'], 2, 'Sustained outbound volume far above baseline, off-hours, to one destination is the classic exfiltration pattern. Confirm against approved backup jobs before ruling it out; patches come in, not out.'),
  ('1.4', "A threat-intel analyst finds your company's VPN credentials listed for sale on a dark-web market. What does this source type mean for confidence and action?", ['Ignore it; dark-web data is never reliable', 'Report it to the vendor and take no internal action', 'Confirm it by buying the credentials', "Treat it as low-confidence until corroborated, but act quickly: check the accounts' logons and force resets"], 3, 'Dark-web listings are unvetted, so confidence starts low, but the potential impact is high and the checks are cheap. Validate with your own logs and reset the accounts. Buying from criminals creates legal and ethical problems.'),
+('1.3', 'A Python script walks /var/www/html with os.walk, opens each file in binary mode, and prints each path beside its hashlib.sha256 digest. What is it most likely for?',
+  ['Building a hash baseline so later changes to web files can be detected', 'Encrypting the web root for ransom', 'Sending the web files to an external server', 'Compressing old files to save disk space'], 0,
+  "Hashing every file and recording path plus digest is a file integrity baseline. Run it again later and any changed digest marks a changed file. Nothing in the description writes, encrypts or transmits anything."),
+ ('1.3', "On a workstation whose locally set execution policy is Restricted, EDR logs 'powershell.exe -ExecutionPolicy Bypass -File C:\\Users\\Public\\upd.ps1'. What does this mean?",
+  ['The script could not run because the policy is Restricted', 'It is harmless, because execution policy blocks anything malicious', 'The process ran the script with the policy ignored, which any user can do, so investigate the script, its parent process and the user', 'The local policy store is corrupted and should be reset'], 2,
+  "A command-line Bypass overrides a locally set policy for that one process; only a Group Policy setting takes precedence over it. Execution policy is not a security boundary, so the real question is what the script in a world-writable folder does and who launched it."),
+ ('1.2', "A workstation showed beaconing and a new WMI event subscription that launches PowerShell. The help desk rebooted it, the beaconing stopped, and they want to close the ticket. What is the best response?",
+  ['Close it; fileless malware lives only in memory, so the reboot removed it', 'Run a full-disk antivirus scan and close it if clean', 'Reset the user password and close it', 'Keep it open: the WMI subscription will relaunch the payload, so remove that persistence, find the entry point, and note that the memory evidence was lost'], 3,
+  "The WMI subscription is persistence; the payload comes back on its trigger. A disk scan misses script-only persistence, and the reboot destroyed the in-memory evidence that should have been captured first."),
 ]
 
 SCENARIOS = [
@@ -482,7 +500,11 @@ SCENARIOS = [
  ('1.3', "An IDS reports: [1:1000002:2] LOCAL directory traversal in request, {TCP} 203.0.113.50:51544 -> 10.0.10.15:80. The server's access log has: GET /download?file=../../../../etc/passwd returned 200 with 1,874 bytes, the size of the server's passwd file.", 'How do you classify this?', ['False positive: the rule is a local test rule', 'True positive with likely success: escalate as an incident', 'No action needed: an IDS would have blocked it', 'Benign: /etc/passwd holds no password hashes'], 1, 'The response was 200 with a body the size of the real file, so the traversal probably worked. passwd exposes account names, and the same flaw can usually read other files. An IDS never blocks.'),
  # -- 10-29 topics, written 2026-10-31
  ('1.2', 'An accountant opened an invoice attachment at 09:12. Since then her workstation has made an HTTPS connection to the same external address every 60 seconds. EDR shows excel.exe spawned powershell.exe with -ep bypass, and a new WMI event subscription appeared. A full antivirus scan is clean. The manager wants the machine shut down and reimaged now.', 'What should happen first?', ['Reimage immediately; the antivirus scan is clean so nothing is lost', 'Run a second full-disk antivirus scan with updated signatures', 'Isolate the host from the network but keep it powered on, and capture a memory image', 'Delete the WMI subscription and return the machine to the user'], 2, 'This is fileless malware with WMI persistence and beaconing. Network isolation stops the C2 traffic; keeping power on preserves the in-memory evidence for analysis. Reimaging first destroys it.'),
- # -- fortified from D1/D2 video check, 2026-10-31
+ # -- fortified from D1/D2 video check, 2026-10-31,
+('1.3', 'A SIEM export contains: {"event": "process_start", "parent": "winword.exe", "child": "powershell.exe", "cmdline": "powershell -nop -w hidden -enc SQBFAFgA..."}',
+  'What is the best reading of this event?',
+  ['Word launched hidden, encoded PowerShell, a strong sign of a malicious document; isolate the host and decode the command', 'A routine Office add-in update', 'A malformed JSON record that the SIEM failed to parse', 'PowerShell loading the user profile at startup'], 0,
+  "Word should not spawn PowerShell. -nop skips the profile, -w hidden hides the window and -enc carries a Base64 command; SQBFAFgA decodes (UTF-16LE) to IEX, the start of Invoke-Expression. The JSON itself is well formed."),
 ]
 
 OBJTITLE = {"1.1": "System & Network Architecture", "1.2": "Indicators of Malicious Activity", "1.3": "Tools & Techniques", "1.4": "Threat Intelligence & Hunting", "1.5": "Efficiency & Process Improvement"}

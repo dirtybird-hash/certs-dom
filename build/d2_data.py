@@ -237,6 +237,15 @@ FLASHCARDS = [
  ('2.4', 'What makes DOM-based XSS different from reflected and stored XSS?', "The page's own JavaScript writes attacker-controlled data (often from the URL fragment) into the page with an unsafe sink such as innerHTML. The payload may never reach the server, so server-side filters and logs miss it. Fix client-side: safe sinks like textContent, trusted types, and a Content Security Policy."),
  ('2.4', 'Give an example of NoSQL injection and its fix.', 'A login that passes JSON straight into a MongoDB query: {"password": {"$ne": null}} matches any password. Fix: treat input as typed data (never as query operators), validate against an allow-list, and use least-privilege database accounts.'),
  ('2.4', 'Which crypto settings will a scanner flag as weak?', 'SSL 2.0/3.0 and TLS 1.0/1.1; RC4, DES and 3DES; MD5 or SHA-1 for signatures; RSA keys under 2048 bits; expired, self-signed or mismatched certificates. Usually fixed by configuration on the server or load balancer, then a rescan.'),
+('2.4',
+  'What does checking a value against INT_MAX before arithmetic prevent?',
+  "Integer overflow: a result too large for its type wrapping around, often into a tiny allocation size that then causes a buffer overflow. Stack overflows are countered by canaries, DEP/NX and ASLR instead."),
+ ('2.4',
+  'Perfect forward secrecy in one sentence?',
+  "Each session uses a fresh ephemeral key (ECDHE or DHE) that is thrown away, so stealing the server's long-term private key later does not decrypt traffic recorded earlier. TLS 1.3 always provides it."),
+ ('2.4',
+  'Horizontal versus vertical privilege escalation: an example of each?',
+  "Horizontal: a customer changes id=1001 to id=1002 and reads another customer's account at the same privilege level. Vertical: a standard user abuses a writable service binary or SUID program to become administrator or root."),
 ]
 
 QUIZ = [
@@ -397,6 +406,15 @@ QUIZ = [
  ('2.4', 'Which control specifically addresses NoSQL operator injection such as {"$ne": null} in a login request?', ['Encrypting the database at rest', 'Moving the database behind a VPN', 'Raising the account lockout threshold', 'Treating input as typed data and rejecting objects or operators where a string is expected'], 3, 'The attack works because the app passes a JSON object where a string belongs. Enforcing types and allow-listing input keeps operators out of the query.'),
  # -- objectives check: uncovered bullets, 2026-10-31
  ('2.1', 'An auditor asks which industry framework your web application testing follows. Which one is built for exactly that?', ['OWASP (Top 10, ASVS and the Web Security Testing Guide)', 'CIS Benchmarks', 'PCI DSS', 'ISO 27001'], 0, 'OWASP publishes the web application security references: the Top 10 risk list, the Application Security Verification Standard and the testing guide. PCI DSS governs cardholder data, CIS Benchmarks harden configurations, and ISO 27001 is a management-system standard.'),
+('2.4', 'A code review finds a size computed as count * 64 in a 32-bit integer and passed to malloc(). A crafted count makes the allocation tiny, and the copy that follows overruns it. Which control most directly fixes the root cause?',
+  ['Enable stack canaries', 'Enable ASLR', 'Add a WAF rule for long requests', 'Reject any count larger than INT_MAX / 64 before multiplying'], 3,
+  "The root cause is integer overflow in the size calculation. A range check before the multiplication stops the wrap. Canaries and ASLR make the later memory corruption harder to exploit but leave the bug in place."),
+ ('2.4', "An attacker recorded months of a web server's TLS traffic and has now stolen the server's private key. Which configuration would have kept those recorded sessions confidential?",
+  ['Ephemeral key exchange (ECDHE), which provides perfect forward secrecy', 'A 4096-bit RSA certificate key', 'HTTP Strict Transport Security', 'Certificate pinning in the mobile app'], 0,
+  "With ephemeral key exchange, session keys are never derivable from the long-term key, so a stolen private key decrypts nothing recorded earlier. A larger RSA key does not help once the key itself is stolen; HSTS and pinning address downgrade and impersonation."),
+ ('2.4', "A logged-in customer changes /invoices?id=5521 to id=5522 and sees another customer's invoice. Which flaw is this, and what is the fix?",
+  ['Vertical privilege escalation; remove SUID binaries', 'Directory traversal; filter ../ sequences', "Broken access control (horizontal escalation); check on the server that the requested object belongs to the session's user", 'Cross-site request forgery; add anti-CSRF tokens'], 2,
+  "Same privilege level, someone else's data: horizontal escalation through a missing object-level authorization check. Hiding or encrypting IDs only slows it; the server must check ownership on every request."),
 ]
 
 SCENARIOS = [
@@ -432,6 +450,10 @@ SCENARIOS = [
  ('2.4', 'Secret scanning flags an AWS access key committed to a public GitHub repository 40 minutes ago. The commit has already been reverted.', 'What do you do first?', ['Revoke or rotate the key immediately, then review its activity in CloudTrail', 'Nothing more; the revert removed it', 'Make the repository private', 'Rewrite Git history to remove the commit'], 0, 'A key exposed publicly must be treated as compromised: the revert leaves it in history and it may already have been harvested. Revoke first, then check what the key was used for. Cleaning history comes later.'),
  # -- fortified from D1/D2 video check, 2026-10-31
  ('2.4', "A bank's single-page app reads a 'welcome' parameter from the URL fragment and inserts it with innerHTML. The server team says their WAF and logs show no attacks, so the app must be safe. A tester demonstrates session theft with a crafted link.", 'What is the best remediation?', ['Tune the WAF to block script tags', 'Enable HSTS', 'Add server-side output encoding', 'Change the client code to write the value with textContent (or sanitize it) and deploy a strict Content Security Policy'], 3, "This is DOM-based XSS. The fragment never reaches the server, so server-side controls can't see it. The fix belongs in the client code, backed by CSP."),
+('2.4', 'An API log shows POST /api/login with the body {"username": "admin\'--", "password": "anything"}, answered with 200 OK and a session token for admin.',
+  'Which conclusion and fix are best?',
+  ['A JSON syntax error; move the API to XML', 'Cross-site scripting; encode output', 'Credential brute force; add account lockout', 'SQL injection carried inside a JSON field bypassed the password check; use parameterized queries on the server'], 3,
+  "The quote closes the SQL string and -- comments out the password clause, so the query matches admin alone. JSON is only the carrier. Parameterized queries fix it; lockout does nothing against a single successful request."),
 ]
 
 OBJTITLE = {"2.1": "Scanning Methods & Concepts", "2.2": "Assessment Tool Output", "2.3": "Prioritizing Vulnerabilities", "2.4": "Controls & Software Vulnerabilities", "2.5": "Response, Handling & Management"}
