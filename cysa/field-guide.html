@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="CySA+ CS0-003 review: trap patterns, objective-by-objective distinctions and an original self-check.">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>CySA+ Bank Field Guide</title>
+</head>
+<body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: SOC runbook. Sticky objective index on the left (desktop), domain sections on the right; trap callouts carry the amber signal color. */
+:root{
+  --bg:#f4f6f8; --surface:#ffffff; --fg:#14202b; --muted:#566573; --line:#d9dfe5;
+  --accent:#a8550c; --accent-soft:#fbeedd; --info:#1f5f8b; --info-soft:#e3eef6;
+  --good:#1e7a46; --bad:#b3261e; --bar:#9fb3c4;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f161d; --surface:#16202a; --fg:#e4eaf0; --muted:#97a6b4; --line:#2a3846;
+  --accent:#f0a14a; --accent-soft:#33240f; --info:#7fb6df; --info-soft:#15293a;
+  --good:#5fc58b; --bad:#f08a80; --bar:#4b6378; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161d; --surface:#16202a; --fg:#e4eaf0; --muted:#97a6b4; --line:#2a3846;
+  --accent:#f0a14a; --accent-soft:#33240f; --info:#7fb6df; --info-soft:#15293a;
+  --good:#5fc58b; --bad:#f08a80; --bar:#4b6378; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px}
+@media (max-width:880px){.wrap{grid-template-columns:minmax(0,1fr)}nav.toc{position:static!important;max-height:none!important}}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(1.9rem,4vw,2.6rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.6rem;font-weight:800;padding-top:8px}
+h3{font-size:1.15rem;font-weight:700}
+h4{font-size:1rem;font-weight:700}
+p{margin:0;max-width:68ch}
+a{color:var(--info)}
+code,.mono{font-family:var(--f-mono);font-size:.9em}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+main{min-width:0;display:flex;flex-direction:column;gap:56px}
+section{display:flex;flex-direction:column;gap:20px;scroll-margin-top:16px}
+.stack{display:flex;flex-direction:column;gap:12px}
+nav.toc{position:sticky;top:max(16px,env(safe-area-inset-top,0px));align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:.88rem;display:flex;flex-direction:column;gap:4px}
+nav.toc a{color:var(--fg);text-decoration:none;padding:3px 8px;border-radius:4px;display:block}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--info-soft);outline:none}
+nav.toc .grp{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:12px;padding-left:8px}
+.hero{display:flex;flex-direction:column;gap:14px;border-bottom:2px solid var(--fg);padding-bottom:24px}
+.hero p{color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 24px;font-family:var(--f-mono);font-size:.85rem}
+.facts b{font-family:var(--f-display);font-size:1.05rem;color:var(--fg)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+.trap{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 4px 4px 0}
+.trap .eyebrow{color:var(--accent)}
+.note{background:var(--info-soft);border-left:4px solid var(--info);padding:12px 16px;border-radius:0 4px 4px 0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg);font-weight:500}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+.cov{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:6px 12px;align-items:center;font-size:.88rem}
+.cov .obj{font-family:var(--f-mono)}
+.cov .track{height:12px;background:var(--bg);border-radius:2px;overflow:hidden}
+.cov .fill{height:100%;background:var(--bar)}
+.cov .n{font-variant-numeric:tabular-nums;font-family:var(--f-mono);text-align:right}
+.pill{font-family:var(--f-mono);font-size:.75rem;padding:2px 8px;border-radius:999px;white-space:nowrap;text-align:center}
+.p-low{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.p-ok{background:var(--info-soft);color:var(--info)}
+.p-none{color:var(--muted);border:1px dashed var(--line)}
+.rules{counter-reset:r;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.rule h4::before{counter-increment:r;content:counter(r,decimal-leading-zero) "  ";font-family:var(--f-mono);color:var(--accent);font-weight:500}
+.rule p{font-size:.93rem}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;max-width:70ch}
+.objhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px}
+.objhead .meta{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--f-mono);font-size:.82rem}
+.chain span{background:var(--surface);border:1px solid var(--line);padding:4px 8px;border-radius:4px}
+.chain i{color:var(--muted);font-style:normal}
+.chain span.hl{border-color:var(--accent);color:var(--accent);font-weight:600}
+/* quiz */
+.q{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.q .stem{font-weight:500}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts button{font:inherit;font-size:.94rem;text-align:left;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:8px 12px;cursor:pointer}
+.opts button:hover{border-color:var(--info)}
+.opts button:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.opts button.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface));}
+.opts button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface));}
+.opts button[disabled]{cursor:default}
+.why{font-size:.92rem;color:var(--muted)}
+.score{font-family:var(--f-mono);font-size:.9rem;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.score button{font:inherit;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;padding:4px 10px;cursor:pointer}
+@media (prefers-reduced-motion:no-preference){nav.toc a{transition:background .15s}}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <span class="grp">Start</span>
+  <a href="#coverage">Bank vs. your accuracy</a>
+  <a href="#traps">Trap patterns</a>
+  <span class="grp">1.0 Security Ops</span>
+  <a href="#o11">1.1 Architecture</a>
+  <a href="#o12">1.2 Indicators</a>
+  <a href="#o13">1.3 Tools</a>
+  <a href="#o14">1.4 Intel &amp; hunting</a>
+  <a href="#o15">1.5 Process improvement</a>
+  <span class="grp">2.0 Vuln Mgmt</span>
+  <a href="#o21">2.1 Scanning</a>
+  <a href="#o22">2.2 Tool output</a>
+  <a href="#o23">2.3 Prioritizing</a>
+  <a href="#o24">2.4 Controls</a>
+  <a href="#o25">2.5 Response &amp; SDLC</a>
+  <span class="grp">3.0 Incident Response</span>
+  <a href="#o31">3.1 Frameworks</a>
+  <a href="#o32">3.2 IR activities</a>
+  <a href="#o33">3.3 Prep &amp; post-incident</a>
+  <span class="grp">4.0 Reporting</span>
+  <a href="#o4">4.1–4.2 Comms &amp; metrics</a>
+  <span class="grp">Drill</span>
+  <a href="#interactive">Interactive-format items</a>
+  <a href="#check">Self-check (16)</a>
+</nav>
+
+<main>
+<header class="hero">
+  <a href="index.html" style="font-family:var(--f-mono);font-size:.8rem;text-decoration:none;align-self:flex-start">&larr; CySA+ Toolkit</a>
+  <span class="eyebrow">CompTIA CySA+ CS0-003 · scope review of the MeasureUp practice bank</span>
+  <h1>CySA+ Bank Field Guide</h1>
+  <p>Everything the 274-question practice bank tests, rewritten as distinctions and rules you can apply to any question. No bank items are reproduced here; the wording, tables, and self-check questions are original and written against CompTIA's published objectives.</p>
+  <div class="facts">
+    <span><b>274</b> items reviewed</span>
+    <span><b>36</b> multi-select</span>
+    <span><b>4</b> interactive formats</span>
+    <span>Reviewed <b>Nov 3, 2026</b></span>
+    <span>MeasureUp final <b>Nov 11</b> · Exam <b>Nov 12</b></span>
+  </div>
+</header>
+
+<section id="coverage">
+  <span class="eyebrow">Where to spend the next 8 days</span>
+  <h2>Bank coverage vs. your drill accuracy</h2>
+  <p>Bar length is how many bank items carry each objective tag. The pill is your cumulative drill accuracy from the toolkit on record (Nov 2). Amber marks objectives that are both heavily tested and under 70%.</p>
+  <div class="panel">
+    <div class="cov" id="cov" role="table" aria-label="Bank items and drill accuracy by objective"></div>
+  </div>
+  <div class="note"><p><b>Read this as:</b> 1.4 (30 items, 65%) and 2.5 (41 items) are where the bank puts weight. 2.1 and 2.4 are under 70%. 1.3 is low but lightly tested here, so cover it with tools practice rather than more multiple choice. Domains 3 and 4 are strong; keep them warm with the self-check at the bottom.</p></div>
+</section>
+
+<section id="traps">
+  <span class="eyebrow">Patterns that repeat across the bank</span>
+  <h2>Trap patterns</h2>
+  <div class="rules">
+    <div class="rule"><h4>"Need" vs. "how to implement"</h4><p>The need for a change, a finding, or a recommendation is recorded in the <b>lessons learned report</b>. The procedure for making the change, or an ongoing routine like patching, belongs to <b>change control</b>.</p></div>
+    <div class="rule"><h4>Gap between two named metrics</h4><p>When the question names two metrics and asks about the time between them, answer with the metric that covers that stretch. Detect → act is <b>MTTA</b>. Don't get stuck on whether it says "process" or "metric".</p></div>
+    <div class="rule"><h4>Formal beats technical on "preserve"</h4><p>"Preserve evidence before notifying the person" calls for a <b>legal hold</b>. Imaging a single device is the technical step that comes with it. When the wording is about law or process, choose the formal mechanism.</p></div>
+    <div class="rule"><h4>Keep critical services up</h4><p>If a question stresses that downtime is costly, eliminate every answer that takes the service offline (shut down, relocate, re-IP). Contain at the edge with an ACL, isolation, or a WAF instead.</p></div>
+    <div class="rule"><h4>Ransomware: isolate, don't power off</h4><p>Pulling the network keeps RAM evidence intact. Powering off destroys it. "Contain and preserve" means <b>isolate</b>.</p></div>
+    <div class="rule"><h4>Who talks to whom</h4><p>Media and customers go to <b>PR</b>. Police and regulators go to <b>Legal</b>. Employee misconduct or employee data goes to <b>HR</b>. Cost of the incident goes to <b>senior management</b>. Analysts never comment, even off the record.</p></div>
+    <div class="rule"><h4>Customer PII ≠ HR</h4><p>Distractors list customer data next to employee data. HR handles only cases where employees are the actor or the victims.</p></div>
+    <div class="rule"><h4>Event vs. incident</h4><p>An event is anything you can observe. An incident threatens confidentiality, integrity, or availability, or breaks policy. An unexplained reboot is an event until evidence ties it to malicious activity.</p></div>
+    <div class="rule"><h4>Infrastructure is not capability</h4><p>In the Diamond Model, C2 servers, domains, and IPs are <b>infrastructure</b>. Malware, exploits, and TTPs are <b>capability</b>. Motive belongs with the <b>adversary</b>, and the people targeted are the <b>victim</b>.</p></div>
+    <div class="rule"><h4>Plug-in update, sudden new finding</h4><p>If one finding appears on every host right after a scanner update, suspect a false positive, and verify it before you accept, exempt, or fix it.</p></div>
+    <div class="rule"><h4>Unknown threats need behavior</h4><p>Signatures, anti-malware, and daily IoC updates catch only known threats. When the question says unknown, zero-day, or new variant, choose <b>behavior, anomaly, or heuristic</b> detection.</p></div>
+    <div class="rule"><h4>Honeypot / sandbox / sinkhole</h4><p>To study attacker TTPs, use a <b>honeypot</b>. To safely run a suspicious file, use a <b>sandbox</b>. To redirect bot or C2 traffic and see who's infected, use a <b>sinkhole</b>. To administer high-value servers, use a <b>jump box</b>.</p></div>
+    <div class="rule"><h4>"Only…" in planning answers</h4><p>For the communication plan and stakeholder lists, the answer that includes everyone wins. Details are still shared only with trusted, need-to-know parties during the investigation.</p></div>
+    <div class="rule"><h4>Watch NOT and EXCEPT</h4><p>About a dozen items in the bank ask which choice is <b>not</b> a factor, control, or source. Underline the negation before you read the options.</p></div>
+  </div>
+</section>
+
+<!-- DOMAIN 1 -->
+<section id="o11">
+  <div class="objhead"><span class="eyebrow">Domain 1 · Security Operations</span></div>
+  <div class="objhead"><h2>1.1 System &amp; network architecture</h2><span class="meta">44 bank items · drill 83%</span></div>
+  <h3>Hardware roots of trust</h3>
+  <div class="tbl"><table>
+    <tr><th>Component</th><th>What it does</th><th>Pick it when the question says…</th></tr>
+    <tr><td>TPM</td><td>Chip on the motherboard that stores keys and boot measurements</td><td>Whole-disk encryption keys, device attestation, laptop key protection</td></tr>
+    <tr><td>HSM</td><td>Dedicated appliance or card that generates, stores, rotates, and retires keys at scale</td><td>Server or website keys were stolen; "most secure key storage"</td></tr>
+    <tr><td>Secure enclave / TEE</td><td>Isolated CPU region that keeps <i>data in use</i> encrypted and walled off from the OS and other tenants</td><td>Data in use, multi-tenant IaaS processes, Top Secret workloads</td></tr>
+    <tr><td>UEFI + Secure Boot</td><td>Firmware loads only signed bootloaders</td><td>Rootkits or bootkits, booting an untrusted OS</td></tr>
+    <tr><td>Measured Boot</td><td>Records a hash of each boot component in the TPM and can report it to a remote server</td><td>Logging and verifying the boot chain. Requires both TPM and UEFI.</td></tr>
+    <tr><td>eFuse</td><td>One-time-programmable fuse that blocks firmware rollback</td><td>Preventing firmware downgrade</td></tr>
+    <tr><td>Bus encryption</td><td>Encrypts data moving between components inside the device</td><td>DRM enforcement</td></tr>
+    <tr><td>Self-encrypting drive</td><td>Encryption is built into the drive</td><td>Remember: it stays unlocked across a warm reboot and locks only when power is cut</td></tr>
+  </table></div>
+  <h3>Protecting data</h3>
+  <div class="tbl"><table>
+    <tr><th>Technique</th><th>Use</th></tr>
+    <tr><td>DLP</td><td>Stops sensitive data from leaving, whether by accident or on purpose (blocked email, blocked upload)</td></tr>
+    <tr><td>DRM</td><td>Controls what someone can do with content after they have it (copy, print, forward)</td></tr>
+    <tr><td>Data masking</td><td>Realistic fake values, used for testing and development outside the company</td></tr>
+    <tr><td>Tokenization</td><td>Replaces a value with a token. The real value lives in a vault (PII in a cloud CRM).</td></tr>
+    <tr><td>De-identification</td><td>Removes identifiers so records can't be tied back to a person</td></tr>
+    <tr><td>Data minimization</td><td>GDPR principle: collect only what the stated purpose needs</td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>Policy</th><th>Answers the question</th></tr>
+    <tr><td>Data retention</td><td>How long data is kept and when and how it's destroyed. Also supports eDiscovery, legal holds, and chain of custody.</td></tr>
+    <tr><td>Data ownership</td><td>Who decides access and who sets disposal rules</td></tr>
+    <tr><td>Data classification</td><td>How sensitive each type of data is, and how each level is labeled</td></tr>
+    <tr><td>Acceptable use</td><td>What users may do with company systems (for BYOD, which websites are allowed)</td></tr>
+  </table></div>
+  <h3>Access control and network placement</h3>
+  <ul class="tight">
+    <li><b>Role-based</b>: access by job function. <b>Rule-based</b>: a system-wide rule, such as time of day. <b>Location-based</b>: where the connection comes from. <b>Context-based</b>: several signals combined.</li>
+    <li><b>Federation</b> uses the same identity <i>across organizations</i>. <b>SSO</b> is one sign-in across apps <i>within</i> one organization.</li>
+    <li><b>VLAN</b>: a quick logical group for a small team. <b>Air gap</b>: no network connection at all. <b>Jump box</b>: the single hardened path to administer servers. <b>DMZ + NGFW</b>: a public server that also needs IPS.</li>
+    <li><b>SSL tunnel VPN</b> carries web and non-web traffic. A <b>portal VPN</b> covers only browser-based applications.</li>
+    <li>Cleartext SMTP seen in a capture means <b>transport encryption</b> is missing. Sniffing risk in general calls for <b>IPsec</b>.</li>
+    <li>Ping sweeps from outside: block inbound <b>ICMP echo</b> at the edge.</li>
+    <li>Firmware updates: <b>digital signatures</b> prove both authenticity and integrity. A hash alone proves only integrity.</li>
+  </ul>
+  <div class="trap"><span class="eyebrow">Syslog severity</span><p>0 Emergency · 1 Alert · 2 Critical · 3 Error · 4 Warning · 5 Notice · 6 Informational · 7 Debug. Lower numbers are more severe, so "log warnings and worse" means <b>level 4 and lower</b>.</p></div>
+</section>
+
+<section id="o12">
+  <div class="objhead"><h2>1.2 Indicators of malicious activity</h2><span class="meta">19 bank items · drill 100% (4 items only)</span></div>
+  <div class="tbl"><table>
+    <tr><th>What you see</th><th>Most likely meaning</th></tr>
+    <tr><td>Port and application don't match</td><td>C2 or tunneling hidden on a common port</td></tr>
+    <tr><td>Outbound volume spikes, especially after hours</td><td>Data exfiltration</td></tr>
+    <tr><td>Traffic to regions you don't do business with</td><td>Attacker infrastructure</td></tr>
+    <tr><td>Many failed logins on TCP 23</td><td>Brute force over Telnet (one account, many passwords). Spraying is the reverse: many accounts, few passwords.</td></tr>
+    <tr><td>Process with a blank description, or a name and description that are identical</td><td>Malicious process disguised among normal ones</td></tr>
+    <tr><td>CPU or RAM spikes but Task Manager shows nothing unusual</td><td>Memory-resident or hidden malware. Dump memory during the spike.</td></tr>
+    <tr><td>Hidden partitions plus falling disk space</td><td>Unknown malware staging data. Isolate first.</td></tr>
+    <tr><td>Slow system, scan clean, registry changed</td><td>Unauthorized registry changes (persistence)</td></tr>
+    <tr><td>Anomaly IDS alerts during end-of-quarter processing</td><td>False positive from a legitimate busy period</td></tr>
+    <tr><td>Rogue AP broadcasting your SSID</td><td>Evil twin</td></tr>
+  </table></div>
+  <h3>Forensic basics the bank keeps coming back to</h3>
+  <ul class="tight">
+    <li>Hash the source <b>before</b> imaging, hash the copy after, and compare. That's how you prove integrity.</li>
+    <li><code>dd</code> makes a bit-for-bit image, including slack and unallocated space. <code>cp</code>, <code>mv</code>, and <code>tar</code> copy only files.</li>
+    <li>Data carving finds files by their header signature. It assumes the file isn't fragmented and that its starting signature still exists.</li>
+    <li>Collect the most volatile evidence first, and RAM comes before disk.</li>
+  </ul>
+</section>
+
+<section id="o13">
+  <div class="objhead"><h2>1.3 Tools &amp; techniques</h2><span class="meta">10 bank items · drill 66%</span></div>
+  <div class="tbl"><table>
+    <tr><th>Need</th><th>Tool</th><th>Not to be confused with</th></tr>
+    <tr><td>Correlate logs from many sources, compare against history</td><td>SIEM</td><td>SOAR, which acts on alerts automatically</td></tr>
+    <tr><td>Automate response to low-level alerts with playbooks</td><td>SOAR</td><td>SIEM, which correlates and alerts but doesn't act on its own</td></tr>
+    <tr><td>Check configuration compliance automatically</td><td>SCAP</td><td>SCADA (industrial control)</td></tr>
+    <tr><td>Bandwidth by protocol, packet-size statistics</td><td>NetFlow</td><td>tcpdump, which captures full packets</td></tr>
+    <tr><td>Send status, diagnostic, and event data to a central server</td><td>Syslog + SNMP</td><td>NetFlow, which carries flow statistics only</td></tr>
+    <tr><td>Check a suspicious attachment</td><td>VirusTotal + sandbox</td><td>Shodan, which indexes internet-facing devices</td></tr>
+    <tr><td>Less manual rule writing across firewall and anti-spam</td><td>Feed several threat intel sources into the SIEM</td><td>Writing more blocklists by hand</td></tr>
+  </table></div>
+  <ul class="tight">
+    <li><b>Email headers:</b> the strongest phishing sign is a sending domain that doesn't match who the message claims to be from.</li>
+    <li><b>Script ID:</b> verb-noun cmdlets such as <code>Test-Connection</code>, and <code>$variables</code>, mean PowerShell. A shebang with <code>bash</code>, or <code>def</code> / <code>import</code>, points elsewhere.</li>
+  </ul>
+</section>
+
+<section id="o14">
+  <div class="objhead"><h2>1.4 Threat intelligence &amp; hunting</h2><span class="meta">30 bank items · drill 65%</span></div>
+  <div class="chain" aria-label="Threat hunting flow"><span class="hl">Hypothesis</span><i>→</i><span>Collect data</span><i>→</i><span>Analyze TTPs</span><i>→</i><span>Find &amp; remove hidden threats</span><i>→</i><span>Feed detections</span></div>
+  <ul class="tight">
+    <li>A hunt <b>starts with a hypothesis</b>. It's usually triggered by a <b>suspected IoC</b> and aims to find attackers who are already hiding inside.</li>
+    <li>TTPs tell you how capable and dangerous an actor is. <b>MITRE ATT&amp;CK</b> is the free catalog of them. <b>STIX</b> is the format for threat data, and <b>TAXII</b> is the protocol for sharing it, for example across an ISAC or a consortium.</li>
+    <li>OSINT is public information only: search engines, social media, the company website. An internal file server is not OSINT.</li>
+    <li>APT: stays hidden for a long time, and its goal is to watch or steal data.</li>
+    <li>A signature-based NIDS misses new threats. Machine learning detection depends on <b>good, relevant training data</b>.</li>
+    <li>Getting traffic to a monitor: a <b>network tap</b> or a <b>port mirror (SPAN)</b>.</li>
+    <li><b>Trusted Foundry</b> (US DoD) means suppliers can show a chain of custody for chips. That's the answer to "prove component authenticity for a government bid."</li>
+  </ul>
+  <h3>Risk vocabulary the bank files under 1.4</h3>
+  <div class="tbl"><table>
+    <tr><th>Likelihood factors</th><th>Impact factors</th></tr>
+    <tr><td style="font-weight:400">Ease of discovery and exploit, attacker skill and motivation, how often you see exploit attempts, user awareness</td><td>Financial loss, non-compliance, reputation, data exposure</td></tr>
+  </table></div>
+  <ul class="tight">
+    <li>Interviewing people and rating risks high, medium, or low is <b>qualitative</b>. Putting dollar values on ALE, SLE, and ARO is <b>quantitative</b>.</li>
+    <li>Risk matrix: <b>low likelihood with high impact</b> gets a contingency plan. High likelihood with high impact gets mitigated now.</li>
+  </ul>
+</section>
+
+<section id="o15">
+  <div class="objhead"><h2>1.5 Process improvement</h2><span class="meta">5 bank items · drill 88%</span></div>
+  <ul class="tight">
+    <li>Too many false positives reaching Tier 2: give <b>Tier 1 triage training</b> and <b>tune the alerts</b>.</li>
+    <li>Users get local admin just to install software: build <b>golden images per role</b> instead.</li>
+    <li>Protect API keys by <b>restricting them to known IPs</b> and <b>requiring TLS</b>.</li>
+    <li>YANG models with automation: <b>RESTCONF + Python</b>. DevSecOps: <b>build security into every stage automatically</b>.</li>
+  </ul>
+</section>
+
+<!-- DOMAIN 2 -->
+<section id="o21">
+  <div class="objhead"><span class="eyebrow">Domain 2 · Vulnerability Management</span></div>
+  <div class="objhead"><h2>2.1 Scanning methods</h2><span class="meta">17 bank items · drill 62%</span></div>
+  <div class="tbl"><table>
+    <tr><th>Situation</th><th>Fix or choice</th></tr>
+    <tr><td>Your scan finds more than a third party's scan did</td><td>You ran a <b>credentialed</b> scan, so it could see inside the hosts</td></tr>
+    <tr><td>Advantage of non-credentialed scans</td><td>Lighter on resources and the network, and they show the outsider's view</td></tr>
+    <tr><td>Remote sites, a DMZ, limited bandwidth</td><td><b>Agent-based</b> scanning</td></tr>
+    <tr><td>Too many false positives</td><td><b>Lower the sensitivity</b>, then confirm</td></tr>
+    <tr><td>Expected assets are missing from results</td><td>The scan scope is missing <b>subnets</b></td></tr>
+    <tr><td>ICS / SCADA</td><td>Active scans can disrupt or crash systems, and standard tools miss OT-specific flaws. Scan passively and carefully.</td></tr>
+    <tr><td>Continuous, standards-based scanning</td><td><b>SCAP</b></td></tr>
+    <tr><td>Fuzzing finds…</td><td>Input-handling bugs: <b>buffer overflows, SQL injection</b></td></tr>
+    <tr><td>Watching a honeynet without being noticed</td><td>Passive <b>IDS</b>, not IPS</td></tr>
+  </table></div>
+  <div class="note"><p><b>Frameworks the bank maps here:</b> under NIST CSF 1.1, vulnerability scanning sits in <b>Detect</b> and mitigating new vulnerabilities sits in <b>Respond</b>. ISO 27002 files scanning tools under <b>technological</b> controls. Regulatory data-residency rules can block a move to the cloud.</p></div>
+</section>
+
+<section id="o22">
+  <div class="objhead"><h2>2.2 Reading tool output</h2><span class="meta">8 bank items · drill 69%</span></div>
+  <div class="tbl"><table>
+    <tr><th>Tool</th><th>What its output tells you</th></tr>
+    <tr><td>nmap (no flags)</td><td>TCP SYN scan is the default when run with privileges</td></tr>
+    <tr><td>nmap <code>open|filtered</code></td><td>No response came back, so nmap can't tell open from filtered (typical of <code>-sX</code>, <code>-sN</code>, and UDP scans)</td></tr>
+    <tr><td>Nessus</td><td>Missing patches and CVEs. First action: install the missing updates.</td></tr>
+    <tr><td>Nikto</td><td>Web server and web app weaknesses. Your job is to find the real issues and clear the false positives.</td></tr>
+    <tr><td>recon-ng</td><td>OSINT recon: hosts, IPs, ports, email addresses, social media</td></tr>
+    <tr><td>Scout Suite</td><td>Cloud configuration audit. <b>Danger</b> (red) means it needs immediate attention.</td></tr>
+    <tr><td>Burp Suite</td><td><b>Intruder</b> sends modified requests with payloads. Repeater resends a request by hand. Sequencer tests token randomness.</td></tr>
+    <tr><td>tcpdump</td><td>Captures packets and writes them to a file</td></tr>
+  </table></div>
+</section>
+
+<section id="o23">
+  <div class="objhead"><h2>2.3 Prioritizing vulnerabilities</h2><span class="meta">13 bank items · drill 100% (11)</span></div>
+  <ul class="tight">
+    <li>Severity × exposure × asset value. A 9.1 on three <b>internet-facing</b> servers and a 7.7 on <b>every workstation</b> outrank a 9.8 on one isolated, non-critical box.</li>
+    <li>The higher the asset's value, the higher the remediation priority.</li>
+    <li>CVSS base metrics: <b>Attack Vector</b> tells you whether it's reachable over the network. <b>Confidentiality Impact</b> tells you whether data can be read or stolen. <i>Requirement</i> metrics are environmental metrics, not base metrics.</li>
+    <li>Threat types: <b>known</b> (DDoS patterns, cleartext transmission), <b>unknown</b>, and <b>zero-day</b> (no fix exists yet). Anti-malware does nothing against unknown threats.</li>
+    <li>A virus got through an IoC-only IDS: add <b>behavior-based detection</b>. If an exhibit shows missing OS patches, the recommendation is <b>patch management</b>.</li>
+  </ul>
+</section>
+
+<section id="o24">
+  <div class="objhead"><h2>2.4 Mitigating attacks</h2><span class="meta">9 bank items · drill 64%</span></div>
+  <div class="tbl"><table>
+    <tr><th>Attack</th><th>Primary control</th></tr>
+    <tr><td>SQL injection</td><td>Parameterized queries, input validation</td></tr>
+    <tr><td>XSS, XML injection</td><td>Input validation and filtering (escape tags and special characters)</td></tr>
+    <tr><td>Buffer overflow</td><td>Input validation (bounds checking)</td></tr>
+    <tr><td>CSRF</td><td>Unpredictable anti-CSRF tokens on each request</td></tr>
+    <tr><td>Session hijacking</td><td>HTTPS everywhere</td></tr>
+    <tr><td>Password spraying</td><td>MFA. Changing passwords more often doesn't help.</td></tr>
+    <tr><td>Breached web app (from lessons learned)</td><td>WAF in front of it and a DMZ around it</td></tr>
+    <tr><td>EOL server that can't be patched</td><td>Isolate it, harden it, add FIM and DLP. <b>Never</b> move it into the DMZ.</td></tr>
+  </table></div>
+</section>
+
+<section id="o25">
+  <div class="objhead"><h2>2.5 Vulnerability response, handling &amp; SDLC</h2><span class="meta">41 bank items · drill 75%</span></div>
+  <h3>Control and risk vocabulary</h3>
+  <div class="tbl"><table>
+    <tr><th>Term</th><th>Bank-style example</th></tr>
+    <tr><td>Compensating</td><td>Motion sensors instead of guards; an alternative because the ideal control costs too much</td></tr>
+    <tr><td>Technical</td><td>Firewalls between subnets</td></tr>
+    <tr><td>Managerial</td><td>Security awareness training</td></tr>
+    <tr><td>Physical preventive</td><td>A locked fence around the data center</td></tr>
+    <tr><td>Risk transference</td><td>Buying cyber insurance</td></tr>
+    <tr><td>Mitigate</td><td>ALE is high compared with what the fix costs</td></tr>
+  </table></div>
+  <h3>SDLC and delivery</h3>
+  <div class="chain" aria-label="SDLC order"><span class="hl">Requirements (security needs)</span><i>→</i><span class="hl">Test planning</span><i>→</i><span>Design</span><i>→</i><span>Build</span><i>→</i><span>Test</span><i>→</i><span>Deploy</span><i>→</i><span>Maintain</span></div>
+  <div class="tbl"><table>
+    <tr><th>Testing</th><th>Answers</th></tr>
+    <tr><td>Stress</td><td>Can it handle the new transaction or throughput targets?</td></tr>
+    <tr><td>Security regression</td><td>Did the update break or reopen anything security-related?</td></tr>
+    <tr><td>UAT</td><td>Does it meet business requirements? Usually the last step.</td></tr>
+    <tr><td>Static analysis</td><td>Data flow analysis, Hoare logic, symbolic execution. Fuzzing is dynamic.</td></tr>
+  </table></div>
+  <ul class="tight">
+    <li><b>Continuous integration</b> merges validated changes into the main branch quickly. <b>Continuous delivery</b> keeps code always releasable. <b>Continuous deployment</b> automates all the way to production, the most automated of the three.</li>
+    <li>Allowlisting (whitelisting) is how you stop unapproved software. Blocklists are never complete.</li>
+    <li>BYOD minimum posture: <b>NAC</b>. Biggest SaaS risk: <b>password/credential management</b>. Self-driving vehicles: the <b>CAN bus</b>.</li>
+    <li>To reduce attack surface, close unused ports, remove unused services, segment the network, and patch. Threat modeling: <b>attack vector analysis</b> lists the paths in, and <b>total attack surface</b> covers growth such as IoT. IoT problems: a wider attack surface and default passwords.</li>
+  </ul>
+  <div class="trap"><span class="eyebrow">Remediation inhibitors (filed under 4.1 in the bank)</span><p>An <b>SLA</b> (uptime promises) and an <b>MOU</b> (agreed terms with a partner) can both delay patching. EULAs, AUPs, and NDAs don't. Prioritize remediation by <b>criticality</b> and <b>difficulty of implementation</b>, and test patches in a <b>sandbox or isolated segment</b> before rolling them out.</p></div>
+</section>
+
+<!-- DOMAIN 3 -->
+<section id="o31">
+  <div class="objhead"><span class="eyebrow">Domain 3 · Incident Response</span></div>
+  <div class="objhead"><h2>3.1 Attack methodology frameworks</h2><span class="meta">9 bank items · drill 88%</span></div>
+  <div class="chain" aria-label="Cyber Kill Chain"><span>1 Recon</span><i>→</i><span class="hl">2 Weaponization</span><i>→</i><span>3 Delivery</span><i>→</i><span>4 Exploitation</span><i>→</i><span>5 Installation</span><i>→</i><span class="hl">6 C2</span><i>→</i><span>7 Actions</span></div>
+  <ul class="tight">
+    <li>Random-looking subdomains in DNS <b>TXT</b> queries mean C2 or tunneling over DNS (stage 6).</li>
+    <li>Diamond Model: <b>Adversary</b> (who and why) · <b>Capability</b> (malware and TTPs) · <b>Infrastructure</b> (C2 servers, domains, IPs) · <b>Victim</b> (people and systems targeted).</li>
+    <li><b>OSSTMM</b> covers security testing in general. The <b>OWASP Testing Guide</b> covers only web app pen testing. <b>ATT&amp;CK</b> is the TTP knowledge base.</li>
+    <li>A broadcast ping such as <code>ping -b</code> to the <code>.255</code> address is <b>topology discovery</b>.</li>
+  </ul>
+</section>
+
+<section id="o32">
+  <div class="objhead"><h2>3.2 Incident response activities</h2><span class="meta">17 bank items · drill 93%</span></div>
+  <ul class="tight">
+    <li>Once an incident is confirmed, the next step is <b>containment</b>. Isolation stops traffic so the attacker can't move laterally.</li>
+    <li><b>Legal hold:</b> identify relevant data and preserve it as it is. It covers email and file servers, and nothing can be deleted or changed.</li>
+    <li>"What happened before the incident" means <b>logs</b> (log viewer or SIEM). Firewall logs record IPs, ports, rules, and actions, but <b>not MAC addresses</b>.</li>
+    <li>Re-imaging returns a system to a clean, known state. Many authenticator prompts in a row before an accept is <b>MFA fatigue</b>.</li>
+    <li>Hashes don't match and the file is hiding inside another file: <b>exfiltration plus steganography</b>.</li>
+    <li>Unexplained restarts on VMs behind physical security point to <b>malware in the VMs</b>, not the hosts.</li>
+    <li>Impact categories include downtime, recovery time, and economic cost. Rule out data integrity when nothing was altered.</li>
+  </ul>
+</section>
+
+<section id="o33">
+  <div class="objhead"><h2>3.3 Preparation &amp; post-incident activity</h2><span class="meta">17 bank items · drill 91%</span></div>
+  <div class="note"><p><b>Two phase models appear.</b> NIST 800-61r2, which CompTIA uses, has four phases: Preparation → Detection &amp; Analysis → Containment, Eradication &amp; Recovery → Post-Incident Activity. The bank also uses SANS's six: Preparation, Identification, Containment, Eradication, Recovery, Lessons Learned. Either way, <b>Preparation comes first</b>.</p></div>
+  <div class="tbl"><table>
+    <tr><th>Metric</th><th>Meaning</th><th>Clue</th></tr>
+    <tr><td>MTD</td><td>Longest the business can survive the outage</td><td>BIA criticality</td></tr>
+    <tr><td>RTO</td><td>Time limit to get the service back</td><td>"Back within X hours"</td></tr>
+    <tr><td>RPO</td><td>Maximum age of restored data</td><td>"Content no older than X"</td></tr>
+    <tr><td>MTBF</td><td>Average run time between failures (from the manufacturer)</td><td>Device reliability data</td></tr>
+    <tr><td>MTTR (repair)</td><td>Average time to fix a failed part</td><td>Repair time</td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>Document</th><th>Holds</th></tr>
+    <tr><td>Lessons learned report</td><td>Root cause, what went wrong, recommended changes, ways to respond faster next time</td></tr>
+    <tr><td>Incident summary report</td><td>Scope, how the incident was contained and resolved, who was involved. <b>Not</b> proposed changes to the IR plan.</td></tr>
+    <tr><td>Change control</td><td>Approved procedures for making changes, including patching</td></tr>
+    <tr><td>Incident timeline</td><td>Events, descriptions, UTC date-time groups, impacts, data sources</td></tr>
+  </table></div>
+  <ul class="tight">
+    <li>A new team with an approved IR plan should hold a <b>tabletop exercise</b> next.</li>
+    <li>CSIRT email that has to stay confidential and signed: <b>S/MIME</b>. Before taking legal action: rely on your <b>data retention</b> policy and process.</li>
+    <li>Leaked merger details: <b>NDA</b>. Leaked unpublished material: <b>DRM</b>. Supply-chain tampering: <b>anti-tamper devices + file system hashing</b>.</li>
+  </ul>
+</section>
+
+<!-- DOMAIN 4 -->
+<section id="o4">
+  <div class="objhead"><span class="eyebrow">Domain 4 · Reporting &amp; Communication</span></div>
+  <div class="objhead"><h2>4.1–4.2 Communication, regulation &amp; metrics</h2><span class="meta">35 bank items · drill 4.1 89%, 4.2 100%</span></div>
+  <div class="tbl"><table>
+    <tr><th>Stakeholder</th><th>Owns</th></tr>
+    <tr><td>Legal</td><td>Contact with law enforcement and regulators, breach-notification duties, and keeping liability low in every statement</td></tr>
+    <tr><td>PR / marketing</td><td>Media, customers, investors: clear, factual statements without jargon, and avoiding accidental disclosure</td></tr>
+    <tr><td>HR</td><td>Employees as the actor or as the victims of a data leak</td></tr>
+    <tr><td>Senior management</td><td>Financial cost of the incident, approvals, resources</td></tr>
+    <tr><td>Technical / IT</td><td>Containment and analysis. Not outside communication.</td></tr>
+  </table></div>
+  <ul class="tight">
+    <li>Early in an investigation, share only with <b>trusted parties</b>. If the scope is unknown and internal systems may be compromised, communicate by <b>personal mobile devices</b>, out of band.</li>
+    <li>Contact law enforcement as soon as a crime is <b>clearly suspected or obvious</b>, coordinated through Legal.</li>
+    <li><b>Declaration</b> is formally acknowledging that an incident exists. <b>Escalation</b> is handing it to another team or tier.</li>
+    <li>The communication plan includes every stakeholder, plus a call list and more than one way to reach each person.</li>
+    <li>For PHI exposure, notification is a <b>regulatory requirement</b>. It doesn't remove liability or replace a law enforcement report.</li>
+  </ul>
+  <div class="tbl"><table>
+    <tr><th>Clue</th><th>Regulation</th></tr>
+    <tr><td>EU residents' personal data; 72-hour notice to the regulator</td><td>GDPR</td></tr>
+    <tr><td>Health records, PHI / ePHI</td><td>HIPAA</td></tr>
+    <tr><td>Payment card data (an industry standard, not a law)</td><td>PCI DSS</td></tr>
+    <tr><td>Financial institutions, customer financial data</td><td>GLBA</td></tr>
+    <tr><td>Children under 13 online</td><td>COPPA</td></tr>
+  </table></div>
+  <h3>Metrics timeline</h3>
+  <div class="chain" aria-label="Incident metrics"><span>Compromise</span><i>— MTTD →</i><span>Alert</span><i>— <b>MTTA</b> →</i><span>Response</span><i>— MTTC →</i><span>Contained</span><i>— MTTR (remediate) →</i><span class="hl">Normal business</span></div>
+  <ul class="tight">
+    <li>Faster response comes from a <b>24/7 SOC</b> and <b>SOAR</b>. Fresh signatures improve detection, and tested backups improve recovery.</li>
+    <li>Improving mean time to remediate means <b>returning to normal business sooner</b>. The <b>IR plan</b> is the factor with the biggest effect on it.</li>
+    <li>RCA finds the underlying cause so the incident doesn't happen again. Lessons learned are delivered in the <b>Post-Incident Activity</b> phase.</li>
+  </ul>
+</section>
+
+<section id="interactive">
+  <span class="eyebrow">Practice these hands-on</span>
+  <h2>Interactive-format items</h2>
+  <p>Four bank items use drop-downs or drag-to-order, so their answers can't be read off the page. Practice the skills directly in the Performance Tasks page:</p>
+  <ul class="tight">
+    <li><b>Reading a CVSS v3 report:</b> map a base score to its severity band (None 0, Low 0.1–3.9, Medium 4.0–6.9, High 7.0–8.9, Critical 9.0–10.0) and read each vector field.</li>
+    <li><b>Disk analysis sequence:</b> hash the original, make a verified image, analyze the copy (never the original).</li>
+    <li><b>IR phase order:</b> put either model in order from memory (see 3.3).</li>
+    <li><b>Classifying controls:</b> sort controls by type (physical, technical, administrative/managerial) and by function (preventive, detective, corrective, deterrent, compensating).</li>
+  </ul>
+</section>
+
+<section id="check">
+  <span class="eyebrow">Original items · not from the bank</span>
+  <h2>Self-check</h2>
+  <p>Sixteen new scenarios that test the same distinctions. Your score stays on this page and isn't saved.</p>
+  <div class="score"><span id="scoreTxt">0 / 0 answered</span><button type="button" id="resetBtn">Reset</button></div>
+  <div class="stack" id="quiz"></div>
+</section>
+</main>
+</div>
+
+<script>
+const COV=[
+ ["1.1",44,"83%","ok"],["1.2",19,"100% (4)","ok"],["1.3",10,"66%","low"],["1.4",30,"65%","low"],["1.5",5,"88%","ok"],
+ ["2.1",17,"62%","low"],["2.2",8,"69%","low"],["2.3",13,"100% (11)","ok"],["2.4",9,"64%","low"],["2.5",41,"75%","ok"],
+ ["3.1",9,"88%","ok"],["3.2",17,"93%","ok"],["3.3",17,"91%","ok"],["4.1",12,"89%","ok"],["4.2",23,"100%","ok"]];
+const max=44, cov=document.getElementById('cov');
+cov.innerHTML='<span class="eyebrow">Obj</span><span class="eyebrow">Bank items</span><span class="eyebrow">#</span><span class="eyebrow">Drill</span>'+
+ COV.map(([o,n,a,s])=>`<span class="obj">${o}</span><span class="track"><span class="fill" style="width:${(n/max*100).toFixed(1)}%;display:block"></span></span><span class="n">${n}</span><span class="pill ${s==='low'?'p-low':'p-ok'}">${a}</span>`).join('');
+
+const Q=[
+ {s:"An alert fired at 02:10. An analyst picked it up at 07:45, and the host was contained by 08:30. Which metric shows the biggest problem?",o:["MTTD","MTBF","MTTA","MTTC"],a:2,w:"The five-hour wait between the alert and someone picking it up is acknowledgment time."},
+ {s:"A file server's CPU spikes every few hours, but the process list looks normal each time. What should the analyst capture during the next spike?",o:["A full disk image","A memory dump","The firewall log","A new vulnerability scan"],a:1,w:"Malware that hides from the process list often lives only in memory. Capture RAM while the spike is happening."},
+ {s:"Infected hosts keep resolving an attacker's domain. The team wants to cut off the C2 and see which internal hosts are infected. What should they use?",o:["DNS sinkhole","Honeypot","Jump box","Air gap"],a:0,w:"A sinkhole redirects the malicious domain to a server you control and logs every host that tries to reach it."},
+ {s:"A laptop is encrypting shared drives right now. The team must stop the spread and keep forensic evidence. What should they do first?",o:["Shut it down","Re-image it","Run a full AV scan","Disconnect it from the network"],a:3,w:"Isolating it stops the spread, and leaving it powered on keeps the evidence in RAM."},
+ {s:"An nmap -sX scan reports several ports as open|filtered. What does that mean?",o:["The ports require authentication","No response came back for those ports","A host firewall reset the connection","Services run on non-standard ports"],a:1,w:"With FIN, NULL, and Xmas scans, getting no reply is ambiguous, so nmap can't tell open from filtered."},
+ {s:"A legacy server runs an operating system that no longer gets patches and can't be replaced this year. Which compensating step is NOT acceptable?",o:["Move it into the DMZ","Put it on its own isolated segment","Add file integrity monitoring","Remove unused services"],a:0,w:"The DMZ exposes it to more traffic. Every other choice reduces exposure."},
+ {s:"A contract promises a partner 99.95% uptime, which leaves almost no maintenance window for patching. What is this an example of?",o:["An AUP limitation","A EULA restriction","An SLA acting as a remediation inhibitor","A data retention conflict"],a:2,w:"Service-level commitments (SLAs) and memoranda of understanding (MOUs) commonly delay remediation."},
+ {s:"Using the Diamond Model, an analyst records the lookalike domain used to host a phishing kit. Which corner does it belong to?",o:["Adversary","Infrastructure","Capability","Victim"],a:1,w:"Domains, IPs, and servers the attacker uses to deliver and control are infrastructure. The phishing kit itself is capability."},
+ {s:"A company needs one document naming who decides access to the payroll database and when its archives are destroyed. Which policy is it?",o:["Acceptable use","Data classification","Data retention","Data ownership"],a:3,w:"Data ownership assigns who decides access and sets the disposal rules for the data."},
+ {s:"A retailer moving to a cloud CRM wants to swap card numbers for stand-in values that can be mapped back only through a secured vault. What technique is this?",o:["Tokenization","Data masking","Hashing","De-identification"],a:0,w:"Tokens map back to the real value through a vault. Masking uses fake values that can't be mapped back."},
+ {s:"For a board report that counts only incidents, which of these should be counted?",o:["A printer jam on floor 3","A patch reboot outside the maintenance window","A lost, unencrypted laptop with customer records","A failed login from a user who mistyped a password once"],a:2,w:"Possible exposure of customer data affects confidentiality, so it's an incident. The others are events."},
+ {s:"Customer records for EU residents were stolen. Under GDPR, how long does the company have to notify the supervisory authority after becoming aware of the breach?",o:["24 hours","72 hours","30 days","60 days"],a:1,w:"GDPR sets 72 hours for notifying the supervisory authority."},
+ {s:"After a scanner plug-in update, one finding appears on every server running the company's in-house app, and nothing else changed. What should the analyst do first?",o:["Patch every server","Add a scan exception","Rerun as non-credentialed","Validate whether the finding is real"],a:3,w:"A sudden finding everywhere after an update is a classic false positive. Verify it before acting."},
+ {s:"A threat hunter is starting a new hunt for possible APT activity. What comes first?",o:["Form a hypothesis","Deploy more sensors","Re-image suspect hosts","Write a lessons learned report"],a:0,w:"A hunt starts with a testable hypothesis that tells you what data to collect."},
+ {s:"In the Cyber Kill Chain, which stage comes right after Delivery?",o:["Installation","Weaponization","Exploitation","Command & Control"],a:2,w:"The order is Recon, Weaponization, Delivery, Exploitation, Installation, C2, Actions on objectives."},
+ {s:"A reporter calls an analyst about rumors of a breach that hasn't been announced. What should the analyst do?",o:["Confirm off the record only","Decline and refer the reporter to the designated media contact","Refer the reporter to the CEO","Say there was no incident"],a:1,w:"Analysts don't comment. Media questions go to the designated contact in PR."}
+];
+let answered=0, right=0;
+const quiz=document.getElementById('quiz'), scoreTxt=document.getElementById('scoreTxt');
+function render(){
+  answered=0; right=0; scoreTxt.textContent='0 / 0 answered';
+  quiz.innerHTML='';
+  Q.forEach((q,i)=>{
+    const d=document.createElement('div'); d.className='q';
+    d.innerHTML=`<span class="eyebrow">Q${i+1}</span><div class="stem">${q.s}</div><div class="opts">${q.o.map((t,j)=>`<button type="button" id="q${i}o${j}" data-j="${j}">${String.fromCharCode(65+j)}. ${t}</button>`).join('')}</div><div class="why" hidden></div>`;
+    d.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      const j=+b.dataset.j; answered++; if(j===q.a) right++;
+      d.querySelectorAll('button').forEach(x=>{x.disabled=true; if(+x.dataset.j===q.a) x.classList.add('right');});
+      if(j!==q.a) b.classList.add('wrong');
+      const w=d.querySelector('.why'); w.hidden=false; w.textContent=(j===q.a?'Correct. ':'Not quite. ')+q.w;
+      scoreTxt.textContent=`${right} / ${answered} answered · ${Math.round(right/answered*100)}%`;
+    }));
+    quiz.appendChild(d);
+  });
+}
+document.getElementById('resetBtn').addEventListener('click',render);
+render();
+</script>
+</body>
+</html>
