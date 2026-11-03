@@ -125,6 +125,11 @@ mark{background:color-mix(in srgb,var(--accent) 28%,transparent);color:inherit;b
 .shint{font-size:13.5px;color:var(--text-muted);}
 .note{border-left:3px solid var(--border);background:var(--surface-2);border-radius:0 10px 10px 0;
   padding:12px 14px;font-size:13.5px;color:var(--text-muted);line-height:1.55;margin-top:18px;}
+#misscount{display:inline-block;min-width:18px;margin-left:3px;padding:0 5px;border-radius:999px;
+  background:var(--surface-2);color:var(--text);font-variant-numeric:tabular-nums;text-align:center;}
+.tab[aria-selected="true"] #misscount{background:var(--accent-ink);color:var(--accent);}
+.mdone{text-align:center;padding:28px 22px;}
+.mdone .big{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:6px;}
 .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
 </style>
 
@@ -142,6 +147,7 @@ mark{background:color-mix(in srgb,var(--accent) 28%,transparent);color:inherit;b
     <button class="tab" id="t-flash" role="tab" aria-selected="true">Dirty Bird's</button>
     <button class="tab" id="t-quiz"  role="tab" aria-selected="false">Quiz</button>
     <button class="tab" id="t-scen"  role="tab" aria-selected="false">Scenarios</button>
+    <button class="tab" id="t-miss"  role="tab" aria-selected="false">Misses <span id="misscount">0</span></button>
     <button class="tab" id="t-prog"  role="tab" aria-selected="false">Progress</button>
   </div>
 
@@ -152,6 +158,7 @@ mark{background:color-mix(in srgb,var(--accent) 28%,transparent);color:inherit;b
   <div id="p-flash"></div>
   <div id="p-quiz" hidden></div>
   <div id="p-scen" hidden></div>
+  <div id="p-miss" hidden></div>
   <div id="p-prog" hidden></div>
   <div id="p-srch" hidden>
     <div id="sres"></div>
@@ -169,11 +176,12 @@ var OBJTITLE = __OBJTITLE__;
 
 var KEY = "cysa:domain__N__drill:v1";
 var OBJS = __OBJS__;
-var state = {cardStatus:{}, objStats:{}, gkStats:{}};
+var state = {cardStatus:{}, objStats:{}, gkStats:{}, missed:{}};
 try{ var raw = localStorage.getItem(KEY); if(raw) state = JSON.parse(raw); }catch(e){}
 if(!state.cardStatus) state.cardStatus = {};
 if(!state.objStats) state.objStats = {};
 if(!state.gkStats) state.gkStats = {};
+if(!state.missed) state.missed = {};
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 // General-knowledge answers are kept apart, so objective accuracy stays an exam-readiness number.
 function record(o, ok, gk){
@@ -181,6 +189,16 @@ function record(o, ok, gk){
   var s = bag[o] || {c:0,t:0};
   s.t += 1; if(ok) s.c += 1; bag[o] = s; save();
 }
+// Miss list: a question answered wrong is kept here until it is answered right,
+// from any tab. Keyed by the start of its text (questions carry no ids).
+function qkey(q){ return (q.s ? 's:' + q.s.slice(0,40) + '|' : 'q:') + q.q.slice(0,80); }
+function noteMiss(q, ok){
+  var k = qkey(q);
+  if(ok) delete state.missed[k]; else state.missed[k] = (state.missed[k] || 0) + 1;
+  save(); drawMissCount();
+}
+function missedItems(){ return QUIZ.concat(SCEN).filter(function(q){ return state.missed[qkey(q)]; }); }
+function drawMissCount(){ var el = document.getElementById('misscount'); if(el) el.textContent = missedItems().length; }
 var examOnly = false;
 function kindTag(x){ return x.g ? '<span class="kind gk">General knowledge</span>' : '<span class="kind ex">Exam objective</span>'; }
 var active = new Set(OBJS);
@@ -213,15 +231,16 @@ function mark(c, how){
   fi++; flipped = false; drawFlash(); drawProgress();
 }
 
-function mcPanel(id, items, isScen){
-  var qs = shuffle(sel(items)), i = 0, answered = false;
+function mcPanel(id, items, isScen, emptyHtml){
+  function src(){ return typeof items === 'function' ? items() : items; }
+  var qs = shuffle(sel(src())), i = 0, answered = false;
   function draw(){
     var el = document.getElementById(id);
-    if(!qs.length){ el.innerHTML = '<div class="card">No questions for the selected objectives.</div>'; return; }
+    if(!qs.length){ el.innerHTML = emptyHtml ? emptyHtml() : '<div class="card">No questions for the selected objectives.</div>'; return; }
     var q = qs[i % qs.length];
     var h = '<div class="card"><div class="tagrow"><span class="otag" data-o="'+q.o+'">'+q.o+'</span>'+kindTag(q)
       + '<span class="count">'+((i%qs.length)+1)+' / '+qs.length+'</span></div>';
-    if(isScen) h += '<div class="situation">'+q.s+'</div>';
+    if(isScen || q.s) h += '<div class="situation">'+q.s+'</div>';
     h += '<div class="qtext">'+q.q+'</div><div class="choices">';
     var order = shuffle(q.c.map(function(_, k){ return k; }));   // fresh order every time the question is shown
     order.forEach(function(k, pos){
@@ -243,16 +262,23 @@ function mcPanel(id, items, isScen){
         });
         document.getElementById(id+'-ex').innerHTML =
           '<div class="explain"><b>'+(ok?'Correct':'Not quite')+'</b>'+q.e+'</div>';
-        record(q.o, ok, q.g); drawProgress();
+        record(q.o, ok, q.g); noteMiss(q, ok); drawProgress();
       };
     });
     document.getElementById(id+'-next').onclick = function(){ i = (i + 1) % qs.length; draw(); };
     document.getElementById(id+'-prev').onclick = function(){ i = (i - 1 + qs.length) % qs.length; draw(); };
   }
-  return {draw:draw, reset:function(){ qs = shuffle(sel(items)); i = 0; draw(); }};
+  return {draw:draw, reset:function(){ qs = shuffle(sel(src())); i = 0; draw(); }};
 }
 var quizPanel = mcPanel('p-quiz', QUIZ, false);
 var scenPanel = mcPanel('p-scen', SCEN, true);
+var missPanel = mcPanel('p-miss', missedItems, false, function(){
+  var all = missedItems().length;
+  return '<div class="card mdone">' + (all
+    ? '<div class="big">'+all+' missed, hidden by your filters</div><p>Turn the objective buttons back on (or Exam only off) to review them.</p>'
+    : '<div class="big">No misses waiting</div><p>Every question you get wrong in Quiz or Scenarios lands here. Answer it right and it leaves the list.</p>')
+    + '</div>';
+});
 
 function drawProgress(){
   var el = document.getElementById('p-prog');
@@ -283,13 +309,15 @@ function drawProgress(){
     + 'coverage of the material is not the same as being able to recall it. Progress is saved in this '
     + 'browser only, under <code>cysa:domain__N__drill:v1</code>.</div>'
     + '<div class="btnrow"><button class="btn" id="reset">Reset all progress</button></div>';
+  var mc = missedItems().length;
+  h = h.replace('<div class="note">', '<div class="note">' + (mc ? '<b>' + mc + ' question' + (mc===1?'':'s') + '</b> waiting in Misses. ' : '') );
   el.innerHTML = h;
   document.getElementById('reset').onclick = function(){
-    state = {cardStatus:{}, objStats:{}, gkStats:{}}; save(); drawProgress();
+    state = {cardStatus:{}, objStats:{}, gkStats:{}, missed:{}}; save(); drawProgress(); drawMissCount();
   };
 }
 
-var panels = ['flash','quiz','scen','prog','srch'];
+var panels = ['flash','quiz','scen','miss','prog','srch'];
 function show(which){
   panels.forEach(function(p){
     document.getElementById('p-'+p).hidden = (p !== which);
@@ -300,6 +328,7 @@ function show(which){
   if(which==='flash') drawFlash();
   if(which==='quiz') quizPanel.draw();
   if(which==='scen') scenPanel.draw();
+  if(which==='miss') missPanel.reset();
   if(which==='prog') drawProgress();
   if(which==='srch') drawSearch();
   else lastPanel = which;
@@ -312,13 +341,13 @@ Array.prototype.forEach.call(document.querySelectorAll('.obj'), function(b){
     if(active.has(o)) active.delete(o); else active.add(o);
     if(!active.size){ active.add(o); }
     b.setAttribute('aria-pressed', String(active.has(o)));
-    newFlash(); quizPanel.reset(); scenPanel.reset();
+    newFlash(); quizPanel.reset(); scenPanel.reset(); missPanel.reset();
   };
 });
 
 document.getElementById('examonly').onclick = function(){
   examOnly = !examOnly; this.setAttribute('aria-pressed', String(examOnly));
-  newFlash(); quizPanel.reset(); scenPanel.reset();
+  newFlash(); quizPanel.reset(); scenPanel.reset(); missPanel.reset();
 };
 
 
@@ -380,7 +409,7 @@ document.addEventListener('keydown', function(ev){
   if(ev.key === '/' && t !== 'INPUT' && t !== 'TEXTAREA'){ ev.preventDefault(); sqEl.focus(); }
 });
 
-newFlash(); show('flash');
+newFlash(); show('flash'); drawMissCount();
 
 // Arriving from the toolkit-wide search (hub link ends in #q=term): open on that search.
 (function(){

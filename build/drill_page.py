@@ -9,7 +9,10 @@ pages so regenerating cannot drift from what shipped. Placeholders:
            hardcoded to 1.1-1.5, so Domains 2-4 shipped with Domain 1 filters)
 
 Storage key per domain: cysa:domain<N>drill:v1
-    {cardStatus:{...}, objStats:{"2.1":{c:correct, t:total}, ...}}
+    {cardStatus:{...}, objStats:{"2.1":{c:correct, t:total}, ...}, missed:{key:times}}
+missed (added 2026-11-02) feeds the Misses tab: a quiz or scenario question
+answered wrong is kept, keyed by the start of its text, until it is answered
+right from any tab. Older saved states load fine; missed starts empty.
 objStats is what the Progress tab reports as per-objective accuracy; it follows
 the Security+ schema deliberately, so the same readiness reporting works.
 
