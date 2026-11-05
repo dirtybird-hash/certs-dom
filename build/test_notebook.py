@@ -15,7 +15,7 @@ with sync_playwright() as pw:
     pg = b.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(PAGE); pg.wait_for_timeout(100)
     n = pg.evaluate('TOPICS.length'); na = pg.evaluate('ACR.length')
-    check('data loaded', n >= 60 and na == 128, f'{n} topics, {na} acronyms')
+    check('data loaded', n >= 60 and na == 176, f'{n} topics, {na} acronyms')
     # every objective has topics on screen
     for d in '1234':
         pg.click(f'[data-tab="{d}"]'); pg.wait_for_timeout(30)
@@ -33,7 +33,7 @@ with sync_playwright() as pw:
     check('drill link carries #q=', '#q=' in link and 'KrYojQYtNqGKiiYQQ1iPXy' in link, link)
     # acronyms tab + letter filter
     pg.click('[data-tab="A"]'); pg.wait_for_timeout(30)
-    check('acronym tab lists all', pg.evaluate("document.querySelectorAll('.acr').length") == 128)
+    check('acronym tab lists all', pg.evaluate("document.querySelectorAll('.acr').length") == 176)
     pg.click('[data-letter="D"]'); pg.wait_for_timeout(30)
     ds = pg.evaluate("[...document.querySelectorAll('.acr .a')].map(e=>e.textContent)")
     check('letter filter', ds and all(x.startswith('D') for x in ds), ds)

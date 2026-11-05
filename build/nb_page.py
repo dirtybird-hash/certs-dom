@@ -6,7 +6,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from nb_d1 import D1
 from nb_d2 import D2
 from nb_d34 import D3, D4
-from nb_acr import ACR
+from nb_acr import ACR, CLASS_ONLY
 
 ROOT = pathlib.Path('/home/claude')
 SPINE = json.load(open(ROOT / 'build/cysa-spine.json'))
@@ -25,7 +25,8 @@ ids = [t['id'] for t in topics]
 assert len(ids) == len(set(ids)), 'duplicate topic id'
 for o in SPINE:                                  # every objective has at least one topic
     assert any(t['o'] == o for t in topics), 'no topic for ' + o
-acr = [{'a': a[0], 'x': a[1], 'n': a[2], 'o': a[3], **({'f': a[4]} if len(a) > 4 else {})} for a in ACR]
+acr = [{'a': a[0], 'x': a[1], 'n': a[2], 'o': a[3], **({'f': a[4]} if len(a) > 4 else {}),
+        **({'k': 1} if a[0] in CLASS_ONLY else {})} for a in ACR]
 objt = {o: v['title'] for o, v in SPINE.items()}
 
 def js(v): return json.dumps(v, ensure_ascii=False).replace('</', '<\\/')
@@ -133,6 +134,7 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px;}
 .acr .x{font-weight:600;font-size:14.5px;}
 .acr .n{grid-column:2;font-size:13.5px;color:var(--text-muted);line-height:1.5;}
 .acr .f{grid-column:2;font-size:12.5px;color:var(--trap);line-height:1.45;}
+.acr .ks{font-family:var(--font-display);font-size:10.5px;color:var(--text-muted);border:1px solid var(--border);border-radius:999px;padding:0 7px;margin-left:6px;white-space:nowrap;}
 .acr .ob{font-family:var(--font-display);font-size:11px;color:var(--text-muted);margin-left:6px;}
 @media (max-width:520px){.acr{grid-template-columns:1fr;}.acr .n,.acr .f{grid-column:1;}}
 
@@ -147,7 +149,7 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px;}
   <a class="backlink" href="__HUB__">&larr; CySA+ Toolkit</a>
   <p class="eyebrow">CompTIA CySA+ &middot; CS0-003</p>
   <h1>CySA+ Notebook</h1>
-  <p class="lede">Reference notes for every objective, plus all __NACR__ acronyms on CompTIA&rsquo;s list. Look a topic up, read it, then hit <b>Drill this</b> to answer questions on it.</p>
+  <p class="lede">Reference notes for every objective, plus all __NACR__ acronyms from the class sheet, including every one on CompTIA&rsquo;s list. Look a topic up, read it, then hit <b>Drill this</b> to answer questions on it.</p>
 
   <div class="sbox" role="search">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6"/><path d="M13 13l5 5" stroke-linecap="round"/></svg>
@@ -159,7 +161,7 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px;}
   <div id="view"></div>
 
   <div class="foot">Original notes written against CompTIA&rsquo;s published CS0-003 objectives. Not official CompTIA content.
-  CompTIA, CySA+ and CS0-003 are trademarks of CompTIA, Inc. Acronym expansions are as CompTIA lists them; corrections are noted in pink.</div>
+  CompTIA, CySA+ and CS0-003 are trademarks of CompTIA, Inc. Acronym expansions follow the class sheet; where the sheet is wrong or CompTIA prints a different form, the note in pink says so.</div>
 </div>
 
 <script>
@@ -207,7 +209,7 @@ function topicHTML(t, terms){
 }
 function acrHTML(a, terms){
   return '<div class="acr" id="a-'+esc(a.a.replace(/[^A-Za-z0-9]/g,''))+'"><span class="a">'+hlHTML(esc(a.a), terms)+'</span><span class="x">'+hlHTML(esc(a.x), terms)+
-    '<span class="ob">'+a.o+'</span></span><span class="n">'+hlHTML(a.n, terms)+'</span>'+(a.f?'<span class="f">'+hlHTML(a.f, terms)+'</span>':'')+'</div>';
+    '<span class="ob">'+a.o+'</span>'+(a.k?'<span class="ks" title="On the class sheet, not on CompTIA&rsquo;s published list">Class sheet</span>':'')+'</span><span class="n">'+hlHTML(a.n, terms)+'</span>'+(a.f?'<span class="f">'+hlHTML(a.f, terms)+'</span>':'')+'</div>';
 }
 function drawDomain(d){
   var objs = Object.keys(OBJT).filter(function(o){ return o.charAt(0)===d; });
@@ -224,7 +226,7 @@ function drawDomain(d){
 }
 function drawAcr(){
   var letters = {}; ACR.forEach(function(a){ letters[a.a.charAt(0).toUpperCase()] = 1; });
-  var h = '<div class="tA"><div class="dhead"><h2>CS0-003 acronyms</h2><span class="w">'+ACR.length+' on CompTIA&rsquo;s list</span></div>';
+  var h = '<div class="tA"><div class="dhead"><h2>CySA+ acronyms</h2><span class="w">'+ACR.length+' from the class sheet &middot; '+ACR.filter(function(a){return !a.k;}).length+' on CompTIA&rsquo;s list</span></div>';
   h += '<div class="acrtools" role="group" aria-label="Jump to letter"><button type="button" data-letter="" aria-pressed="'+(!state.letter)+'">All</button>';
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function(L){
     h += '<button type="button" data-letter="'+L+'" aria-pressed="'+(state.letter===L)+'"'+(letters[L]?'':' disabled')+'>'+L+'</button>';

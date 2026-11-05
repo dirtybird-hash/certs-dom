@@ -94,7 +94,7 @@ CYSA_DESC = {
   'simple-flash.html': 'Course flashcards for CySA+, typed during class and kept verbatim.',
   'performance-tasks.html':
       'Hands-on CySA+ exercises in the shape the exam uses, scored per objective.',
-  'notebook.html':     'Searchable CySA+ reference notes for every CS0-003 objective, plus all 128 exam acronyms.',
+  'notebook.html':     'Searchable CySA+ reference notes for every CS0-003 objective, plus 176 acronyms from the class sheet, including all of CompTIA&rsquo;s list.',
   'ops-lab.html':      'Hands-on CySA+ drills on simulated evidence: CVSS scoring, scanning, incident response and log triage.',
   'field-guide.html':  'CySA+ CS0-003 review: trap patterns, objective-by-objective distinctions and an original self-check.',
 }
