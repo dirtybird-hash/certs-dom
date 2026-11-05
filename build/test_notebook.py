@@ -38,7 +38,7 @@ with sync_playwright() as pw:
     ds = pg.evaluate("[...document.querySelectorAll('.acr .a')].map(e=>e.textContent)")
     check('letter filter', ds and all(x.startswith('D') for x in ds), ds)
     fixes = pg.evaluate("[...document.querySelectorAll('.acr .f')].length")
-    check('corrections shown for DNS/DKIM', fixes >= 2, fixes)
+    check('sheet correction shown under D (DMARC)', fixes >= 1, fixes)
     # search
     def s(q):
         pg.fill('#q', q); pg.wait_for_timeout(200)

@@ -149,7 +149,7 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px;}
   <a class="backlink" href="__HUB__">&larr; CySA+ Toolkit</a>
   <p class="eyebrow">CompTIA CySA+ &middot; CS0-003</p>
   <h1>CySA+ Notebook</h1>
-  <p class="lede">Reference notes for every objective, plus all __NACR__ acronyms from the class sheet, including every one on CompTIA&rsquo;s list. Look a topic up, read it, then hit <b>Drill this</b> to answer questions on it.</p>
+  <p class="lede">Reference notes for every objective, plus all __NACR__ acronyms from the class sheet. Look a topic up, read it, then hit <b>Drill this</b> to answer questions on it.</p>
 
   <div class="sbox" role="search">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6"/><path d="M13 13l5 5" stroke-linecap="round"/></svg>
@@ -161,7 +161,7 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px;}
   <div id="view"></div>
 
   <div class="foot">Original notes written against CompTIA&rsquo;s published CS0-003 objectives. Not official CompTIA content.
-  CompTIA, CySA+ and CS0-003 are trademarks of CompTIA, Inc. Acronym expansions follow the class sheet; where the sheet is wrong or CompTIA prints a different form, the note in pink says so.</div>
+  CompTIA, CySA+ and CS0-003 are trademarks of CompTIA, Inc. Acronyms come from the class sheet; where the sheet is wrong, the correct expansion is shown and the note in pink says what the sheet has.</div>
 </div>
 
 <script>
@@ -209,7 +209,7 @@ function topicHTML(t, terms){
 }
 function acrHTML(a, terms){
   return '<div class="acr" id="a-'+esc(a.a.replace(/[^A-Za-z0-9]/g,''))+'"><span class="a">'+hlHTML(esc(a.a), terms)+'</span><span class="x">'+hlHTML(esc(a.x), terms)+
-    '<span class="ob">'+a.o+'</span>'+(a.k?'<span class="ks" title="On the class sheet, not on CompTIA&rsquo;s published list">Class sheet</span>':'')+'</span><span class="n">'+hlHTML(a.n, terms)+'</span>'+(a.f?'<span class="f">'+hlHTML(a.f, terms)+'</span>':'')+'</div>';
+    '<span class="ob">'+a.o+'</span>'+'</span><span class="n">'+hlHTML(a.n, terms)+'</span>'+(a.f?'<span class="f">'+hlHTML(a.f, terms)+'</span>':'')+'</div>';
 }
 function drawDomain(d){
   var objs = Object.keys(OBJT).filter(function(o){ return o.charAt(0)===d; });
@@ -226,7 +226,7 @@ function drawDomain(d){
 }
 function drawAcr(){
   var letters = {}; ACR.forEach(function(a){ letters[a.a.charAt(0).toUpperCase()] = 1; });
-  var h = '<div class="tA"><div class="dhead"><h2>CySA+ acronyms</h2><span class="w">'+ACR.length+' from the class sheet &middot; '+ACR.filter(function(a){return !a.k;}).length+' on CompTIA&rsquo;s list</span></div>';
+  var h = '<div class="tA"><div class="dhead"><h2>CySA+ acronyms</h2><span class="w">'+ACR.length+' &middot; from the class sheet</span></div>';
   h += '<div class="acrtools" role="group" aria-label="Jump to letter"><button type="button" data-letter="" aria-pressed="'+(!state.letter)+'">All</button>';
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function(L){
     h += '<button type="button" data-letter="'+L+'" aria-pressed="'+(state.letter===L)+'"'+(letters[L]?'':' disabled')+'>'+L+'</button>';

@@ -124,7 +124,7 @@ dict(id="network-architecture", o="1.1", t="Network architecture: segmentation, 
 <p><strong>On-premises</strong> means you own the hardware and all of its security; <strong>cloud</strong> shifts some layers to the provider; <strong>hybrid</strong> mixes both and adds the link between them as attack surface.</p>
 <p><strong>Network segmentation</strong> splits the network into zones (VLANs, subnets, firewall rules, a screened subnet for public services) so a compromise in one zone cannot freely reach another. It limits lateral movement and narrows audit scope, for example keeping cardholder systems in their own segment for PCI DSS.</p>
 <p><strong>Zero trust</strong>: never trust because of network location; verify every request using identity, device health and context, and grant least privilege per session. Core pieces are a policy decision point and a policy enforcement point, plus <strong>microsegmentation</strong>.</p>
-<p><strong>SASE</strong> (secure access service edge) delivers networking and security as one cloud service near the user: SD-WAN plus SWG, CASB, ZTNA and firewall-as-a-service. CompTIA&rsquo;s list prints it as &ldquo;secure access secure edge&rdquo;; the industry term is service edge.</p>
+<p><strong>SASE</strong> (secure access service edge) delivers networking and security as one cloud service near the user: SD-WAN plus SWG, CASB, ZTNA and firewall-as-a-service.</p>
 <p><strong>SDN</strong> (software-defined networking) separates the control plane (decides where traffic goes, in a central controller) from the data plane (forwards packets). It lets you change segmentation by policy in software, and makes the controller a high-value target.</p>
 <p><strong>Cloud filtering: two layers (AWS terms).</strong></p>
 <div class="tblwrap"><table><tr><th></th><th>Security group</th><th>Network ACL</th></tr>
@@ -190,7 +190,7 @@ dict(id="sase-sse", o="1.1", t="SASE vs SSE vs SD-WAN vs SDN", q="SASE", h="""
 <tr><td><strong>SSE</strong> (security service edge)</td><td>The security stack alone, delivered from the cloud close to the user</td><td>SWG, CASB, ZTNA, often FWaaS and DLP</td></tr>
 <tr><td><strong>SASE</strong> (secure access service edge)</td><td>SSE plus SD-WAN: networking and security converged into one cloud service</td><td>SD-WAN + SWG + CASB + ZTNA + FWaaS</td></tr></table></div>
 <p>The quick formula is <strong>SASE = SSE + SD-WAN</strong>. An organization that keeps its existing WAN and moves only its security controls to the cloud has bought SSE.</p>
-<p>Exam scope: SASE and SDN are on the CS0-003 list (CompTIA prints SASE as &ldquo;secure access secure edge&rdquo;). SSE and SD-WAN are general knowledge, included so you can tell the four apart.</p>
+<p>Exam scope: SASE and SDN are on the CS0-003 list. SSE and SD-WAN are general knowledge, included so you can tell the four apart.</p>
 """ + T.format("SDN is about separating the control and data planes, not about security as a service. An answer describing a cloud-delivered security stack for remote users is SASE (or SSE), not SDN.")),
 
 # ---------------------------------------------------------------- 1.2
