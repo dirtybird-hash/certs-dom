@@ -72,6 +72,7 @@ CYSA_URLS = {
   "https://claude.ai/artifact/2Zm7Tw7xCVcNJCC9bheaxv": "notebook.html",
   "https://claude.ai/artifact/3v8xDmJgJFy1BMsCyLEhCE": "ops-lab.html",
   "https://claude.ai/artifact/Uc1LhLJ1q5Gm3g9ds554e6": "field-guide.html",
+  "https://claude.ai/artifact/Ddz7pgCugvY2adJk9oF8v1": "study-map.html",
 }
 CYSA_FILES = {
   'cysa-hub.html':             'index.html',
@@ -84,6 +85,7 @@ CYSA_FILES = {
   'cysa-notebook.html':        'notebook.html',
   'cysa-opslab.html':          'ops-lab.html',
   'cysa-bank-guide.html':      'field-guide.html',
+  'cysa-studymap.html':        'study-map.html',
 }
 CYSA_DESC = {
   'index.html':        'Study tools for the CompTIA CySA+ CS0-003 exam, organized by domain.',
@@ -97,6 +99,7 @@ CYSA_DESC = {
   'notebook.html':     'Searchable CySA+ reference notes for every CS0-003 objective, plus 176 acronyms from the class sheet.',
   'ops-lab.html':      'Hands-on CySA+ drills on simulated evidence: CVSS scoring, scanning, incident response and log triage.',
   'field-guide.html':  'CySA+ CS0-003 review: trap patterns, objective-by-objective distinctions and an original self-check.',
+  'study-map.html':    'Every CySA+ CS0-003 objective topic as a card: what it is, what it does and where it lives, with flow diagrams and exam traps.',
 }
 
 CERTS = {

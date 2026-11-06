@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+
+# Keep book material out of the public repo
+private/
+build/sybex_outline.md

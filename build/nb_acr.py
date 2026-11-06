@@ -84,7 +84,7 @@ ACR = [
 ('LFI','Local File Inclusion','App includes a file already on the server via user input (<code>../</code> paths).','2.4'),
 ('LOI','Letter of Intent','Non-binding statement of intent to enter an agreement.','4.1'),
 ('LSASS','Local Security Authority Subsystem Service','Holds credentials in memory. Dumping lsass.exe (for example with Mimikatz) is a top credential-theft technique, so alert on access to it.','1.2'),
-('MAC','Media Access Control','Layer-2 hardware address; spoofable, so weak for NAC on its own.','1.2'),
+('MAC','Mandatory Access Control (security) / Media Access Control (networking)','Two meanings. <strong>CySA+ access control:</strong> Mandatory Access Control, where the system enforces labels such as Secret and Top Secret and users cannot change permissions (SELinux is the common example). <strong>Networking:</strong> a MAC address is the 48-bit Layer 2 hardware address on a network card; the first half (OUI) names the vendor. MAC addresses are easy to spoof, so they are weak for NAC on their own.','1.1'),
 ('MD5','Message Digest 5','128-bit hash, broken for collisions. Still used to identify files, but use SHA-256 to prove integrity.','1.3'),
 ('MFA','Multifactor Authentication','Two or more different factor types; two passwords is not MFA.','1.1'),
 ('MOU','Memorandum of Understanding','Statement of intent between parties; can limit when you can change shared systems.','4.1'),

@@ -72,6 +72,16 @@ Run from the repo root: `python build/hub_page.py`. Adding a cert to the dropdow
 to `sched_data.json` and to `LINKS` in `hub_page.py`. The old Security+-only generator
 (`prep_page.py`, `prep_style.css`, `prep_data.json`) is retired.
 
+`sm_page.py` + `sm_d1.py`..`sm_d4.py` — generate the CySA+ Study Map (`cysa/study-map.html`): every
+CS0-003 objective item as a card with what it is, what it does and where it lives, plus optional flow
+and exam-trap notes. Data is `OBJ` dicts built with `I(t, what, does, where, full, trap, flow, kids)`.
+
+`restyle.py` — one-off pass that moved the older CySA+ pages (hub, drills, Simple Flash, Performance
+Tasks, Ops Lab, Field Guide) onto the Midnight theme the Notebook and Study Map use: dark tokens on
+`:root`, light under `:root[data-theme="light"]`, Sora / Source Sans 3 / JetBrains Mono, and a
+Dark/Light switch remembered per page (`cysa:<page>:theme`). Its input paths point at copies of the
+live artifacts; rerun it only against fresh copies.
+
 ## Validation, every time
 
 Two checks, in this order, before publishing anything:

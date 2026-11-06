@@ -32,31 +32,34 @@ objt = {o: v['title'] for o, v in SPINE.items()}
 def js(v): return json.dumps(v, ensure_ascii=False).replace('</', '<\\/')
 
 page = r"""<title>CySA+ Notebook</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
+/* Midnight (dark) is the default; the switch at the top right adds body.light. */
 :root{
-  --bg:#f6f5f2; --surface:#ffffff; --surface-2:#eef1f2; --border:#dbe0e3;
-  --text:#171b1f; --text-muted:#5a6570; --accent:#6d4bc4;
-  --d1:#6d4bc4; --d2:#1f8a5c; --d3:#a14b7a; --d4:#a9791c; --acr:#1f6f8b;
-  --trap:#b3437c; --trap-bg:#fbeaf2; --hl:#fbf1d9; --th:#e7f4ee; --th-ink:#1f6b4a;
-  --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
-  --font-display:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  --font-body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --bg:#0F1720; --surface:#17222D; --surface-2:#1C2935; --border:#2E4052;
+  --text:#E8EEF3; --text-muted:#A9B7C4; --accent:#5B9DFF; --accent-ink:#0B1220; --link:#7FB2FF;
+  --d1:#7FB2FF; --d2:#4FD1A5; --d3:#F08CC0; --d4:#F5B74A; --acr:#7FD3EE;
+  --trap:#F5B74A; --trap-bg:#2B2414; --hl:#4a3b12; --th:#1C2935; --th-ink:#7FB2FF;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.3);
+  --font-head:'Sora','Segoe UI',system-ui,sans-serif;
+  --font-display:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-body:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e; --text:#e7edf1; --text-muted:#93a2ac;
-  --accent:#a98cf0; --d1:#a98cf0; --d2:#55d69a; --d3:#e58fba; --d4:#e0b24d; --acr:#5ab6d4;
-  --trap:#ea86b8; --trap-bg:#301b26; --hl:#4a3b12; --th:#12291f; --th-ink:#55d69a;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}}
-:root[data-theme="dark"]{
-  --bg:#0d1216; --surface:#151c22; --surface-2:#1b242b; --border:#2b363e; --text:#e7edf1; --text-muted:#93a2ac;
-  --accent:#a98cf0; --d1:#a98cf0; --d2:#55d69a; --d3:#e58fba; --d4:#e0b24d; --acr:#5ab6d4;
-  --trap:#ea86b8; --trap-bg:#301b26; --hl:#4a3b12; --th:#12291f; --th-ink:#55d69a;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35); color-scheme:dark;}
+body.light{
+  --bg:#F5F8FC; --surface:#FFFFFF; --surface-2:#EEF3F9; --border:#D3DCE6;
+  --text:#13202D; --text-muted:#4A5866; --accent:#2F6FE0; --accent-ink:#FFFFFF; --link:#2459B8;
+  --d1:#2F6FE0; --d2:#1F8A5C; --d3:#A14B7A; --d4:#9A6A00; --acr:#1F6F8B;
+  --trap:#8A5A00; --trap-bg:#FFF5E0; --hl:#FBF1D9; --th:#E7EEF8; --th-ink:#1D4E89;
+  --shadow:0 1px 2px rgba(20,24,28,.06),0 4px 14px rgba(20,24,28,.06);
+  color-scheme:light;
+}
 *{box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;font-size:16px;line-height:1.55;}
-.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:22px 64px;}
-h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance;}
+html{background:#0F1720}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;font-size:17px;line-height:1.55;}
+.wrap{max-width:900px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 64px;}
+h1,h2,h3{font-family:var(--font-head);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance;}
 .backlink{font-family:var(--font-display);font-size:11.5px;color:var(--text-muted);text-decoration:none;display:inline-block;
   margin-bottom:12px;padding:3px 9px;border:1px solid var(--border);border-radius:999px;background:var(--surface);}
 .backlink:hover{color:var(--accent);border-color:var(--accent);}
@@ -143,10 +146,24 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px;}
 .none{background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:18px;text-align:center;font-size:14px;color:var(--text-muted);}
 .foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);}
 .t1{--tc:var(--d1);} .t2{--tc:var(--d2);} .t3{--tc:var(--d3);} .t4{--tc:var(--d4);} .tA{--tc:var(--acr);}
+.toprow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;}
+.toprow .backlink{margin-bottom:0;}
+.mode{display:flex;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);}
+.mode button{font:600 14px var(--font-head);padding:9px 13px;border:0;background:transparent;color:var(--text-muted);cursor:pointer;display:flex;gap:6px;align-items:center;min-height:42px;}
+.mode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);}
+.mode button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+.topic .tt{font-family:var(--font-head) !important;font-weight:700 !important;}
+a{color:var(--link);}
 </style>
 
 <div class="wrap">
-  <a class="backlink" href="__HUB__">&larr; CySA+ Toolkit</a>
+  <div class="toprow">
+    <span style="display:flex;gap:8px;flex-wrap:wrap"><a class="backlink" href="__HUB__">&larr; CySA+ Toolkit</a><a class="backlink" href="https://claude.ai/artifact/Ddz7pgCugvY2adJk9oF8v1">Study Map &rarr;</a></span>
+    <div class="mode" role="group" aria-label="Color mode">
+      <button type="button" id="m-dark" aria-pressed="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>Dark</button>
+      <button type="button" id="m-light" aria-pressed="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Light</button>
+    </div>
+  </div>
   <p class="eyebrow">CompTIA CySA+ &middot; CS0-003</p>
   <h1>CySA+ Notebook</h1>
   <p class="lede">Reference notes for every objective, plus all __NACR__ acronyms from the class sheet. Look a topic up, read it, then hit <b>Drill this</b> to answer questions on it.</p>
@@ -161,10 +178,23 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px;}
   <div id="view"></div>
 
   <div class="foot">Original notes written against CompTIA&rsquo;s published CS0-003 objectives. Not official CompTIA content.
-  CompTIA, CySA+ and CS0-003 are trademarks of CompTIA, Inc. Acronyms come from the class sheet; where the sheet is wrong, the correct expansion is shown and the note in pink says what the sheet has.</div>
+  CompTIA, CySA+ and CS0-003 are trademarks of CompTIA, Inc. Acronyms come from the class sheet; where the sheet is wrong, the correct expansion is shown and the note in amber says what the sheet has.</div>
 </div>
 
 <script>
+(function(){
+  function setMode(m){
+    document.body.classList.toggle('light', m === 'light');
+    document.documentElement.style.background = m === 'light' ? '#F5F8FC' : '#0F1720';
+    document.getElementById('m-dark').setAttribute('aria-pressed', String(m !== 'light'));
+    document.getElementById('m-light').setAttribute('aria-pressed', String(m === 'light'));
+    try{ localStorage.setItem('cysa:nb:theme', m); }catch(e){}
+  }
+  var m = 'dark'; try{ m = localStorage.getItem('cysa:nb:theme') || 'dark'; }catch(e){}
+  setMode(m);
+  document.getElementById('m-dark').onclick = function(){ setMode('dark'); };
+  document.getElementById('m-light').onclick = function(){ setMode('light'); };
+})();
 var TOPICS = __TOPICS__;
 var ACR = __ACR__;
 var OBJT = __OBJT__;
