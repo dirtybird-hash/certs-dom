@@ -138,6 +138,26 @@ def main():
         okl = 'Best 11/14' in chip and '3.1' in acc and '79%' in acc
         print(('PASS' if okl else 'FAIL') + f'  legacy v2 storage -> "Best 11/14", acc "{acc}"')
         if not okl: fails.append('legacy')
+        # evidence tabs still switch after Try again (regression: the pane froze on the
+        # last tab because Try again swapped the run object the tab handlers held)
+        pg4 = b.new_page(); pg4.on('pageerror', lambda e: errs.append(str(e)))
+        pg4.goto(PAGE); pg4.wait_for_timeout(100)
+        stuck = []
+        for pid, n in pg4.evaluate('PBQS.map(p => [p.id, p.ev.length])'):
+            if n < 2: continue
+            pg4.evaluate('id => open(id, false)', pid)
+            pg4.click(f'#tab-{pid}-{n-1}')
+            pg4.click('#check')
+            if pg4.query_selector('#check[data-confirm="1"]'): pg4.click('#check')
+            pg4.click('#again')
+            panes = []
+            for i in range(n):
+                pg4.click(f'#tab-{pid}-{i}')
+                panes.append(pg4.evaluate("document.getElementById('evbody').innerHTML"))
+                if pg4.get_attribute('.tab[aria-selected="true"]', 'data-i') != str(i): stuck.append(pid); break
+            if len(set(panes)) != n and pid not in stuck: stuck.append(pid)
+        print(('PASS' if not stuck else 'FAIL') + '  evidence tabs switch after Try again', stuck or '')
+        if stuck: fails.append('tabs-after-retry')
         # phone width: no horizontal page scroll
         pg3 = b.new_page(viewport={'width': 390, 'height': 800})
         for pid in [p['id'] for p in data]:
