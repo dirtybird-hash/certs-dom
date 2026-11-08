@@ -21,7 +21,8 @@ dict(id="log-ingestion", o="1.1", t="Log ingestion, time sync and logging levels
 <tr><td>7</td><td>Debug</td><td>Developer detail, very noisy</td></tr></table></div>
 <p>Lower number means more severe. Setting a device to level 4 records 0 through 4 and drops 5&ndash;7.</p>
 """ + T.format("When a question says events from two systems &ldquo;don&rsquo;t line up&rdquo; or a correlation rule never fires, the answer is almost always time synchronization (NTP), not the rule logic.") + """
-<p>Raising everything to debug is not the fix for missing evidence: it floods storage and the SIEM licence, and the signal drowns. Raise verbosity on the specific source you need, for a set period.</p>"""),
+<p>Raising everything to debug is not the fix for missing evidence: it floods storage and the SIEM licence, and the signal drowns. Raise verbosity on the specific source you need, for a set period.</p>""" + """
+<blockquote><span class="tag">Class deck check</span>Day 14 lists syslog level 0 as &ldquo;unstable&rdquo;. Level 0 is <strong>Emergency: the system is unusable</strong>. Level 5, Notice, is a normal but significant condition, not an error.</blockquote>"""),
 
 dict(id="linux-logs", o="1.1", t="Linux logs: where they live and what they show", q="linux log", h="""
 <p>Most Linux text logs live under <code>/var/log</code>, but the file names depend on the distribution family. Questions often show a path and expect you to know what it holds, or describe evidence and expect you to know where to look.</p>
@@ -206,8 +207,24 @@ dict(id="network-indicators", o="1.2", t="Network indicators", q="beacon", h="""
 <p>Everything here depends on a <strong>baseline</strong>. You can&rsquo;t call traffic unusual without knowing what usual is.</p>
 <p><strong>DNS TXT queries: context decides.</strong> Mail servers look up TXT records all day (SPF, DKIM, DMARC), and services use them for domain verification. TXT queries become an indicator when they come from ordinary workstations, arrive in bursts, or ask for long random-looking subdomains of one domain (<code>q7f3k9x2...a1.example.net</code>). That is the shape of DNS tunneling or command and control.</p>
 <p><strong>Ports to know for lateral movement.</strong> SMB is TCP 445 (TCP 139 when it runs over NetBIOS). UDP 137 is NetBIOS name service, not SMB. RDP is 3389, WinRM is 5985 and 5986.</p>
-""" + T.format("Regularity is the giveaway for beaconing, not volume. A beacon can be tiny. Large transfers point to exfiltration instead.")),
+<p><strong>Two readings of &ldquo;activity on unexpected ports.&rdquo;</strong> Either someone is probing ports and services (a scan), or traffic is flowing to or from a service that shouldn&rsquo;t exist (a backdoor or an unapproved service an attacker set up). Context decides which: many short connections to many ports is the first; one long-lived conversation on an odd port is the second.</p>
+<p><strong>DoS vs DDoS.</strong> A denial of service works in one of three ways: overwhelm the target with volume, crash it through a flaw in one service, or attack something in between (a router, DNS, an upstream link) so traffic can&rsquo;t get through. A single-source DoS is usually stopped by blocking that source at the firewall or IPS. A distributed attack comes from a botnet of many sources, so blocking addresses doesn&rsquo;t scale; it needs upstream filtering or a scrubbing service. Watch for it in service performance monitoring, connection counts in server logs, bandwidth graphs and IDS/IPS DoS rules together, not in any single tool.</p>
+""" + T.format("Regularity is the giveaway for beaconing, not volume. A beacon can be tiny. Large transfers point to exfiltration instead.") + """
+<blockquote><span class="tag">Class deck check</span>Day 13, question 9 offers &ldquo;HTTP DDoS&rdquo; for a flood that comes from one source address. One source is a <strong>DoS</strong>; distributed means many sources, usually a botnet. The slide&rsquo;s own explanation says DoS, and that is the right reading.</blockquote>
+<blockquote><span class="tag">Class deck check</span>Day 13, question 7 calls an FTP transfer to 10.0.0.1 exfiltration. 10.0.0.1 is a private, internal address, so the data never left the network. Read it as <strong>staging, or a transfer to a rogue internal host</strong>. It becomes exfiltration when the data crosses the boundary to a destination outside your control.</blockquote>"""),
 
+
+dict(id="rogue-devices", o="1.2", t="Rogue devices: finding them, wired and wireless", q="rogue", h="""
+<p>A <strong>rogue device</strong> is connected to the network without authorization: an employee&rsquo;s personal access point, a test box someone forgot, or an attacker&rsquo;s implant. Two very different stories produce the same indicator, and the second means someone had physical access.</p>
+<div class="tblwrap"><table><tr><th>Way to find them</th><th>How it works</th><th>Weakness</th></tr>
+<tr><td>Valid MAC checking</td><td>Compare MAC addresses seen by switches, DHCP or NAC against an inventory of known devices</td><td>MACs are easy to spoof; phones and laptops now randomize them per network</td></tr>
+<tr><td>Vendor (OUI) lookup</td><td>The first three bytes of a MAC identify the manufacturer, so a consumer router brand on a corporate switch port stands out</td><td>Spoofing and randomization again</td></tr>
+<tr><td>Network scanning</td><td>Discovery scans (Nmap) compared run to run; OS detection shows when something isn&rsquo;t a normal desktop (an embedded or VoIP-style fingerprint)</td><td>Only finds devices that answer</td></tr>
+<tr><td>Traffic analysis</td><td>Flow data or a passive sensor shows new talkers and odd behavior</td><td>Needs a baseline</td></tr>
+<tr><td>Site surveys</td><td>Walk the site: inspect wiring closets and desks, and scan the air for access points and their signal strength</td><td>Slow and periodic</td></tr></table></div>
+<p><strong>Wired rogues</strong> need an open port. Prevent them with <strong>port security</strong> (a switch port accepts only listed or learned MAC addresses) or, better, <strong>NAC with 802.1X</strong>, which requires the device to authenticate before the port carries traffic. MAC filtering alone stops casual plugging in but not an attacker who copies a trusted device&rsquo;s MAC.</p>
+<p><strong>Wireless rogues</strong> don&rsquo;t sit at a known port, so you locate them by signal strength and triangulation. An <strong>evil twin</strong> advertises your network name to lure users onto the attacker&rsquo;s access point. Enterprise wireless controllers with wireless intrusion detection or prevention (WIDS/WIPS) spot unknown access points, and some can contain them.</p>
+""" + T.format("A rogue device found on a wired port is a physical-security event as much as a network one. The right next step is to locate and remove it (and find out how it got there), not just to block its MAC address, which can simply be changed.")),
 dict(id="host-indicators", o="1.2", t="Host indicators", q="scheduled task", h="""
 <ul><li><strong>Processor, memory, drive consumption</strong>: sustained CPU with no user activity suggests a miner; a filling disk suggests staging for exfiltration or a log flood; memory growth can mean injection.</li>
 <li><strong>Unauthorized software</strong> and <strong>malicious processes</strong>: compare against an allow list and known-good inventory.</li>
@@ -219,6 +236,22 @@ dict(id="host-indicators", o="1.2", t="Host indicators", q="scheduled task", h="
 <li><strong>Data exfiltration</strong>: archives (zip, rar, 7z) created in odd locations followed by large uploads.</li></ul>
 """),
 
+
+dict(id="host-monitoring-tools", o="1.2", t="Host checks: resources, services and scheduled tasks", q="perfmon", h="""
+<p>The 1.2 host indicators are spotted with ordinary built-in tools. Know which one answers which question.</p>
+<div class="tblwrap"><table><tr><th>Question</th><th>Windows</th><th>Linux</th></tr>
+<tr><td>What is using CPU and memory right now?</td><td>Task Manager; <strong>Resource Monitor</strong> (<code>resmon</code>), which also shows per-process disk and network use and listening ports</td><td><code>top</code> (or <code>htop</code>), <code>ps aux</code>, <code>free -h</code></td></tr>
+<tr><td>How has usage changed over time?</td><td><strong>Performance Monitor</strong> (<code>perfmon</code>): counters, data collector sets, reports; can collect from remote machines</td><td><code>sar</code>, or a monitoring system</td></tr>
+<tr><td>Is a disk filling up?</td><td>Disk Management, <code>Get-PSDrive</code></td><td><code>df -h</code> (human-readable), <code>du -sh</code></td></tr>
+<tr><td>Who is logged on?</td><td><code>query user</code></td><td><code>w</code>, <code>who</code>, <code>last</code></td></tr>
+<tr><td>Is a service running, and how does it start?</td><td><code>services.msc</code>, <code>sc query</code>, <code>Get-Service</code></td><td><code>systemctl status name</code>, <code>systemctl list-units --type=service</code> (older systems: <code>service --status-all</code>)</td></tr>
+<tr><td>What scheduled jobs exist?</td><td>Task Scheduler (shows author, triggers, created and last-run times); <code>schtasks /query /fo LIST /v</code></td><td><code>crontab -l</code>, <code>crontab -u root -l</code>, plus <code>/etc/crontab</code>, <code>/etc/cron.d/</code> and the <code>cron.daily</code> style folders; <code>systemctl list-timers</code></td></tr>
+<tr><td>What starts automatically?</td><td>Sysinternals <strong>Autoruns</strong>; Run and RunOnce keys under HKLM and HKCU</td><td>systemd units, cron, shell profiles</td></tr>
+<tr><td>Deeper process detail</td><td>Sysinternals <strong>Process Explorer</strong> (parent, path, signature, DLLs), <strong>Process Monitor</strong> (file and registry activity)</td><td><code>lsof -p PID</code>, <code>/proc/PID/</code></td></tr></table></div>
+<p>At fleet scale, central tools (Microsoft Intune, System Center Operations Manager, Nagios and similar) report installed software and resource use, but software inventories are usually snapshots rather than real time.</p>
+<p><strong>Built-ins attackers favor on Windows</strong>: <code>cmd</code>, <code>powershell</code>, <code>wmic</code>, <code>schtasks</code> (and the older <code>at</code>), <code>net</code>, <code>reg</code>, <code>sc</code>, and <code>rundll32</code> to run code from a DLL. Malware also hides behind names that resemble system processes or runs inside <code>svchost</code> as a service. Finding <code>nc</code> or <code>nc.exe</code> (netcat) on a server that has no reason for it is a strong sign of compromise: one command such as <code>nc -l -p 4444 -e cmd.exe</code> gives anyone who connects a shell.</p>
+<p><strong>Watch cron jobs that run as root</strong>, and Windows tasks created recently, by an unusual author, or pointing into user-writable folders.</p>
+""" + T.format("In Process Monitor, a result of <code>BUFFER OVERFLOW</code> is normal. It means the program asked for data with a buffer that was too small and will ask again with a bigger one. It is not an overflow attack.")),
 dict(id="app-indicators", o="1.2", t="Application indicators", q="new account", h="""
 <ul><li><strong>Anomalous activity</strong>: requests at volumes, times or sequences the app never sees normally.</li>
 <li><strong>Introduction of new accounts</strong>: an admin account created outside the provisioning process is a strong persistence indicator. Check who created it and from where.</li>
@@ -226,6 +259,7 @@ dict(id="app-indicators", o="1.2", t="Application indicators", q="new account", 
 <li><strong>Unexpected outbound</strong>: a web or database server initiating connections to the internet is rarely legitimate (reverse shells, SSRF, exfiltration).</li>
 <li><strong>Service interruption</strong>: crashes and restarts can be DoS or exploitation of a memory bug.</li>
 <li><strong>Application logs</strong>: web access logs (status codes, user agents, URIs), auth logs, and app-specific audit trails are where these show up.</li></ul>
+<p><strong>Four kinds of application monitoring</strong>, each answering a different question: <strong>up/down</strong> (is it running?), <strong>performance</strong> (does it respond quickly?), <strong>transactional logging</strong> (what did users do, and what did it do in response?), and <strong>application or service logging</strong> (errors and status). A compromised application often shows up first as behavior that doesn&rsquo;t match its documented normal: new outbound connections, database queries it never makes, new files or accounts. File integrity checking, allow-listing and EDR help confirm the application itself hasn&rsquo;t been altered.</p>
 """ + T.format("Servers mostly receive connections. A server that starts making outbound connections, especially to raw IPs or odd ports, is a stronger signal than the same traffic from a workstation.")),
 
 dict(id="ioc-checklist", o="1.2", t="Common IoCs: the classic checklist", q="ioc", h="""
@@ -262,6 +296,17 @@ dict(id="indicator-tools", o="1.2", t="Catching the indicators: baselines, flow 
 <tr><td>Scheduled tasks, new accounts, new privileges</td><td>Windows Security log: 4698 (scheduled task created), 4720 (user account created), 4732 (member added to a local security group)</td></tr></table></div>
 <p>A useful baseline is captured during known-good operation, covers time of day and day of week, and is refreshed after legitimate change. Otherwise every new application looks like an indicator.</p>
 <p>General knowledge from class: a <strong>Smurf attack</strong> is an old amplification DDoS. ICMP echo requests carrying the victim&rsquo;s spoofed source address are sent to a network&rsquo;s broadcast address, and every host on that network replies to the victim. On the victim&rsquo;s side it looks like a sudden flood of ICMP echo replies, a traffic spike.</p>
+<p><strong>Three ways to watch a network.</strong></p>
+<div class="tblwrap"><table><tr><th>Method</th><th>How</th><th>Trade-off</th></tr>
+<tr><td>Router-based</td><td>Routers and switches export flow records (NetFlow, sFlow, J-Flow, IPFIX) to a collector, and SNMP reports device health and interface counters</td><td>Good view at network boundaries; flows are often <em>sampled</em> (one packet in 100 or 1,000), so short or low-volume activity can be missed</td></tr>
+<tr><td>Active</td><td>Send test traffic: ping for up/down, iPerf for available bandwidth, synthetic transactions for service response</td><td>Simple, but adds traffic and only measures what you probe</td></tr>
+<tr><td>Passive</td><td>A network tap or SPAN port copies traffic to a capture or analysis system</td><td>Full detail with no added load, but analysis happens after the fact and storage is heavy</td></tr></table></div>
+<p>Monitoring traffic competes with real traffic. On a saturated link, quality-of-service rules usually drop the monitoring data first, which is exactly when you need it.</p>
+<p><strong>Known-good hashes.</strong> Beyond your own FIM baseline, NIST&rsquo;s National Software Reference Library (NSRL) publishes hashes of known software, so you can filter out legitimate files during an investigation. AIDE is an open-source FIM tool for Linux.</p>
+<div class="tblwrap"><table><tr><th>Unauthorized&hellip;</th><th>Evidence</th><th>Where to look</th></tr>
+<tr><td>Access</td><td>Logons, account creation</td><td>Authentication logs (Windows Security log, <code>auth.log</code>), identity provider, SIEM</td></tr>
+<tr><td>Changes</td><td>New files, settings changes</td><td>System and application logs, FIM (Tripwire, AIDE, Wazuh), configuration management</td></tr>
+<tr><td>Privileges</td><td>Privilege use, escalation, group changes</td><td>Security event logs, <code>sudo</code> records, SIEM; Sysinternals AccessChk shows what a user can reach</td></tr></table></div>
 """ + T.format("A baseline recorded while an attacker is already inside teaches your tools that the attacker is normal. Building a new baseline straight after an incident, before confirming the environment is clean, is a classic wrong answer.")),
 
 dict(id="fileless", o="1.2", t="Fileless malware: detection and mitigation", q="powershell", h="""
@@ -331,6 +376,22 @@ dict(id="siem-soar", o="1.3", t="SIEM vs SOAR", q="soar", h="""
 <p>SIEM and SOAR are separate capabilities that CompTIA lists separately. Some vendors sell them together (a SIEM with built-in playbooks), but a SIEM on its own detects and does not act.</p>
 """ + T.format("If the question is about reducing analyst workload or response time by automatically taking steps, the answer is SOAR. If it is about seeing related events from many sources together, it is SIEM.")),
 
+
+dict(id="reading-security-logs", o="1.3", t="Reading common security logs line by line", q="firewall log", h="""
+<p>CS0-003 is vendor-neutral: you won&rsquo;t need any one product&rsquo;s format, but you must be able to read a log line you have never seen and pick out who, what, when, where and the outcome. Start from one identifier (an address, user or time), then widen the search to everything else that identifier did.</p>
+<p><strong>Windows event logs.</strong> The main channels are Application, Security, System and Setup, stored as <code>.evtx</code> files in <code>%SystemRoot%\\System32\\winevt\\Logs</code> and read in Event Viewer or with <code>Get-WinEvent</code>. Installer events in the Application log show what was installed, when and by whom.</p>
+<p><strong>Linux authentication log</strong> (<code>/var/log/auth.log</code> or <code>/var/log/secure</code>):</p>
+<pre class="wrap"><code>Nov  8 09:14:02 web01 sudo:   dana : TTY=pts/1 ; PWD=/home/dana ; USER=root ; COMMAND=/usr/bin/tar czf /tmp/db.tgz /var/lib/mysql</code></pre>
+<p>User <code>dana</code> used <code>sudo</code> to run a command as root that archives the database directory into <code>/tmp</code>. Legitimate backup, or staging for exfiltration? Check whether a large upload from this host follows.</p>
+<p><strong>Host firewall</strong> (Ubuntu UFW, written to the kernel log):</p>
+<pre class="wrap"><code>[UFW BLOCK] IN=eth0 OUT= SRC=198.51.100.23 DST=10.0.20.15 PROTO=TCP SPT=51544 DPT=3389 SYN</code></pre>
+<p>A new inbound TCP connection (SYN) from an internet address to RDP (3389) was blocked. One line is noise; hundreds from one source across many destination ports is a scan, and the same source hitting one port on many hosts is a sweep. Most firewall logs share these fields: action, source and destination address and port, protocol, interface and rule.</p>
+<p><strong>Web application firewall</strong> (ModSecurity-style):</p>
+<pre class="wrap"><code>[client 203.0.113.80] ModSecurity: Access denied with code 403. Matched "/bin/bash" at ARGS:cmd. [id "932160"] [msg "Remote Command Execution: Unix Shell Code Found"] [severity "CRITICAL"] [uri "/tools/ping.php"]</code></pre>
+<p>A request parameter named <code>cmd</code> contained a shell path, matching a command-injection rule from a common rule set (most WAFs ship rules modeled on the OWASP Top 10). The request was blocked, but the attempt says <code>ping.php</code> is being probed and should be checked for the flaw.</p>
+<p><strong>Web proxy</strong>: look at the destination host and URL, the amount of data, the method, and the user agent. GET requests carry their parameters in the URL, so they are visible in the log; POST requests carry data in the body, which most proxy logs don&rsquo;t record. A large POST from a server, or a user agent that isn&rsquo;t a browser your organization uses, deserves a look.</p>
+<p><strong>IDS/IPS</strong>: an alert names the rule (signature ID and message) plus the traffic that matched. Use the first alert to search for the rest: the same source, the same destination, or the same indicator, such as a C2 channel name, in other alerts.</p>
+""" + T.format("A blocked attempt in a firewall or WAF log is not proof that nothing happened. It tells you what is being targeted. Check whether the same source succeeded elsewhere, and whether the targeted weakness actually exists.")),
 dict(id="edr", o="1.3", t="Endpoint security: EDR (and XDR)", q="edr", h="""
 <p><strong>EDR</strong> agents record process starts, command lines, file writes, registry changes and network connections on each endpoint, ship them to a console, detect by behavior rather than only signatures, and let you respond remotely: isolate the host from the network, kill a process, quarantine a file, pull artifacts, run a live-response shell.</p>
 <p>Antivirus asks &ldquo;is this file known bad?&rdquo; EDR asks &ldquo;is this behavior bad?&rdquo;, for example Word spawning PowerShell that downloads and runs a script.</p>
@@ -341,7 +402,9 @@ dict(id="reputation", o="1.3", t="DNS and IP reputation: WHOIS, AbuseIPDB", q="w
 <p><strong>WHOIS</strong> returns registration data for a domain or IP block: registrar, creation and expiry dates, name servers, and (often redacted) registrant contacts. A domain registered three days ago that is sending your users invoices is suspicious. For IPs, regional registries (ARIN, RIPE, APNIC) show which organization owns the range.</p>
 <p><strong>AbuseIPDB</strong> is a community database where people report abusive IP addresses (scanning, brute force, spam). You get a confidence-of-abuse score, report count and categories. High scores mean many independent reports; zero means unreported, not necessarily clean.</p>
 <p>Other reputation sources: VirusTotal (domains and IPs too), passive DNS history, Cisco Talos, threat-intel platforms.</p>
-""" + T.format("WHOIS tells you who registered something and when. It does not say whether it is malicious; that is the reputation service&rsquo;s job.")),
+<p><strong>If you end up on the list.</strong> When your own address appears in AbuseIPDB or a mail block list, treat it as an indicator that one of your systems may be compromised. Investigate first, then use the service&rsquo;s removal process once it is fixed.</p>
+""" + T.format("WHOIS tells you who registered something and when. It does not say whether it is malicious; that is the reputation service&rsquo;s job.") + """
+<blockquote><span class="tag">Class deck check</span>Day 13 treats WHOIS privacy protection as a sign that a domain is malicious. Many registrars turn privacy on by default, and GDPR redacts registrant details for many domains, so <strong>privacy alone proves nothing</strong>. Weigh it with stronger signals: a very recent creation date, a lookalike name, poor IP reputation.</blockquote>"""),
 
 dict(id="file-analysis", o="1.3", t="File analysis: strings, hashing, VirusTotal, sandboxes", q="strings", h="""
 <p><strong>Hashing</strong> gives a file a fingerprint. Same hash means identical file; one changed bit changes the whole hash. Use SHA-256 (MD5 and SHA-1 still appear for lookups but have known collisions). Commands: <code>sha256sum file</code> on Linux, <code>Get-FileHash file</code> (SHA-256 by default) in PowerShell, <code>certutil -hashfile file SHA256</code> in cmd.</p>
@@ -415,6 +478,10 @@ dict(id="email-analysis", o="1.3", t="Email analysis: headers, SPF, DKIM, DMARC,
 <tr><td><strong>DMARC</strong></td><td>Does SPF or DKIM pass <em>and align</em> with the visible From domain? What to do if not?</td><td>DNS TXT at <code>_dmarc.domain</code>, policy <code>p=none</code>, <code>quarantine</code> or <code>reject</code>, plus reporting addresses</td></tr></table></div>
 <p>DMARC is what closes the gap: SPF alone checks the envelope domain, which the user never sees. DMARC ties the result to the From address and tells receivers what to do and where to report.</p>
 <p><strong>Impersonation</strong>: display-name spoofing (&ldquo;CEO Name&rdquo; &lt;random@gmail.com&gt;), lookalike domains, and compromised real accounts (which pass all three checks). <strong>Embedded links</strong>: hover to compare link text with the real href, and check redirects in a sandbox or URL scanner rather than clicking.</p>
+<p><strong>Forwarded messages lose the evidence.</strong> When a user forwards a suspicious email, the new message carries the original content but not its original headers. Ask for the message as an attachment (<code>.eml</code> or <code>.msg</code>) or pull it from the mail system. Forwarding also breaks SPF, because the forwarding server is now the sender; DKIM signatures usually survive unless the message is modified.</p>
+<p><strong>Automatic forwarding rules</strong> are a favorite of attackers who compromise a mailbox: a rule that silently copies all mail to an outside address is both persistence and data exfiltration. Alert on new external forwarding rules, and block auto-forwarding to external domains by policy.</p>
+<p><strong>Signed mail.</strong> S/MIME (or PGP) lets a sender digitally sign a message with their private key. The recipient verifies the signature with the sender&rsquo;s certificate, proving who sent it and that it wasn&rsquo;t changed. It is per-user and less widely deployed than SPF, DKIM and DMARC, which work per domain.</p>
+<p><strong>Rolling out DMARC.</strong> Start with <code>p=none</code> and read the aggregate reports to find every legitimate sender, then move to <code>quarantine</code> and <code>reject</code>. Jumping straight to <code>reject</code> blocks forgotten legitimate senders such as a marketing platform.</p>
 """ + T.format("Passing SPF, DKIM and DMARC proves the mail came from that domain&rsquo;s servers, not that it is safe. A compromised legitimate mailbox passes all three.")),
 
 dict(id="user-behavior", o="1.3", t="User behavior analysis and impossible travel", q="impossible travel", h="""
@@ -450,7 +517,21 @@ dict(id="scripting", o="1.3", t="Reading JSON, XML, Python, PowerShell, shell an
 <p><strong>JSON details worth knowing:</strong> strict JSON allows no comments and no trailing commas, and strings must use double quotes, so a parser rejects a &ldquo;JSON&rdquo; file with <code>//</code> notes in it. Code that turns a JSON string into an object should use a real parser (<code>JSON.parse()</code> in JavaScript, <code>json.loads()</code> in Python). Passing it to <code>eval()</code> executes whatever the string contains, which turns a data field into a code-injection point. JSON is also just a carrier: a value such as <code>{"user": "x'; DROP TABLE accounts;--"}</code> is a SQL injection attempt riding inside a JSON request, and <code>DROP TABLE</code> removes the entire table, structure and rows, not an index. The fix is parameterized queries on the server, not anything about JSON.</p>
 <p><strong>Reading a short Python script:</strong> a loop over <code>os.walk(path)</code> that opens each file in binary mode and feeds it to <code>hashlib.sha256()</code>, printing path and digest, is building a hash baseline, the core of file integrity monitoring. Run it again later and compare: a changed digest on a web root file means the file changed. By contrast, <code>base64.b64decode(...)</code> fed into <code>exec()</code>, or <code>socket.connect()</code> to a hard-coded address followed by a shell spawn, is malicious intent.</p>
 <p><strong>PowerShell execution policy</strong> (<code>Restricted</code>, <code>AllSigned</code>, <code>RemoteSigned</code>, <code>Unrestricted</code>, <code>Bypass</code>) controls when scripts may run, but Microsoft is explicit that it is a safety feature, not a security boundary: any user can start <code>powershell -ExecutionPolicy Bypass</code> or pipe a script into memory. So in a log, <code>-ep bypass</code> is an indicator to investigate, and the real controls are application control (AppLocker or WDAC), Constrained Language Mode and Script Block Logging (Event ID 4104).</p>
-"""),
+""" + """<p><strong>grep flags worth knowing.</strong></p>
+<div class="tblwrap"><table><tr><th>Flag</th><th>Does</th></tr>
+<tr><td><code>-i</code></td><td>Ignore case</td></tr>
+<tr><td><code>-v</code></td><td>Invert: lines that do <em>not</em> match</td></tr>
+<tr><td><code>-c</code></td><td>Count matching lines</td></tr>
+<tr><td><code>-n</code></td><td>Show line numbers</td></tr>
+<tr><td><code>-r</code></td><td>Search a directory recursively</td></tr>
+<tr><td><code>-w</code></td><td>Whole-word match (<code>cat</code> won&rsquo;t match <code>concatenate</code>)</td></tr>
+<tr><td><code>-l</code></td><td>List only the names of files that match</td></tr>
+<tr><td><code>-E</code></td><td>Extended regex (<code>|</code>, <code>+</code>, <code>?</code>, <code>{n}</code> without backslashes)</td></tr>
+<tr><td><code>-e</code></td><td>Give a pattern explicitly; repeat for several patterns</td></tr>
+<tr><td><code>-o</code></td><td>Print only the matching part (handy for extracting IP addresses)</td></tr></table></div>
+<p>Several files are listed with spaces (<code>grep -i fail auth.log syslog</code>), or with a wildcard (<code>grep fail /var/log/*.log</code>). Pipe into <code>sort | uniq -c | sort -nr</code> to rank results, or into <code>less</code> to page through them.</p>
+<p><strong>The five execution policies</strong>: <code>Restricted</code> (no scripts; the default on Windows client editions), <code>AllSigned</code> (only scripts signed by a trusted publisher), <code>RemoteSigned</code> (local scripts run; downloaded ones must be signed; the default on Windows Server), <code>Unrestricted</code> (all run, with a warning for downloaded scripts) and <code>Bypass</code> (all run, no warnings). Change it with <code>Set-ExecutionPolicy</code> from an elevated prompt.</p>
+<blockquote><span class="tag">Class deck check</span>Day 13 annotates <code>WebClient</code> as the Windows WebDAV client service. In a script, <code>New-Object Net.WebClient</code> creates the <strong>.NET <code>System.Net.WebClient</code> class</strong>; its <code>DownloadString</code> and <code>DownloadFile</code> methods fetch content over HTTP(S), and <code>IEX</code> then runs it in memory. The WebClient <em>service</em> is unrelated: it lets Windows map WebDAV shares.</blockquote>"""),
 
 # ---------------------------------------------------------------- 1.4
 dict(id="threat-actors", o="1.4", t="Threat actors", q="threat actor", h="""
