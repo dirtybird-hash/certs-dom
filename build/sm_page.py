@@ -11,6 +11,11 @@ Data shape, one per objective, in sm_dN.py:
     OBJ = {'2.1': {'title': 'objective text', 'items': [I(...), ...]}}
 I(t, what, does, where='', full='', trap='', flow=None, kids=None)
 
+Two side files, keyed by card id:
+    sm_deck.py   DECK  = {id: html}   class deck checks, shown under the card
+    sm_steps.py  STEPS = {id: [(html, jump_id or None), ...]}   one entry per flow box;
+                 the boxes become buttons, the fill follows the click, and the entry opens below
+
 Usage: python3 sm_page.py [out.html]
 """
 import json, sys, pathlib, re, importlib
@@ -31,6 +36,8 @@ for d in '1234':
         objs.update(m.OBJ)
     except ModuleNotFoundError:
         pass
+from sm_deck import DECK
+from sm_steps import STEPS
 
 def slug(s):
     return re.sub(r'[^a-z0-9]+', '-', re.sub(r'<[^>]+>|&[a-z]+;', '', s.lower())).strip('-')[:48]
@@ -47,6 +54,7 @@ def norm(item, o, parent=''):
     out = {'id': sid, 't': item['t']}
     for k in ('full', 'what', 'does', 'where', 'trap'):
         if item.get(k): out[k] = item[k]
+    if sid in DECK: out['deck'] = DECK[sid]
     if item.get('flow'): out['flow'] = item['flow']
     if item.get('kids'): out['kids'] = [norm(k, o, item['t']) for k in item['kids']]
     return out
@@ -57,6 +65,18 @@ for o in sorted(objs, key=lambda x: [int(p) for p in x.split('.')]):
     def c(L): return sum(1 + c(x.get('kids', [])) for x in L)
     count += c(items)
     data.append({'o': o, 'title': objs[o]['title'], 'items': items})
+
+def every(L):
+    for x in L:
+        yield x
+        yield from every(x.get('kids', []))
+cards = {x['id']: x for o in data for x in every(o['items'])}
+for k in DECK: assert k in cards, ('deck check for unknown card', k)
+for k, v in STEPS.items():
+    assert k in cards and cards[k].get('flow'), ('steps for a card with no flow', k)
+    assert len(v) == len(cards[k]['flow']), ('step count does not match flow', k)
+    for _, go in v: assert go is None or go in cards, ('jump to unknown card', k, go)
+STEPS_JS = {k: [[t, go] if go else [t] for t, go in v] for k, v in STEPS.items()}
 
 nb_topics = {}
 for mod, names in (('nb_d1', ['D1']), ('nb_d2', ['D2']), ('nb_d34', ['D3', 'D4'])):
@@ -138,9 +158,27 @@ a{color:var(--link)}
 .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .flow .bx{flex:1 1 140px;background:var(--flowbox);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.35}
 .flow .bx.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+button.bx{font:inherit;font-size:15px;line-height:1.35;text-align:left;color:var(--text);cursor:pointer;min-height:44px;position:relative;padding-right:26px}
+button.bx::after{content:"+";position:absolute;right:9px;top:50%;transform:translateY(-50%);font:700 15px var(--f-head);color:var(--link)}
+button.bx.on::after{color:var(--accent-ink)}
+button.bx[aria-expanded="true"]::after{content:"\2212"}
+button.bx:hover{border-color:var(--accent)}
+button.bx:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){button.bx{transition:background-color .2s,border-color .2s,color .2s}}
+.flow .bx.on{color:var(--accent-ink)}
+.fhint{margin:-4px 0 0;font-size:13px;color:var(--muted)}
+.fpanel{background:var(--surface-2);border:1.5px solid var(--border);border-left:4px solid var(--link);border-radius:12px;padding:12px 14px}
+.fpanel b{display:block;font:700 12px var(--f-head);letter-spacing:.08em;color:var(--link);margin-bottom:4px}
+.fpanel p{margin:0}
+.fpanel p b{display:inline;font:inherit;font-weight:700;letter-spacing:0;color:var(--text);margin:0}
+.fgo{margin-top:10px;font:700 14px var(--f-head);color:var(--link);background:transparent;border:1.5px solid var(--border);border-radius:10px;padding:8px 12px;min-height:40px;cursor:pointer}
+.fgo:hover{border-color:var(--accent)}
+.card.hl{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
 .flow .ar{color:var(--link);font:700 20px var(--f-head)}
 .trap{background:var(--trap-bg);border:1.5px solid var(--trap-bd);border-radius:12px;padding:12px 14px;color:var(--trap-tx)}
 .trap b{display:block;font:700 12px var(--f-head);letter-spacing:.08em;color:var(--trap-lb);margin-bottom:2px}
+.deck{margin-top:10px;background:var(--surface-2);border:1.5px solid var(--border);border-left:4px solid var(--accent);border-radius:12px;padding:12px 14px}
+.deck b{display:block;font:700 12px var(--f-head);letter-spacing:.08em;color:var(--accent);margin-bottom:2px}
 code{font-family:var(--f-mono);font-size:.86em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
 .deep{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:15px;color:var(--muted)}
 .deep a{font-weight:600}
@@ -172,6 +210,7 @@ code{font-family:var(--f-mono);font-size:.86em;background:var(--surface-2);borde
 var DATA = __DATA__;
 var NBT = __NBT__;
 var NB = '__NB__', DRILL = __DRILL__, DOMS = __DOMS__;
+var STEPS = __STEPS__;
 var st = {d: '2', o: null, q: ''};
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
@@ -185,19 +224,38 @@ function setMode(m){
   $('m-light').setAttribute('aria-pressed', String(m === 'light'));
   try{ localStorage.setItem('cysa:sm:theme', m); }catch(e){}
 }
-function flow(f){
-  return '<div class="flow" aria-label="Where it sits">' + f.map(function(b, i){
+function flow(f, id){
+  var S = STEPS[id] || [];
+  return '<div class="flow" role="group" aria-label="Steps">' + f.map(function(b, i){
     var on = b.charAt(0) === '*', t = on ? b.slice(1) : b;
-    return (i ? '<span class="ar" aria-hidden="true">&rarr;</span>' : '') + '<div class="bx' + (on ? ' on' : '') + '">' + t + '</div>';
-  }).join('') + '</div>';
+    var cls = 'bx' + (on ? ' on' : '');
+    return (i ? '<span class="ar" aria-hidden="true">&rarr;</span>' : '') + (S[i]
+      ? '<button type="button" class="' + cls + '"' + (on ? ' data-key="1"' : '') + ' data-fid="' + id + '" data-i="' + i + '" aria-expanded="false" aria-controls="fp-' + id + '">' + t + '</button>'
+      : '<div class="' + cls + '">' + t + '</div>');
+  }).join('') + '</div>' + (S.length ? '<p class="fhint">Select a step to expand it.' + (f.some(function(b){ return b.charAt(0) === '*'; }) ? ' The fill starts on the one to remember and follows your click.' : '') + '</p><div class="fpanel" id="fp-' + id + '" role="region" aria-live="polite" hidden></div>' : '');
+}
+function stepPanel(id, i, label){
+  var s = STEPS[id][i], n = STEPS[id].length;
+  return '<b>STEP ' + (i + 1) + ' OF ' + n + ' &middot; ' + label + '</b><p>' + s[0] + '</p>'
+    + (s[1] ? '<button type="button" class="fgo" data-go="' + s[1] + '">' + (s[1] === id ? 'Back to the top of this card' : 'Open the full card') + ' &rarr;</button>' : '');
+}
+function goTo(id){
+  var hit = flat().filter(function(p){ return p[1].id === id; })[0];
+  if (!hit) return;
+  st.d = hit[0].charAt(0); st.o = hit[0]; st.q = ''; $('q').value = ''; draw();
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({block: 'start'});
+  el.classList.add('hl'); setTimeout(function(){ el.classList.remove('hl'); }, 1800);
 }
 function card(x, top){
   var h = '<article class="card' + (top ? ' lead' : '') + '" id="' + x.id + '"><h3>' + x.t + (x.full ? '<span class="full">' + x.full + '</span>' : '') + '</h3>';
   h += '<div class="rows"><span class="lb">What it is</span><p>' + x.what + '</p><span class="lb">What it does</span><p>' + x.does + '</p>';
   if (x.where) h += '<span class="lb">Where it lives</span><p>' + x.where + '</p>';
   h += '</div>';
-  if (x.flow) h += flow(x.flow);
+  if (x.flow) h += flow(x.flow, x.id);
   if (x.trap) h += '<div class="trap"><b>EXAM TRAP</b>' + x.trap + '</div>';
+  if (x.deck) h += '<div class="deck"><b>CLASS DECK CHECK</b>' + x.deck + '</div>';
   h += '</article>';
   return h;
 }
@@ -236,7 +294,7 @@ function drawObj(){
 function flat(){ var out = []; DATA.forEach(function(o){ (function w(L){ L.forEach(function(x){ out.push([o.o, x]); w(x.kids || []); }); })(o.items); }); return out; }
 var FLAT = null;
 function drawSearch(){
-  FLAT = FLAT || flat().map(function(p){ return [p[0], p[1], (p[1].t + ' ' + (p[1].full||'') + ' ' + p[1].what + ' ' + p[1].does + ' ' + (p[1].where||'') + ' ' + (p[1].trap||'')).replace(/<[^>]+>/g, ' ').toLowerCase()]; });
+  FLAT = FLAT || flat().map(function(p){ return [p[0], p[1], (p[1].t + ' ' + (p[1].full||'') + ' ' + p[1].what + ' ' + p[1].does + ' ' + (p[1].where||'') + ' ' + (p[1].trap||'') + ' ' + (p[1].deck||'')).replace(/<[^>]+>/g, ' ').toLowerCase()]; });
   var words = st.q.toLowerCase().split(/\s+/).filter(Boolean);
   var hits = FLAT.filter(function(p){ return words.every(function(w){ return p[2].indexOf(w) >= 0; }); });
   hits.sort(function(a, b){ return (b[1].t.toLowerCase().indexOf(words[0]) === 0) - (a[1].t.toLowerCase().indexOf(words[0]) === 0); });
@@ -248,6 +306,18 @@ function draw(){
   if (st.q) drawSearch(); else drawObj();
   try{ history.replaceState(null, '', '#' + (st.q ? 'q' : 'o' + st.o.replace('.', '-'))); }catch(e){}
 }
+$('main').addEventListener('click', function(e){
+  var b = e.target.closest('button.bx[data-fid]');
+  if (b){
+    var id = b.getAttribute('data-fid'), i = +b.getAttribute('data-i'), p = document.getElementById('fp-' + id), open = b.getAttribute('aria-expanded') === 'true';
+    [].forEach.call(b.parentNode.querySelectorAll('button.bx'), function(x){ x.setAttribute('aria-expanded', 'false'); x.classList.toggle('on', open ? x.hasAttribute('data-key') : x === b); });
+    if (open){ p.hidden = true; p.innerHTML = ''; return; }
+    b.setAttribute('aria-expanded', 'true'); p.innerHTML = stepPanel(id, i, b.textContent); p.hidden = false;
+    return;
+  }
+  var g = e.target.closest('button[data-go]');
+  if (g) goTo(g.getAttribute('data-go'));
+});
 $('m-dark').onclick = function(){ setMode('dark'); };
 $('m-light').onclick = function(){ setMode('light'); };
 var qt; $('q').oninput = function(){ clearTimeout(qt); var v = this.value; qt = setTimeout(function(){ st.q = v.trim(); draw(); }, 150); };
@@ -264,6 +334,6 @@ var qt; $('q').oninput = function(){ clearTimeout(qt); var v = this.value; qt = 
 
 def js(x): return json.dumps(x, ensure_ascii=False).replace('</', '<\\/')
 page = (PAGE.replace('__DATA__', js(data)).replace('__NBT__', js(nb_topics)).replace('__NB__', NB)
-        .replace('__HUB__', HUB).replace('__DRILL__', js(DRILL)).replace('__DOMS__', js(DOMAINS)))
+        .replace('__HUB__', HUB).replace('__DRILL__', js(DRILL)).replace('__DOMS__', js(DOMAINS)).replace('__STEPS__', js(STEPS_JS)))
 OUT.write_text(page, encoding='utf-8')
 print(f'study map: {len(data)} objectives, {count} topics, {len(page)//1024} KB -> {OUT}')
